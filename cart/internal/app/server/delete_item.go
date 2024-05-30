@@ -1,8 +1,14 @@
 package server
 
-import "net/http"
+import (
+	"log/slog"
+	"net/http"
+)
 
-func (s *Server) DelItemCart(w http.ResponseWriter, r *http.Request) {
+// Удаляет товар из корзины
+func (s *Server) DeleteItem(w http.ResponseWriter, r *http.Request) {
+	op := "DeleteItem"
+
 	userId, err := getPathValueInt(w, r, "user_id")
 	if err != nil {
 		return
@@ -13,8 +19,9 @@ func (s *Server) DelItemCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.Service.DeleteSKU(userId, sku)
+	err = s.Service.DeleteProductCart(userId, sku)
 	if err != nil {
+		slog.Error(op, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

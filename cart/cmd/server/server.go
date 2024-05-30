@@ -21,13 +21,12 @@ func main() {
 	cartService := service.NewService(cartRepository)
 	cartServer := server.NewServer(cartService)
 
-	// добавить комменты и логирование
-
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", cartServer.AddItemCart)
-	mux.HandleFunc("DELETE /user/{user_id}/cart/{sku_id}", cartServer.DelItemCart)
-	mux.HandleFunc("DELETE /user/{user_id}/cart", cartServer.CleaningCart)
-	mux.HandleFunc("GET /user/{user_id}/cart", cartServer.GetCart)
+
+	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", cartServer.AddItem)
+	mux.HandleFunc("DELETE /user/{user_id}/cart/{sku_id}", cartServer.DeleteItem)
+	mux.HandleFunc("DELETE /user/{user_id}/cart", cartServer.DeleteItemsByUserID)
+	mux.HandleFunc("GET /user/{user_id}/cart/list", cartServer.GetItemsByUserID)
 
 	http.Serve(conn, mux)
 }

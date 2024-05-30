@@ -5,31 +5,40 @@ import (
 	"encoding/json"
 	"net/http"
 	"route256/cart/internal/pkg/cart/model"
+	"route256/cart/internal/pkg/cart/service"
 )
 
-type Carts map[int64]map[int64]*model.CartItem
+// Структура: "Корзины". id пользователя есть id конкретной корзины.
+// Id корзины соответствует первому ключу. SKU товара соответствует
+// второму ключу. Значение - продукт, с его количеством
+type Carts map[int64]map[int64]*model.Product
 
+// Структура репозитория
 type Repository struct {
 	Carts Carts
 }
 
+// Инициализирует репозиторий
 func NewRepository() *Repository {
 	return &Repository{
 		Carts: make(Carts),
 	}
 }
 
-func (r *Repository) CheckSKU(sku int64) (bool, error) {
+// Проверяет наличие sku на удаленном сервере
+func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
+	// Структура для отправки запроса SKU
 	type CheckSkuRequest struct {
 		Token string `json:"token"`
 		Sku   int64  `json:"sku"`
 	}
 
+	// Структура для получения ответа о наличии SKU
 	type CheckSkuResponse struct {
-		Code      int     `json:"code"`
-		Name      string  `json:"name"`
-		Price     float32 `json:"price"`
-		ErrorMess string  `json:"message"`
+		Code      int64  `json:"code"`
+		Name      string `json:"name"`
+		Price     uint32 `json:"price"`
+		ErrorMess string `json:"message"`
 	}
 
 	bodyCheckSKU := CheckSkuRequest{
@@ -37,9 +46,11 @@ func (r *Repository) CheckSKU(sku int64) (bool, error) {
 		Sku:   sku,
 	}
 
+	responseSKU := &model.Product{}
+
 	jsonBodyCheckSKU, err := json.Marshal(bodyCheckSKU)
 	if err != nil {
-		return false, err
+		return responseSKU, err
 	}
 
 	req, err := http.NewRequest(
@@ -48,55 +59,69 @@ func (r *Repository) CheckSKU(sku int64) (bool, error) {
 		bytes.NewReader(jsonBodyCheckSKU),
 	)
 	if err != nil {
-		return false, err
+		return responseSKU, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return false, err
+		return responseSKU, err
 	}
 
 	defer resp.Body.Close()
 
-	SkuResponse := CheckSkuResponse{}
-	json.NewDecoder(resp.Body).Decode(&SkuResponse)
+	SkuResponseCheck := CheckSkuResponse{}
+	json.NewDecoder(resp.Body).Decode(&SkuResponseCheck)
 
-	if SkuResponse.Price > 0 {
-		return true, nil
+	// Если в ответе есть цена SKU считаем что товар доступен
+	if SkuResponseCheck.Price > 0 {
+		responseSKU.Name = SkuResponseCheck.Name
+		responseSKU.Price = SkuResponseCheck.Price
+		return responseSKU, nil
 	}
 
-	return false, nil
+	return responseSKU, service.ErrNoProductInStock
 }
 
-// TODO Разложить. Логику вынести в сервис
+// Получает конкретный товар из корзины пользователя
+func (r *Repository) GetProductCart(productRequest *model.Product, cartId int64) (*model.Product, error) {
+	item := &model.Product{}
+	if _, ok := r.Carts[cartId]; ok {
+		if v, ok := r.Carts[cartId][productRequest.SKU]; ok {
+			item.Count = v.Count
+			item.SKU = productRequest.SKU
+		}
+	}
+
+	return item, nil
+}
+
+// Добавляет товар в корзину
 func (r *Repository) AddProductCart(productRequest *model.Product, cartId int64) error {
 	if _, ok := r.Carts[cartId]; !ok {
-		r.Carts[cartId] = make(map[int64]*model.CartItem)
+		r.Carts[cartId] = make(map[int64]*model.Product)
 	}
 
-	var ctn uint16
-	if basket, ok := r.Carts[cartId][productRequest.SKU]; ok {
-		ctn = basket.Count
-	}
-
-	r.Carts[cartId][productRequest.SKU] = &model.CartItem{
-		Count: productRequest.Count + ctn,
+	r.Carts[cartId][productRequest.SKU] = &model.Product{
+		Count: productRequest.Count,
 	}
 
 	return nil
 }
 
-func (r *Repository) DeleteSKU(cartId, sku int64) error {
+// Удаляет товар из корзины
+func (r *Repository) DeleteProductCart(cartId, sku int64) error {
 	delete(r.Carts[cartId], sku)
 	return nil
 }
 
+// Чистит корзину
 func (r *Repository) ClearCart(cartId int64) error {
 	delete(r.Carts, cartId)
 	return nil
 }
 
-func (r *Repository) GetCart(cartId int64) (map[int64]*model.CartItem, error) {
+// Получает содержимое корзины
+func (r *Repository) GetCart(cartId int64) (map[int64]*model.Product, error) {
 	return r.Carts[cartId], nil
 }

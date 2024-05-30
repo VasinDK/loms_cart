@@ -9,7 +9,10 @@ import (
 	"route256/cart/internal/pkg/cart/service"
 )
 
-func (s *Server) AddItemCart(w http.ResponseWriter, r *http.Request) {
+// Добавляет товар в корзину.
+func (s *Server) AddItem(w http.ResponseWriter, r *http.Request) {
+	op := "AddItem"
+
 	userId, err := getPathValueInt(w, r, "user_id")
 	if err != nil {
 		return
@@ -26,6 +29,7 @@ func (s *Server) AddItemCart(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	if err != nil || userId == 0 || sku == 0 {
+		slog.Error(op, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -39,6 +43,7 @@ func (s *Server) AddItemCart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		slog.Error(op, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		slog.Error(err.Error())
 		return
