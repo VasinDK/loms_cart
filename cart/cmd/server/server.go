@@ -1,19 +1,20 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"route256/cart/internal/app/server"
 	"route256/cart/internal/pkg/cart/repository"
 	"route256/cart/internal/pkg/cart/service"
+	"route256/cart/internal/pkg/middleware"
 )
 
 func main() {
 
 	conn, err := net.Listen("tcp", "0.0.0.0:8082")
 	if err != nil {
-		log.Panic(err)
+		slog.Error(err.Error())
 	}
 	defer conn.Close()
 
@@ -28,5 +29,11 @@ func main() {
 	mux.HandleFunc("DELETE /user/{user_id}/cart", cartServer.DeleteItemsByUserID)
 	mux.HandleFunc("GET /user/{user_id}/cart/list", cartServer.GetItemsByUserID)
 
-	http.Serve(conn, mux)
+	handle := middleware.Logging(mux)
+	handle = middleware.PanicRecovery(handle)
+
+	err = http.Serve(conn, handle)
+	if err != nil {
+		slog.Error(err.Error())
+	}
 }

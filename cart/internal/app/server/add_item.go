@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 	"route256/cart/internal/pkg/cart/model"
-	"route256/cart/internal/pkg/cart/service"
 )
 
 // Добавляет товар в корзину.
@@ -18,26 +17,49 @@ func (s *Server) AddItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	errs := validate.Var(userId, "required,gte=1")
+	if errs != nil {
+		slog.Error(op, errs)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	sku, err := getPathValueInt(w, r, "sku_id")
 	if err != nil {
 		return
 	}
 
-	productRequest := model.Product{}
-
-	err = json.NewDecoder(r.Body).Decode(&productRequest)
-	defer r.Body.Close()
-
-	if err != nil || userId == 0 || sku == 0 {
-		slog.Error(op, err)
+	errs = validate.Var(sku, "required,gte=1")
+	if errs != nil {
+		slog.Error(op, errs)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	productRequest.SKU = sku
+	productRequest := ProductRequest{}
 
-	err = s.Service.AddProduct(&productRequest, userId)
-	if errors.Is(err, service.ErrNoProductInStock) {
+	err = json.NewDecoder(r.Body).Decode(&productRequest)
+	if err != nil {
+		slog.Error(op, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	errs = validate.Struct(productRequest)
+	if errs != nil {
+		slog.Error(op, errs)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	product := model.Product{}
+
+	product.SKU = sku
+	product.Count = productRequest.Count
+
+	err = s.Service.AddProduct(&product, userId)
+	if errors.Is(err, model.ErrNoProductInStock) {
 		w.WriteHeader(http.StatusPreconditionFailed)
 		return
 	}

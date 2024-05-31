@@ -55,7 +55,7 @@ func (s *Service) AddProduct(productRequest *model.Product, userId int64) error 
 	}
 
 	if checkSKU.Price == 0 {
-		return ErrNoProductInStock
+		return model.ErrNoProductInStock
 	}
 
 	return nil

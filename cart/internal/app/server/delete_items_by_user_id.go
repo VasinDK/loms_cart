@@ -14,6 +14,13 @@ func (s *Server) DeleteItemsByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	errs := validate.Var(userId, "required,gte=1")
+	if errs != nil {
+		slog.Error(op, errs)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	err = s.Service.ClearCart(userId)
 	if err != nil {
 		slog.Error(op, err)

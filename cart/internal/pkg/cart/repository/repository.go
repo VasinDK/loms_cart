@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"route256/cart/internal/pkg/cart/model"
-	"route256/cart/internal/pkg/cart/service"
 )
 
 // Структура: "Корзины". id пользователя есть id конкретной корзины.
@@ -80,7 +79,7 @@ func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
 		return responseSKU, nil
 	}
 
-	return responseSKU, service.ErrNoProductInStock
+	return responseSKU, model.ErrNoProductInStock
 }
 
 // Получает конкретный товар из корзины пользователя

@@ -17,6 +17,13 @@ func (s *Server) GetItemsByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	errs := validate.Var(userId, "required,gte=1")
+	if errs != nil {
+		slog.Error(op, errs)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	items, err := s.Service.GetCart(userId)
 	if err != nil || items.TotalPrice == 0 {
 		if err != nil {
