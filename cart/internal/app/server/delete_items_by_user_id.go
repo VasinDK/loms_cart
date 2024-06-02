@@ -3,30 +3,33 @@ package server
 import (
 	"log/slog"
 	"net/http"
+	"route256/cart/internal/pkg/cart/service/list/clear_cart"
 )
 
 // Удаляет все товары корзины по id пользователя
-func (s *Server) DeleteItemsByUserID(w http.ResponseWriter, r *http.Request) {
-	op := "DeleteItemsByUserID"
+func (s *Server) DeleteItemsByUserID(h *clear_cart.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		op := "DeleteItemsByUserID"
 
-	userId, err := getPathValueInt(w, r, "user_id")
-	if err != nil {
-		return
+		userId, err := getPathValueInt(w, r, "user_id")
+		if err != nil {
+			return
+		}
+
+		errs := validate.Var(userId, "required,gte=1")
+		if errs != nil {
+			slog.Error(op, errs)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		err = h.ClearCart(userId)
+		if err != nil {
+			slog.Error(op, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
-
-	errs := validate.Var(userId, "required,gte=1")
-	if errs != nil {
-		slog.Error(op, errs)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	err = s.Service.ClearCart(userId)
-	if err != nil {
-		slog.Error(op, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
 }

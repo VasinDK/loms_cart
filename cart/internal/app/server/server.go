@@ -1,8 +1,6 @@
 package server
 
 import (
-	"route256/cart/internal/pkg/cart/model"
-
 	"github.com/go-playground/validator/v10"
 )
 
@@ -25,22 +23,11 @@ type ProductRequest struct {
 	Count uint16 `json:"count" validate:"gte=1"`
 }
 
-type Service interface {
-	AddProduct(*model.Product, int64) error
-	DeleteProductCart(int64, int64) error
-	ClearCart(int64) error
-	GetCart(int64) (*model.Cart, error)
-}
-
-type Server struct {
-	Service Service
-}
+type Server struct{}
 
 // Инициализирует экземпляр транспорта
-func NewServer(service Service) *Server {
-	return &Server{
-		Service: service,
-	}
+func NewServer() *Server {
+	return &Server{}
 }
 
 var validate = validator.New(validator.WithRequiredStructEnabled())
