@@ -3,7 +3,7 @@ package server
 import (
 	"log/slog"
 	"net/http"
-	"route256/cart/internal/pkg/cart/service/list/clear_cart"
+	"route256/cart/internal/service/list/clear_cart"
 )
 
 // Удаляет все товары корзины по id пользователя

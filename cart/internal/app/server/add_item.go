@@ -5,8 +5,8 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"route256/cart/internal/pkg/cart/model"
-	"route256/cart/internal/pkg/cart/service/item/add_product"
+	"route256/cart/internal/model"
+	"route256/cart/internal/service/item/add_product"
 )
 
 // Добавляет товар в корзину.

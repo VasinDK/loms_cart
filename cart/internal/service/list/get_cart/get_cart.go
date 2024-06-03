@@ -2,7 +2,7 @@ package get_cart
 
 import (
 	"fmt"
-	"route256/cart/internal/pkg/cart/model"
+	"route256/cart/internal/model"
 	"sort"
 	"strings"
 )
@@ -23,7 +23,7 @@ func New(repository Repository) *Handler {
 }
 
 // Получает содержимое конкретной корзины
-func(h *Handler) GetCart(cartId int64) (*model.Cart, error) {
+func (h *Handler) GetCart(cartId int64) (*model.Cart, error) {
 	var totalPrice uint32
 	cart := &model.Cart{}
 

@@ -5,12 +5,12 @@ import (
 	"net"
 	"net/http"
 	"route256/cart/internal/app/server"
-	"route256/cart/internal/pkg/cart/repository"
-	"route256/cart/internal/pkg/cart/service/item/add_product"
-	"route256/cart/internal/pkg/cart/service/item/delete_item"
-	"route256/cart/internal/pkg/cart/service/list/clear_cart"
-	"route256/cart/internal/pkg/cart/service/list/get_cart"
-	"route256/cart/internal/pkg/middleware"
+	"route256/cart/internal/repository"
+	"route256/cart/internal/service/item/add_product"
+	"route256/cart/internal/service/item/delete_item"
+	"route256/cart/internal/service/list/clear_cart"
+	"route256/cart/internal/service/list/get_cart"
+	"route256/cart/internal/middleware"
 )
 
 func main() {

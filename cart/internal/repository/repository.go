@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"route256/cart/internal/pkg/cart/model"
+	"route256/cart/internal/model"
 )
 
 // Структура: "Корзины". id пользователя есть id конкретной корзины.

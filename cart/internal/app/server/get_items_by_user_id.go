@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"route256/cart/internal/pkg/cart/service/list/get_cart"
+	"route256/cart/internal/service/list/get_cart"
 )
 
 // Получает все товары корзины пользователя по id пользователя

@@ -3,7 +3,7 @@ package server
 import (
 	"log/slog"
 	"net/http"
-	"route256/cart/internal/pkg/cart/service/item/delete_item"
+	"route256/cart/internal/service/item/delete_item"
 )
 
 // Удаляет товар из корзины

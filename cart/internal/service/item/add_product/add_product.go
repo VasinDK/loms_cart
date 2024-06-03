@@ -2,7 +2,7 @@ package add_product
 
 import (
 	"fmt"
-	"route256/cart/internal/pkg/cart/model"
+	"route256/cart/internal/model"
 )
 
 type Repository interface {
