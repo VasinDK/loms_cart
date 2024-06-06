@@ -31,6 +31,10 @@ func (h *Handler) AddProduct(productRequest *model.Product, userId int64) error 
 		return fmt.Errorf("s.Repository.CheckSKU %w", err)
 	}
 
+	if productRequest.Count < 1 {
+		return fmt.Errorf("AddProduct %w", fmt.Errorf("Количество меньше 1"))
+	}
+
 	if checkSKU.Price > 0 {
 		currentProduct, err := h.Repository.GetProductCart(productRequest, userId)
 		if err != nil {

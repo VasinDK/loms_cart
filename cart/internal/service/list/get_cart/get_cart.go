@@ -28,6 +28,7 @@ func (h *Handler) GetCart(cartId int64) (*model.Cart, error) {
 	cart := &model.Cart{}
 
 	productsList, err := h.Repository.GetCart(cartId)
+
 	if err != nil {
 		return cart, fmt.Errorf("s.Repository.GetCart %w", err)
 	}
@@ -38,6 +39,7 @@ func (h *Handler) GetCart(cartId int64) (*model.Cart, error) {
 
 	for i := range productsList {
 		item, err := h.Repository.CheckSKU(i)
+
 		if err != nil {
 			errorsSKU = append(errorsSKU, err.Error())
 			continue

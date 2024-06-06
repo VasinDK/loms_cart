@@ -3,6 +3,7 @@ module route256/cart
 go 1.22.3
 
 require (
+	github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-playground/validator/v10 v10.21.0
 	github.com/gojuno/minimock/v3 v3.3.11
 )
