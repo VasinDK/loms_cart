@@ -7,6 +7,11 @@ import (
 	"route256/cart/internal/model"
 )
 
+type Config interface {
+	GetTokenStore() string
+	GetAddressStore() string
+}
+
 // Структура: "Корзины". id пользователя есть id конкретной корзины.
 // Id корзины соответствует первому ключу. SKU товара соответствует
 // второму ключу. Значение - продукт, с его количеством
@@ -14,13 +19,15 @@ type Carts map[int64]map[int64]*model.Product
 
 // Структура репозитория
 type Repository struct {
-	Carts Carts
+	Carts  Carts
+	Config Config
 }
 
 // Инициализирует репозиторий
-func NewRepository() *Repository {
+func NewRepository(config Config) *Repository {
 	return &Repository{
-		Carts: make(Carts),
+		Carts:  make(Carts),
+		Config: config,
 	}
 }
 
@@ -41,7 +48,7 @@ func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
 	}
 
 	bodyCheckSKU := CheckSkuRequest{
-		Token: "testtoken",
+		Token: r.Config.GetTokenStore(),
 		Sku:   sku,
 	}
 
@@ -54,7 +61,7 @@ func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
 
 	req, err := http.NewRequest(
 		"POST",
-		"http://route256.pavl.uk:8080/get_product",
+		r.Config.GetAddressStore(),
 		bytes.NewReader(jsonBodyCheckSKU),
 	)
 	if err != nil {

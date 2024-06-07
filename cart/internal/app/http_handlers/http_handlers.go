@@ -1,4 +1,4 @@
-package server
+package http_handlers
 
 import (
 	"github.com/go-playground/validator/v10"
@@ -26,7 +26,7 @@ type ProductRequest struct {
 type Server struct{}
 
 // Инициализирует экземпляр транспорта
-func NewServer() *Server {
+func New() *Server {
 	return &Server{}
 }
 
