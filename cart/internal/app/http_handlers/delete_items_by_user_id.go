@@ -6,7 +6,7 @@ import (
 	"route256/cart/internal/service/list/clear_cart"
 )
 
-// Удаляет все товары корзины по id пользователя
+// DeleteItemsByUserID - удаляет все товары корзины по id пользователя
 func (s *Server) DeleteItemsByUserID(h *clear_cart.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		op := "DeleteItemsByUserID"

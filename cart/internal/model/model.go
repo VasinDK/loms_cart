@@ -1,12 +1,12 @@
 package model
 
-// Корзина
+// Cart - корзина
 type Cart struct {
 	Items      []*Product
 	TotalPrice uint32
 }
 
-// Товар
+// Product - товар
 type Product struct {
 	SKU   int64
 	Name  string

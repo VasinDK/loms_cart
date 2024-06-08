@@ -12,18 +12,18 @@ type Config interface {
 	GetAddressStore() string
 }
 
-// Структура: "Корзины". id пользователя есть id конкретной корзины.
+// Carts - структура: "Корзины". id пользователя есть id конкретной корзины.
 // Id корзины соответствует первому ключу. SKU товара соответствует
-// второму ключу. Значение - продукт, с его количеством
+// второму ключу. Значение - продукт
 type Carts map[int64]map[int64]*model.Product
 
-// Структура репозитория
+// Repository - структура репозитория
 type Repository struct {
 	Carts  Carts
 	Config Config
 }
 
-// Инициализирует репозиторий
+// NewRepository - инициализирует репозиторий
 func NewRepository(config Config) *Repository {
 	return &Repository{
 		Carts:  make(Carts),
@@ -31,15 +31,15 @@ func NewRepository(config Config) *Repository {
 	}
 }
 
-// Проверяет наличие sku на удаленном сервере
+// CheckSKU - проверяет наличие sku на удаленном сервере
 func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
-	// Структура для отправки запроса SKU
+	// CheckSkuRequest - структура для отправки запроса SKU
 	type CheckSkuRequest struct {
 		Token string `json:"token"`
 		Sku   int64  `json:"sku"`
 	}
 
-	// Структура для получения ответа о наличии SKU
+	// CheckSkuResponse - структура для получения ответа о наличии SKU
 	type CheckSkuResponse struct {
 		Code      int64  `json:"code"`
 		Name      string `json:"name"`
@@ -89,7 +89,7 @@ func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
 	return responseSKU, model.ErrNoProductInStock
 }
 
-// Получает конкретный товар из корзины пользователя
+// GetProductCart - получает конкретный товар из корзины пользователя
 func (r *Repository) GetProductCart(productRequest *model.Product, cartId int64) (*model.Product, error) {
 	item := &model.Product{}
 	if _, ok := r.Carts[cartId]; ok {
@@ -102,7 +102,7 @@ func (r *Repository) GetProductCart(productRequest *model.Product, cartId int64)
 	return item, nil
 }
 
-// Добавляет товар в корзину
+// AddProductCart - добавляет товар в корзину
 func (r *Repository) AddProductCart(productRequest *model.Product, cartId int64) error {
 	if _, ok := r.Carts[cartId]; !ok {
 		r.Carts[cartId] = make(map[int64]*model.Product)
@@ -115,19 +115,19 @@ func (r *Repository) AddProductCart(productRequest *model.Product, cartId int64)
 	return nil
 }
 
-// Удаляет товар из корзины
+// DeleteProductCart - удаляет товар из корзины
 func (r *Repository) DeleteProductCart(cartId, sku int64) error {
 	delete(r.Carts[cartId], sku)
 	return nil
 }
 
-// Чистит корзину
+// ClearCart - чистит корзину
 func (r *Repository) ClearCart(cartId int64) error {
 	delete(r.Carts, cartId)
 	return nil
 }
 
-// Получает содержимое корзины
+// GetCart - получает содержимое корзины
 func (r *Repository) GetCart(cartId int64) (map[int64]*model.Product, error) {
 	return r.Carts[cartId], nil
 }

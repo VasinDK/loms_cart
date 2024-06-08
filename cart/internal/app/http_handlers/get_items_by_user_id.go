@@ -7,7 +7,7 @@ import (
 	"route256/cart/internal/service/list/get_cart"
 )
 
-// Получает все товары корзины пользователя по id пользователя
+// GetItemsByUserID - получает все товары корзины пользователя по id пользователя
 func (s *Server) GetItemsByUserID(h *get_cart.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		op := "GetItemsByUserID"

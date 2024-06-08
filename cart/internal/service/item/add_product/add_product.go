@@ -15,13 +15,14 @@ type Handler struct {
 	Repository Repository
 }
 
+// New - создает и возвращает Handler
 func New(repository Repository) *Handler {
 	return &Handler{
 		Repository: repository,
 	}
 }
 
-// Добавляет товар в корзину.
+// AddProduct - добавляет товар в корзину.
 // Сначала проверяется наличие товара в специальном сервисе.
 // Затем получаем, если есть, количество товара добавленного ранее в корзину.
 // Добавляет к нему новый объем и сохраняет в корзину

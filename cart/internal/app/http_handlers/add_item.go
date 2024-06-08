@@ -9,7 +9,7 @@ import (
 	"route256/cart/internal/service/item/add_product"
 )
 
-// Добавляет товар в корзину.
+// AddItem - добавляет товар в корзину
 func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		op := "AddItem"

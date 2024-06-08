@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-// Извлекает параметры из строки, меняя тип, проверяя ошибки.
+// getPathValueInt - извлекает параметры из строки, меняя тип, проверяя ошибки.
 // В случае ошибки отвечает 500
 func getPathValueInt(w http.ResponseWriter, r *http.Request, param string) (int64, error) {
 	paramStr := r.PathValue(param)

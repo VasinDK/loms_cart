@@ -16,13 +16,14 @@ type Handler struct {
 	Repository Repository
 }
 
+// New - создает и возвращает Handler
 func New(repository Repository) *Handler {
 	return &Handler{
 		Repository: repository,
 	}
 }
 
-// Получает содержимое конкретной корзины
+// GetCart - получает содержимое конкретной корзины
 func (h *Handler) GetCart(cartId int64) (*model.Cart, error) {
 	var totalPrice uint32
 	cart := &model.Cart{}

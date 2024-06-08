@@ -2,6 +2,7 @@ package repository_test
 
 import (
 	"route256/cart/internal/model"
+	"route256/cart/internal/pkg/config"
 	"route256/cart/internal/repository"
 	"testing"
 
@@ -14,7 +15,7 @@ type SuiteRepo struct {
 }
 
 func (s *SuiteRepo) SetupSuite() {
-	s.Repo = repository.NewRepository()
+	s.Repo = repository.NewRepository(config.New())
 }
 
 func (s *SuiteRepo) SetupTest() {
@@ -54,7 +55,7 @@ func (s *SuiteRepo) SetupTest() {
 }
 
 func (s *SuiteRepo) TearDownTest() {
-	s.Repo = repository.NewRepository()
+	s.Repo = repository.NewRepository(config.New())
 }
 
 func TestSuiteAll(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"route256/cart/internal/service/item/delete_item"
 )
 
-// Удаляет товар из корзины
+// DeleteItem - удаляет товар из корзины
 func (s *Server) DeleteItem(h *delete_item.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		op := "DeleteItem"

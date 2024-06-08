@@ -13,6 +13,7 @@ import (
 	"route256/cart/internal/service/list/get_cart"
 )
 
+// Run - запускает сервер
 func Run(config *config.Config) {
 	cartRepository := repository.NewRepository(config)
 	httpHandlers := http_handlers.New()

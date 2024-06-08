@@ -4,13 +4,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// Корзина ответ
+// CartResponse - корзина, ответ
 type CartResponse struct {
 	Items      []*ProductResponse `json:"items"`
 	TotalPrice uint32             `json:"total_price"`
 }
 
-// Товар ответ
+// ProductResponse - товар, ответ
 type ProductResponse struct {
 	SKU   int64  `json:"sku_id"`
 	Name  string `json:"name"`
@@ -18,14 +18,14 @@ type ProductResponse struct {
 	Count uint16 `json:"count"`
 }
 
-// Товар запрос
+// ProductRequest - товар, запрос
 type ProductRequest struct {
 	Count uint16 `json:"count" validate:"gte=1"`
 }
 
 type Server struct{}
 
-// Инициализирует экземпляр транспорта
+// New - инициализирует экземпляр транспорта
 func New() *Server {
 	return &Server{}
 }
