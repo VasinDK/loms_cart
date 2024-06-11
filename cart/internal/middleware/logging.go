@@ -26,7 +26,6 @@ func Logging(next http.Handler) http.Handler {
 		if r.Method == http.MethodPost || r.Method == http.MethodPut {
 			err := fmt.Errorf("")
 			body, err = io.ReadAll(r.Body)
-			defer r.Body.Close()
 
 			if err != nil {
 				slog.Info("Request",

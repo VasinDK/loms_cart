@@ -12,7 +12,7 @@ import (
 // AddItem - добавляет товар в корзину
 func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		op := "AddItem"
+		const op = "AddItem"
 
 		userId, err := getPathValueInt(w, r, "user_id")
 		if err != nil {
@@ -46,7 +46,6 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		defer r.Body.Close()
 
 		errs = validate.Struct(productRequest)
 		if errs != nil {

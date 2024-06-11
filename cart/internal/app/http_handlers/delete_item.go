@@ -9,7 +9,7 @@ import (
 // DeleteItem - удаляет товар из корзины
 func (s *Server) DeleteItem(h *delete_item.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		op := "DeleteItem"
+		const op = "DeleteItem"
 
 		userId, err := getPathValueInt(w, r, "user_id")
 		if err != nil {

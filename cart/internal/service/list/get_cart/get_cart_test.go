@@ -5,11 +5,12 @@ import (
 	"route256/cart/internal/service/list/get_cart/mock"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/gojuno/minimock/v3"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetCart(t *testing.T) {
+	t.Parallel()
 	CartProd := map[int64]*model.Product{
 		123: &model.Product{
 			SKU:   123,
@@ -20,7 +21,6 @@ func TestGetCart(t *testing.T) {
 			Count: 1,
 		},
 	}
-	CartProd0 := map[int64]*model.Product{}
 
 	CheckSKUResp1 := &model.Product{ // SKU:   123
 		Name:  "Чай",
@@ -31,43 +31,52 @@ func TestGetCart(t *testing.T) {
 		Name:  "Кофе",
 		Price: 130,
 	}
-	// CheckSKUResp0 := &model.Product{}
+	CheckSKUResp0 := &model.Product{}
 
 	tests := []struct {
 		Name        string
 		CartId      int64
 		CartProd    map[int64]*model.Product
 		CheckSKUReq int64
-		WantError error
-		WantRes   uint32
+		WantError   error
+		WantRes     uint32
 	}{
 		{
 			Name:        "Типичное значение",
 			CartId:      12,
 			CartProd:    CartProd,
 			CheckSKUReq: 123,
-			WantError: nil,
-			WantRes:   156,
+			WantError:   nil,
+			WantRes:     156,
 		},
 		{
 			Name:        "Пустая корзина",
 			CartId:      2,
-			CartProd:    CartProd0,
+			CartProd:    map[int64]*model.Product{},
 			CheckSKUReq: 123,
-			WantError: nil,
-			WantRes:   0,
+			WantError:   nil,
+			WantRes:     0,
 		},
 	}
-	ctrl := minimock.NewController(t)
-	repositoryMock := mock.NewRepositoryMock(ctrl)
-	repositoryMock.CheckSKUMock.When(123).Then(CheckSKUResp1, nil)
-	repositoryMock.CheckSKUMock.When(124).Then(CheckSKUResp2, nil)
-	NewHandler := New(repositoryMock)
 
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
-			repositoryMock.GetCartMock.Expect(tt.CartId).Return(tt.CartProd, nil)
+			t.Parallel()
+			ctrl := minimock.NewController(t)
+			repositoryMock := mock.NewRepositoryMock(ctrl)
+			repositoryMock.GetCartMock.Optional().Expect(tt.CartId).Return(tt.CartProd, nil)
+			repositoryMock.CheckSKUMock.Optional().Set(func(i int64) (*model.Product, error) {
+				switch i {
+				case 123:
+					return CheckSKUResp1, nil
+				case 124:
+					return CheckSKUResp2, nil
+				default:
+					return CheckSKUResp0, nil
+				}
+			})
 
+			NewHandler := New(repositoryMock)
 			Cart, err := NewHandler.GetCart(tt.CartId)
 
 			assert.Equal(t, tt.WantError, err)

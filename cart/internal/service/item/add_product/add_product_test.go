@@ -6,11 +6,12 @@ import (
 	"route256/cart/internal/service/item/add_product/mock"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/gojuno/minimock/v3"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddProduct(t *testing.T) {
+	t.Parallel()
 	product := &model.Product{
 		SKU:   123,
 		Name:  "Чай",
@@ -89,15 +90,17 @@ func TestAddProduct(t *testing.T) {
 			WantError:          fmt.Errorf("AddProduct %w", fmt.Errorf("Количество меньше 1")),
 		},
 	}
-	ctrl := minimock.NewController(t)
-	repoMock := mock.NewRepositoryMock(ctrl)
-	NewRepo := New(repoMock)
 
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
-			repoMock.CheckSKUMock.Expect(tt.CheckSKUReq).Return(tt.CheckSKURespParam1, tt.CheckSKURespParam2)
-			repoMock.GetProductCartMock.Expect(tt.GetProdReq, tt.UserId).Return(tt.GetProdRespParam1, tt.GetProdRespParam2)
-			repoMock.AddProductCartMock.Expect(tt.AddProdReq, tt.UserId).Return(tt.AddProdResp)
+			t.Parallel()
+			ctrl := minimock.NewController(t)
+			repoMock := mock.NewRepositoryMock(ctrl)
+			repoMock.CheckSKUMock.Optional().Expect(tt.CheckSKUReq).Return(tt.CheckSKURespParam1, tt.CheckSKURespParam2)
+			repoMock.GetProductCartMock.Optional().Expect(tt.GetProdReq, tt.UserId).Return(tt.GetProdRespParam1, tt.GetProdRespParam2)
+			repoMock.AddProductCartMock.Optional().Expect(tt.AddProdReq, tt.UserId).Return(tt.AddProdResp)
+
+			NewRepo := New(repoMock)
 			err := NewRepo.AddProduct(tt.AddProdReq, tt.UserId)
 			assert.Equal(t, tt.WantError, err)
 		})

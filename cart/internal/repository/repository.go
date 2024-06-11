@@ -73,7 +73,6 @@ func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
 	if err != nil {
 		return responseSKU, err
 	}
-
 	defer resp.Body.Close()
 
 	SkuResponseCheck := CheckSkuResponse{}
@@ -92,6 +91,7 @@ func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
 // GetProductCart - получает конкретный товар из корзины пользователя
 func (r *Repository) GetProductCart(productRequest *model.Product, cartId int64) (*model.Product, error) {
 	item := &model.Product{}
+
 	if _, ok := r.Carts[cartId]; ok {
 		if v, ok := r.Carts[cartId][productRequest.SKU]; ok {
 			item.Count = v.Count

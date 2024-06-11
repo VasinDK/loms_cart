@@ -4,11 +4,12 @@ import (
 	"route256/cart/internal/service/item/delete_item/mock"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/gojuno/minimock/v3"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteProductCart(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		Name      string
 		cartId    int64
@@ -40,13 +41,15 @@ func TestDeleteProductCart(t *testing.T) {
 			WantError: nil,
 		},
 	}
-	ctrl := minimock.NewController(t)
-	repositoryMock := mock.NewRepositoryMock(ctrl)
-	NewHandler := New(repositoryMock)
 
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := minimock.NewController(t)
+			repositoryMock := mock.NewRepositoryMock(ctrl)
 			repositoryMock.DeleteProductCartMock.Expect(tt.cartId, tt.sku).Return(tt.WantError)
+
+			NewHandler := New(repositoryMock)
 			err := NewHandler.DeleteProductCart(tt.cartId, tt.sku)
 			assert.Equal(t, tt.WantError, err)
 		})

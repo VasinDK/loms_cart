@@ -29,7 +29,6 @@ func (h *Handler) GetCart(cartId int64) (*model.Cart, error) {
 	cart := &model.Cart{}
 
 	productsList, err := h.Repository.GetCart(cartId)
-
 	if err != nil {
 		return cart, fmt.Errorf("s.Repository.GetCart %w", err)
 	}

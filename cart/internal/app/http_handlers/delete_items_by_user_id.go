@@ -9,7 +9,7 @@ import (
 // DeleteItemsByUserID - удаляет все товары корзины по id пользователя
 func (s *Server) DeleteItemsByUserID(h *clear_cart.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		op := "DeleteItemsByUserID"
+		const op = "DeleteItemsByUserID"
 
 		userId, err := getPathValueInt(w, r, "user_id")
 		if err != nil {

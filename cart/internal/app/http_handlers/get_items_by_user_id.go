@@ -10,7 +10,7 @@ import (
 // GetItemsByUserID - получает все товары корзины пользователя по id пользователя
 func (s *Server) GetItemsByUserID(h *get_cart.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		op := "GetItemsByUserID"
+		const op = "GetItemsByUserID"
 
 		w.Header().Set("Content-Type", "application/json")
 
