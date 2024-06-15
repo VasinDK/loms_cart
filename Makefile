@@ -11,6 +11,8 @@ build-all:
 run-all: build-all
 	docker-compose up --force-recreate --build -d
 
-
 run-cover:
 	go test -cover $(PACKAGES) | grep -v cart/internal/repository
+
+run-loms:
+	cd ./loms && make .protoc-generate

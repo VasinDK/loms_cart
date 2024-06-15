@@ -30,7 +30,7 @@ func New() *Config {
 	}
 
 	return &Config{
-		Port:         ":" + Port,
+		Port:         Port,
 		TokenStore:   TokenStore,
 		AddressStore: AddressStore,
 	}
