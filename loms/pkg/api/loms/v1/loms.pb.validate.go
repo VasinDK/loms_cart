@@ -293,10 +293,30 @@ func (m *OrderCreateRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for User
+	if m.GetUser() <= 0 {
+		err := OrderCreateRequestValidationError{
+			field:  "User",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	for idx, item := range m.GetItems() {
 		_, _ = idx, item
+
+		if item == nil {
+			err := OrderCreateRequestValidationError{
+				field:  fmt.Sprintf("Items[%v]", idx),
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(item).(type) {
@@ -430,7 +450,16 @@ func (m *OrderId) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for OrderId
+	if m.GetOrderId() <= 0 {
+		err := OrderIdValidationError{
+			field:  "OrderId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return OrderIdMultiError(errors)
@@ -670,7 +699,16 @@ func (m *Sku) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Sku
+	if m.GetSku() <= 0 {
+		err := SkuValidationError{
+			field:  "Sku",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return SkuMultiError(errors)

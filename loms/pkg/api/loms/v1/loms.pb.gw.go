@@ -61,8 +61,21 @@ func request_Loms_OrderInfo_0(ctx context.Context, marshaler runtime.Marshaler, 
 	var protoReq OrderId
 	var metadata runtime.ServerMetadata
 
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["orderId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "orderId")
+	}
+
+	protoReq.OrderId, err = runtime.Int64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "orderId", err)
 	}
 
 	msg, err := client.OrderInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -74,8 +87,21 @@ func local_request_Loms_OrderInfo_0(ctx context.Context, marshaler runtime.Marsh
 	var protoReq OrderId
 	var metadata runtime.ServerMetadata
 
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["orderId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "orderId")
+	}
+
+	protoReq.OrderId, err = runtime.Int64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "orderId", err)
 	}
 
 	msg, err := server.OrderInfo(ctx, &protoReq)
@@ -87,7 +113,7 @@ func request_Loms_OrderPay_0(ctx context.Context, marshaler runtime.Marshaler, c
 	var protoReq OrderId
 	var metadata runtime.ServerMetadata
 
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.OrderId); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -100,7 +126,7 @@ func local_request_Loms_OrderPay_0(ctx context.Context, marshaler runtime.Marsha
 	var protoReq OrderId
 	var metadata runtime.ServerMetadata
 
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.OrderId); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -113,8 +139,21 @@ func request_Loms_OrderCancel_0(ctx context.Context, marshaler runtime.Marshaler
 	var protoReq OrderId
 	var metadata runtime.ServerMetadata
 
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["orderId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "orderId")
+	}
+
+	protoReq.OrderId, err = runtime.Int64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "orderId", err)
 	}
 
 	msg, err := client.OrderCancel(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -126,8 +165,21 @@ func local_request_Loms_OrderCancel_0(ctx context.Context, marshaler runtime.Mar
 	var protoReq OrderId
 	var metadata runtime.ServerMetadata
 
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["orderId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "orderId")
+	}
+
+	protoReq.OrderId, err = runtime.Int64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "orderId", err)
 	}
 
 	msg, err := server.OrderCancel(ctx, &protoReq)
@@ -139,8 +191,21 @@ func request_Loms_StocksInfo_0(ctx context.Context, marshaler runtime.Marshaler,
 	var protoReq Sku
 	var metadata runtime.ServerMetadata
 
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["sku"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "sku")
+	}
+
+	protoReq.Sku, err = runtime.Uint32(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "sku", err)
 	}
 
 	msg, err := client.StocksInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -152,8 +217,21 @@ func local_request_Loms_StocksInfo_0(ctx context.Context, marshaler runtime.Mars
 	var protoReq Sku
 	var metadata runtime.ServerMetadata
 
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["sku"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "sku")
+	}
+
+	protoReq.Sku, err = runtime.Uint32(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "sku", err)
 	}
 
 	msg, err := server.StocksInfo(ctx, &protoReq)
@@ -175,7 +253,7 @@ func RegisterLomsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/OrderCreate", runtime.WithHTTPPathPattern("/loms_grpc.Loms/OrderCreate"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/OrderCreate", runtime.WithHTTPPathPattern("/v1/order/add"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -192,7 +270,7 @@ func RegisterLomsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 
 	})
 
-	mux.Handle("POST", pattern_Loms_OrderInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Loms_OrderInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -200,7 +278,7 @@ func RegisterLomsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/OrderInfo", runtime.WithHTTPPathPattern("/loms_grpc.Loms/OrderInfo"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/OrderInfo", runtime.WithHTTPPathPattern("/v1/order/info/{orderId}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -225,7 +303,7 @@ func RegisterLomsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/OrderPay", runtime.WithHTTPPathPattern("/loms_grpc.Loms/OrderPay"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/OrderPay", runtime.WithHTTPPathPattern("/v1/order/pay"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -242,7 +320,7 @@ func RegisterLomsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 
 	})
 
-	mux.Handle("POST", pattern_Loms_OrderCancel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_Loms_OrderCancel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -250,7 +328,7 @@ func RegisterLomsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/OrderCancel", runtime.WithHTTPPathPattern("/loms_grpc.Loms/OrderCancel"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/OrderCancel", runtime.WithHTTPPathPattern("/v1/order/cancel/{orderId}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -267,7 +345,7 @@ func RegisterLomsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 
 	})
 
-	mux.Handle("POST", pattern_Loms_StocksInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Loms_StocksInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -275,7 +353,7 @@ func RegisterLomsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/StocksInfo", runtime.WithHTTPPathPattern("/loms_grpc.Loms/StocksInfo"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/loms_grpc.Loms/StocksInfo", runtime.WithHTTPPathPattern("/v1/order/stock/info/{sku}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -339,7 +417,7 @@ func RegisterLomsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/OrderCreate", runtime.WithHTTPPathPattern("/loms_grpc.Loms/OrderCreate"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/OrderCreate", runtime.WithHTTPPathPattern("/v1/order/add"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -355,13 +433,13 @@ func RegisterLomsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 
 	})
 
-	mux.Handle("POST", pattern_Loms_OrderInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Loms_OrderInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/OrderInfo", runtime.WithHTTPPathPattern("/loms_grpc.Loms/OrderInfo"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/OrderInfo", runtime.WithHTTPPathPattern("/v1/order/info/{orderId}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -383,7 +461,7 @@ func RegisterLomsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/OrderPay", runtime.WithHTTPPathPattern("/loms_grpc.Loms/OrderPay"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/OrderPay", runtime.WithHTTPPathPattern("/v1/order/pay"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -399,13 +477,13 @@ func RegisterLomsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 
 	})
 
-	mux.Handle("POST", pattern_Loms_OrderCancel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_Loms_OrderCancel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/OrderCancel", runtime.WithHTTPPathPattern("/loms_grpc.Loms/OrderCancel"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/OrderCancel", runtime.WithHTTPPathPattern("/v1/order/cancel/{orderId}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -421,13 +499,13 @@ func RegisterLomsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 
 	})
 
-	mux.Handle("POST", pattern_Loms_StocksInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Loms_StocksInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/StocksInfo", runtime.WithHTTPPathPattern("/loms_grpc.Loms/StocksInfo"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/loms_grpc.Loms/StocksInfo", runtime.WithHTTPPathPattern("/v1/order/stock/info/{sku}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -447,15 +525,15 @@ func RegisterLomsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 }
 
 var (
-	pattern_Loms_OrderCreate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"loms_grpc.Loms", "OrderCreate"}, ""))
+	pattern_Loms_OrderCreate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "order", "add"}, ""))
 
-	pattern_Loms_OrderInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"loms_grpc.Loms", "OrderInfo"}, ""))
+	pattern_Loms_OrderInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "order", "info", "orderId"}, ""))
 
-	pattern_Loms_OrderPay_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"loms_grpc.Loms", "OrderPay"}, ""))
+	pattern_Loms_OrderPay_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "order", "pay"}, ""))
 
-	pattern_Loms_OrderCancel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"loms_grpc.Loms", "OrderCancel"}, ""))
+	pattern_Loms_OrderCancel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "order", "cancel", "orderId"}, ""))
 
-	pattern_Loms_StocksInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"loms_grpc.Loms", "StocksInfo"}, ""))
+	pattern_Loms_StocksInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "order", "stock", "info", "sku"}, ""))
 )
 
 var (
