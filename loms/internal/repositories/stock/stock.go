@@ -20,6 +20,7 @@ type StockRepository struct {
 //go:embed stock-data.json
 var byteJSON []byte
 
+// New - создает новый репозиторий для StockRepository
 func New() *StockRepository {
 	const op = "StockRepository.New"
 

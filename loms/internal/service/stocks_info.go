@@ -2,6 +2,7 @@ package service
 
 import "fmt"
 
+// StocksInfo - инфа о стоке
 func (s *Service) StocksInfo(sku uint32) (uint64, error) {
 	item, err := s.StockRepository.GetStockItemBySku(sku)
 	if err != nil {

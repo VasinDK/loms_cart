@@ -5,6 +5,7 @@ import (
 	"route256/loms/internal/model"
 )
 
+// OrderInfo - получает ордер по id
 func (s *Service) OrderInfo(orderId model.OrderId) (*model.Order, error) {
 	const op = "OrderInfo"
 	order, err := s.OrderRepository.GetById(orderId)

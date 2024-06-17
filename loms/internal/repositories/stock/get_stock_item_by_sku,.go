@@ -2,6 +2,7 @@ package stock
 
 import "route256/loms/internal/model"
 
+// GetStockItemBySku - получает стоки по sku
 func (s *StockRepository) GetStockItemBySku(sku uint32) (*model.StockItem, error) {
 	item, ok := s.Repo[sku]
 	if !ok {

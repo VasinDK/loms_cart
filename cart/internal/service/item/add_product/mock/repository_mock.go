@@ -35,6 +35,12 @@ type RepositoryMock struct {
 	afterGetProductCartCounter  uint64
 	beforeGetProductCartCounter uint64
 	GetProductCartMock          mRepositoryMockGetProductCart
+
+	funcStockInfo          func(sku int64) (i1 int64, err error)
+	inspectFuncStockInfo   func(sku int64)
+	afterStockInfoCounter  uint64
+	beforeStockInfoCounter uint64
+	StockInfoMock          mRepositoryMockStockInfo
 }
 
 // NewRepositoryMock returns a mock for add_product.Repository
@@ -53,6 +59,9 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 
 	m.GetProductCartMock = mRepositoryMockGetProductCart{mock: m}
 	m.GetProductCartMock.callArgs = []*RepositoryMockGetProductCartParams{}
+
+	m.StockInfoMock = mRepositoryMockStockInfo{mock: m}
+	m.StockInfoMock.callArgs = []*RepositoryMockStockInfoParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
@@ -993,6 +1002,299 @@ func (m *RepositoryMock) MinimockGetProductCartInspect() {
 	}
 }
 
+type mRepositoryMockStockInfo struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockStockInfoExpectation
+	expectations       []*RepositoryMockStockInfoExpectation
+
+	callArgs []*RepositoryMockStockInfoParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockStockInfoExpectation specifies expectation struct of the Repository.StockInfo
+type RepositoryMockStockInfoExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockStockInfoParams
+	paramPtrs *RepositoryMockStockInfoParamPtrs
+	results   *RepositoryMockStockInfoResults
+	Counter   uint64
+}
+
+// RepositoryMockStockInfoParams contains parameters of the Repository.StockInfo
+type RepositoryMockStockInfoParams struct {
+	sku int64
+}
+
+// RepositoryMockStockInfoParamPtrs contains pointers to parameters of the Repository.StockInfo
+type RepositoryMockStockInfoParamPtrs struct {
+	sku *int64
+}
+
+// RepositoryMockStockInfoResults contains results of the Repository.StockInfo
+type RepositoryMockStockInfoResults struct {
+	i1  int64
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option by default unless you really need it, as it helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmStockInfo *mRepositoryMockStockInfo) Optional() *mRepositoryMockStockInfo {
+	mmStockInfo.optional = true
+	return mmStockInfo
+}
+
+// Expect sets up expected params for Repository.StockInfo
+func (mmStockInfo *mRepositoryMockStockInfo) Expect(sku int64) *mRepositoryMockStockInfo {
+	if mmStockInfo.mock.funcStockInfo != nil {
+		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
+	}
+
+	if mmStockInfo.defaultExpectation == nil {
+		mmStockInfo.defaultExpectation = &RepositoryMockStockInfoExpectation{}
+	}
+
+	if mmStockInfo.defaultExpectation.paramPtrs != nil {
+		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by ExpectParams functions")
+	}
+
+	mmStockInfo.defaultExpectation.params = &RepositoryMockStockInfoParams{sku}
+	for _, e := range mmStockInfo.expectations {
+		if minimock.Equal(e.params, mmStockInfo.defaultExpectation.params) {
+			mmStockInfo.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmStockInfo.defaultExpectation.params)
+		}
+	}
+
+	return mmStockInfo
+}
+
+// ExpectSkuParam1 sets up expected param sku for Repository.StockInfo
+func (mmStockInfo *mRepositoryMockStockInfo) ExpectSkuParam1(sku int64) *mRepositoryMockStockInfo {
+	if mmStockInfo.mock.funcStockInfo != nil {
+		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
+	}
+
+	if mmStockInfo.defaultExpectation == nil {
+		mmStockInfo.defaultExpectation = &RepositoryMockStockInfoExpectation{}
+	}
+
+	if mmStockInfo.defaultExpectation.params != nil {
+		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Expect")
+	}
+
+	if mmStockInfo.defaultExpectation.paramPtrs == nil {
+		mmStockInfo.defaultExpectation.paramPtrs = &RepositoryMockStockInfoParamPtrs{}
+	}
+	mmStockInfo.defaultExpectation.paramPtrs.sku = &sku
+
+	return mmStockInfo
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.StockInfo
+func (mmStockInfo *mRepositoryMockStockInfo) Inspect(f func(sku int64)) *mRepositoryMockStockInfo {
+	if mmStockInfo.mock.inspectFuncStockInfo != nil {
+		mmStockInfo.mock.t.Fatalf("Inspect function is already set for RepositoryMock.StockInfo")
+	}
+
+	mmStockInfo.mock.inspectFuncStockInfo = f
+
+	return mmStockInfo
+}
+
+// Return sets up results that will be returned by Repository.StockInfo
+func (mmStockInfo *mRepositoryMockStockInfo) Return(i1 int64, err error) *RepositoryMock {
+	if mmStockInfo.mock.funcStockInfo != nil {
+		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
+	}
+
+	if mmStockInfo.defaultExpectation == nil {
+		mmStockInfo.defaultExpectation = &RepositoryMockStockInfoExpectation{mock: mmStockInfo.mock}
+	}
+	mmStockInfo.defaultExpectation.results = &RepositoryMockStockInfoResults{i1, err}
+	return mmStockInfo.mock
+}
+
+// Set uses given function f to mock the Repository.StockInfo method
+func (mmStockInfo *mRepositoryMockStockInfo) Set(f func(sku int64) (i1 int64, err error)) *RepositoryMock {
+	if mmStockInfo.defaultExpectation != nil {
+		mmStockInfo.mock.t.Fatalf("Default expectation is already set for the Repository.StockInfo method")
+	}
+
+	if len(mmStockInfo.expectations) > 0 {
+		mmStockInfo.mock.t.Fatalf("Some expectations are already set for the Repository.StockInfo method")
+	}
+
+	mmStockInfo.mock.funcStockInfo = f
+	return mmStockInfo.mock
+}
+
+// When sets expectation for the Repository.StockInfo which will trigger the result defined by the following
+// Then helper
+func (mmStockInfo *mRepositoryMockStockInfo) When(sku int64) *RepositoryMockStockInfoExpectation {
+	if mmStockInfo.mock.funcStockInfo != nil {
+		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockStockInfoExpectation{
+		mock:   mmStockInfo.mock,
+		params: &RepositoryMockStockInfoParams{sku},
+	}
+	mmStockInfo.expectations = append(mmStockInfo.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.StockInfo return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockStockInfoExpectation) Then(i1 int64, err error) *RepositoryMock {
+	e.results = &RepositoryMockStockInfoResults{i1, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.StockInfo should be invoked
+func (mmStockInfo *mRepositoryMockStockInfo) Times(n uint64) *mRepositoryMockStockInfo {
+	if n == 0 {
+		mmStockInfo.mock.t.Fatalf("Times of RepositoryMock.StockInfo mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmStockInfo.expectedInvocations, n)
+	return mmStockInfo
+}
+
+func (mmStockInfo *mRepositoryMockStockInfo) invocationsDone() bool {
+	if len(mmStockInfo.expectations) == 0 && mmStockInfo.defaultExpectation == nil && mmStockInfo.mock.funcStockInfo == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmStockInfo.mock.afterStockInfoCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmStockInfo.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// StockInfo implements add_product.Repository
+func (mmStockInfo *RepositoryMock) StockInfo(sku int64) (i1 int64, err error) {
+	mm_atomic.AddUint64(&mmStockInfo.beforeStockInfoCounter, 1)
+	defer mm_atomic.AddUint64(&mmStockInfo.afterStockInfoCounter, 1)
+
+	if mmStockInfo.inspectFuncStockInfo != nil {
+		mmStockInfo.inspectFuncStockInfo(sku)
+	}
+
+	mm_params := RepositoryMockStockInfoParams{sku}
+
+	// Record call args
+	mmStockInfo.StockInfoMock.mutex.Lock()
+	mmStockInfo.StockInfoMock.callArgs = append(mmStockInfo.StockInfoMock.callArgs, &mm_params)
+	mmStockInfo.StockInfoMock.mutex.Unlock()
+
+	for _, e := range mmStockInfo.StockInfoMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.i1, e.results.err
+		}
+	}
+
+	if mmStockInfo.StockInfoMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmStockInfo.StockInfoMock.defaultExpectation.Counter, 1)
+		mm_want := mmStockInfo.StockInfoMock.defaultExpectation.params
+		mm_want_ptrs := mmStockInfo.StockInfoMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockStockInfoParams{sku}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.sku != nil && !minimock.Equal(*mm_want_ptrs.sku, mm_got.sku) {
+				mmStockInfo.t.Errorf("RepositoryMock.StockInfo got unexpected parameter sku, want: %#v, got: %#v%s\n", *mm_want_ptrs.sku, mm_got.sku, minimock.Diff(*mm_want_ptrs.sku, mm_got.sku))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmStockInfo.t.Errorf("RepositoryMock.StockInfo got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmStockInfo.StockInfoMock.defaultExpectation.results
+		if mm_results == nil {
+			mmStockInfo.t.Fatal("No results are set for the RepositoryMock.StockInfo")
+		}
+		return (*mm_results).i1, (*mm_results).err
+	}
+	if mmStockInfo.funcStockInfo != nil {
+		return mmStockInfo.funcStockInfo(sku)
+	}
+	mmStockInfo.t.Fatalf("Unexpected call to RepositoryMock.StockInfo. %v", sku)
+	return
+}
+
+// StockInfoAfterCounter returns a count of finished RepositoryMock.StockInfo invocations
+func (mmStockInfo *RepositoryMock) StockInfoAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmStockInfo.afterStockInfoCounter)
+}
+
+// StockInfoBeforeCounter returns a count of RepositoryMock.StockInfo invocations
+func (mmStockInfo *RepositoryMock) StockInfoBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmStockInfo.beforeStockInfoCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.StockInfo.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmStockInfo *mRepositoryMockStockInfo) Calls() []*RepositoryMockStockInfoParams {
+	mmStockInfo.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockStockInfoParams, len(mmStockInfo.callArgs))
+	copy(argCopy, mmStockInfo.callArgs)
+
+	mmStockInfo.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockStockInfoDone returns true if the count of the StockInfo invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockStockInfoDone() bool {
+	if m.StockInfoMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.StockInfoMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.StockInfoMock.invocationsDone()
+}
+
+// MinimockStockInfoInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockStockInfoInspect() {
+	for _, e := range m.StockInfoMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.StockInfo with params: %#v", *e.params)
+		}
+	}
+
+	afterStockInfoCounter := mm_atomic.LoadUint64(&m.afterStockInfoCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.StockInfoMock.defaultExpectation != nil && afterStockInfoCounter < 1 {
+		if m.StockInfoMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.StockInfo")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.StockInfo with params: %#v", *m.StockInfoMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcStockInfo != nil && afterStockInfoCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.StockInfo")
+	}
+
+	if !m.StockInfoMock.invocationsDone() && afterStockInfoCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.StockInfo but found %d calls",
+			mm_atomic.LoadUint64(&m.StockInfoMock.expectedInvocations), afterStockInfoCounter)
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *RepositoryMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
@@ -1002,6 +1304,8 @@ func (m *RepositoryMock) MinimockFinish() {
 			m.MinimockCheckSKUInspect()
 
 			m.MinimockGetProductCartInspect()
+
+			m.MinimockStockInfoInspect()
 			m.t.FailNow()
 		}
 	})
@@ -1028,5 +1332,6 @@ func (m *RepositoryMock) minimockDone() bool {
 	return done &&
 		m.MinimockAddProductCartDone() &&
 		m.MinimockCheckSKUDone() &&
-		m.MinimockGetProductCartDone()
+		m.MinimockGetProductCartDone() &&
+		m.MinimockStockInfoDone()
 }

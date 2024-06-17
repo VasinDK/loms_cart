@@ -1,101 +1,11 @@
 [
     {
-        "sku": 1201,
-        "total_count": 100,
-        "reserved": 0
-    },
-    {
-        "sku": 1202,
-        "total_count": 150,
-        "reserved": 0
-    },
-    {
-        "sku": 1203,
-        "total_count": 200,
-        "reserved": 0
-    },
-    {
-        "sku": 1204,
-        "total_count": 120,
-        "reserved": 0
-    },
-    {
-        "sku": 1205,
-        "total_count": 80,
-        "reserved": 0
-    },
-    {
-        "sku": 1206,
-        "total_count": 90,
-        "reserved": 0
-    },
-    {
-        "sku": 1207,
-        "total_count": 110,
-        "reserved": 0
-    },
-    {
-        "sku": 1208,
-        "total_count": 140,
-        "reserved": 0
-    },
-    {
-        "sku": 1209,
-        "total_count": 130,
-        "reserved": 0
-    },
-    {
-        "sku": 1210,
-        "total_count": 160,
-        "reserved": 0
-    },
-    {
-        "sku": 1211,
-        "total_count": 170,
-        "reserved": 0
-    },
-    {
-        "sku": 1212,
-        "total_count": 180,
-        "reserved": 0
-    },
-    {
-        "sku": 1213,
-        "total_count": 190,
-        "reserved": 0
-    },
-    {
-        "sku": 1214,
-        "total_count": 210,
-        "reserved": 0
-    },
-    {
-        "sku": 1215,
-        "total_count": 220,
-        "reserved": 0
-    },
-    {
-        "sku": 1216,
-        "total_count": 230,
-        "reserved": 0
-    },
-    {
-        "sku": 1217,
-        "total_count": 240,
-        "reserved": 0
-    },
-    {
-        "sku": 1218,
-        "total_count": 250,
-        "reserved": 0
-    },
-    {
-        "sku": 1219,
+        "sku": 1148162,
         "total_count": 260,
         "reserved": 0
     },
     {
-        "sku": 1220,
+        "sku": 1076963,
         "total_count": 270,
         "reserved": 0
     }

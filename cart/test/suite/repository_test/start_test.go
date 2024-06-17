@@ -15,7 +15,10 @@ type SuiteRepo struct {
 }
 
 func (s *SuiteRepo) SetupSuite() {
-	s.Repo = repository.NewRepository(config.New())
+	s.Repo = &repository.Repository{
+		Carts:  make(repository.Carts),
+		Config: config.New(),
+	}
 }
 
 func (s *SuiteRepo) SetupTest() {
@@ -55,7 +58,11 @@ func (s *SuiteRepo) SetupTest() {
 }
 
 func (s *SuiteRepo) TearDownTest() {
-	s.Repo = repository.NewRepository(config.New())
+	s.Repo = &repository.Repository{
+		Carts:  make(repository.Carts),
+		Config: config.New(),
+	}
+
 }
 
 func TestSuiteAll(t *testing.T) {

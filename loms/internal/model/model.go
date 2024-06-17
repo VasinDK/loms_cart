@@ -1,7 +1,7 @@
 package model
 
 type OrderId int64
-type OrderStatus string
+type OrderStatus string	// статус ордеров
 
 type OrderItem struct {
 	Sku   uint32

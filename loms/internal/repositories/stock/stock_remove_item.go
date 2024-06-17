@@ -4,6 +4,7 @@ import (
 	"route256/loms/internal/model"
 )
 
+// StockRemoveItem - удаляет элем.из стока
 func (s *StockRepository) StockRemoveItem(order *model.OrderItem) error {
 	item, ok := s.Repo[order.Sku]
 	if !ok {

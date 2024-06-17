@@ -26,4 +26,5 @@ require (
 // replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac
 
 replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240610135401-a8a62080eff3
+
 replace github.com/gojuno/minimock/v3 => github.com/gojuno/minimock/v3 v3.3.11

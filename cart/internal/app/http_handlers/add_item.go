@@ -60,8 +60,15 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		product.Count = productRequest.Count
 
 		err = h.AddProduct(&product, userId)
+
 		if errors.Is(err, model.ErrNoProductInStock) {
 			w.WriteHeader(http.StatusPreconditionFailed)
+			return
+		}
+
+		if errors.Is(err, model.ErrInsufficientStock) {
+			w.WriteHeader(http.StatusPreconditionFailed)
+			w.Write([]byte(model.ErrInsufficientStock.Error()))
 			return
 		}
 

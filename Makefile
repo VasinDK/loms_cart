@@ -15,4 +15,5 @@ run-cover:
 	go test -cover $(PACKAGES) | grep -v cart/internal/repository
 
 run-loms:
+	cd ./cart && make .protoc-generate && cd .. && \
 	cd ./loms && make .protoc-generate

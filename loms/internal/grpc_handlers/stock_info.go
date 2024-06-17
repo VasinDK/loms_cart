@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// StocksInfo - информация о стоке
 func (h *Handlers) StocksInfo(ctx context.Context, sku *loms.Sku) (*loms.Count, error) {
 	const op = "StocksInfo"
 

@@ -6,6 +6,7 @@ var (
 	Port         = "8082"
 	TokenStore   = "testtoken"
 	AddressStore = "http://route256.pavl.uk:8080/get_product"
+	PostLoms     = "50051"
 )
 
 // Config - конфигурация приложения
@@ -13,6 +14,7 @@ type Config struct {
 	Port         string // Port - порт приложения
 	TokenStore   string // TokenStore - токен для стороннего хранилища
 	AddressStore string // AddressStore - адрес стороннего хранилища
+	PostLoms     string // Port grpc loms
 }
 
 // New - создает экземпляр конфига
@@ -29,16 +31,26 @@ func New() *Config {
 		AddressStore = os.Getenv("ADDRESS_STORE")
 	}
 
+	if len(os.Getenv("PORT_LOMS")) > 0 {
+		PostLoms = os.Getenv("PORT_LOMS")
+	}
+
 	return &Config{
 		Port:         Port,
 		TokenStore:   TokenStore,
 		AddressStore: AddressStore,
+		PostLoms:     PostLoms,
 	}
 }
 
 // GetPort - получает порт
 func (c *Config) GetPort() string {
 	return c.Port
+}
+
+// GetPortLoms - получает порт
+func (c *Config) GetPortLoms() string {
+	return c.PostLoms
 }
 
 // GetTokenStore - получает токен

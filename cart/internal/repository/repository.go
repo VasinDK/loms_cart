@@ -2,9 +2,12 @@ package repository
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"route256/cart/internal/model"
+	"route256/loms/pkg/api/loms/v1"
+	"time"
 )
 
 type Config interface {
@@ -12,22 +15,24 @@ type Config interface {
 	GetAddressStore() string
 }
 
-// Carts - структура: "Корзины". id пользователя есть id конкретной корзины.
+// Carts - структура: "Корзины". id пользователя - id конкретной корзины.
 // Id корзины соответствует первому ключу. SKU товара соответствует
 // второму ключу. Значение - продукт
 type Carts map[int64]map[int64]*model.Product
 
 // Repository - структура репозитория
 type Repository struct {
-	Carts  Carts
-	Config Config
+	Carts      Carts
+	ClientLoms loms.LomsClient
+	Config     Config
 }
 
 // NewRepository - инициализирует репозиторий
-func NewRepository(config Config) *Repository {
+func NewRepository(config Config, loms loms.LomsClient) *Repository {
 	return &Repository{
-		Carts:  make(Carts),
-		Config: config,
+		Carts:      make(Carts),
+		ClientLoms: loms,
+		Config:     config,
 	}
 }
 
@@ -130,4 +135,44 @@ func (r *Repository) ClearCart(cartId int64) error {
 // GetCart - получает содержимое корзины
 func (r *Repository) GetCart(cartId int64) (map[int64]*model.Product, error) {
 	return r.Carts[cartId], nil
+}
+
+// Checkout - создаент ордера на уделенном сервере
+func (r *Repository) Checkout(userId int64, cart []*model.Product) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	items := []*loms.ItemRequest{}
+
+	for i, _ := range cart {
+		items = append(items, &loms.ItemRequest{
+			Sku:   uint32(cart[i].SKU),
+			Count: uint32(cart[i].Count),
+		})
+	}
+
+	in := &loms.OrderCreateRequest{
+		User:  userId,
+		Items: items,
+	}
+
+	orderIdloms, err := r.ClientLoms.OrderCreate(ctx, in)
+	if err != nil {
+		return 0, err
+	}
+
+	return int64(orderIdloms.GetOrderId()), nil
+}
+
+// StockInfo - инфа по остаткам
+func (r *Repository) StockInfo(sku int64) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	countloms, err := r.ClientLoms.StocksInfo(ctx, &loms.Sku{Sku: uint32(sku)})
+	if err != nil {
+		return 0, err
+	}
+
+	return int64(countloms.GetCount()), nil
 }

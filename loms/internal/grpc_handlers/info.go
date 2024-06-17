@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// OrderInfo - инфа об ордере
 func (h *Handlers) OrderInfo(ctx context.Context, OrderId *loms.OrderId) (*loms.OrderInfoResponse, error) {
 	const op = "OrderInfo"
 	order, err := h.service.OrderInfo(model.OrderId(OrderId.GetOrderId()))

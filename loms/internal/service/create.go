@@ -5,6 +5,7 @@ import (
 	"route256/loms/internal/model"
 )
 
+// Create - создает ордер
 func (s *Service) Create(order *model.Order) (model.OrderId, error) {
 	const op = "Service.OrderCreate"
 

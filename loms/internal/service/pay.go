@@ -5,6 +5,7 @@ import (
 	"route256/loms/internal/model"
 )
 
+// OrderPay - оплата ордера по id. Проверка и перевод в статус
 func (s *Service) OrderPay(orderId model.OrderId) error {
 	order, err := s.OrderRepository.GetById(orderId)
 	if err != nil {

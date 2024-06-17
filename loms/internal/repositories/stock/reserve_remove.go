@@ -4,6 +4,7 @@ import (
 	"route256/loms/internal/model"
 )
 
+// ReserveRemove - удаляет резерв
 func (s *StockRepository) ReserveRemove(order *model.OrderItem) error {
 	item, ok := s.Repo[order.Sku]
 	if !ok {

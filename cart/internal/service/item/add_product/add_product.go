@@ -9,6 +9,7 @@ type Repository interface {
 	GetProductCart(*model.Product, int64) (*model.Product, error)
 	AddProductCart(*model.Product, int64) error
 	CheckSKU(int64) (*model.Product, error)
+	StockInfo(sku int64) (int64, error)
 }
 
 type Handler struct {
@@ -36,7 +37,16 @@ func (h *Handler) AddProduct(productRequest *model.Product, userId int64) error 
 		return fmt.Errorf("AddProduct %w", fmt.Errorf("Количество меньше 1"))
 	}
 
+	var countSKU int64
+
 	if checkSKU.Price > 0 {
+		countSKU, err = h.Repository.StockInfo(productRequest.SKU)
+		if err != nil {
+			return fmt.Errorf("s.Repository.GetProductCart %w", err)
+		}
+	}
+
+	if countSKU >= int64(productRequest.Count) && countSKU != 0 {
 		currentProduct, err := h.Repository.GetProductCart(productRequest, userId)
 		if err != nil {
 			return fmt.Errorf("s.Repository.GetProductCart %w", err)
@@ -52,8 +62,12 @@ func (h *Handler) AddProduct(productRequest *model.Product, userId int64) error 
 		return nil
 	}
 
+	if countSKU >= int64(productRequest.Count) {
+		return fmt.Errorf("AddProduct %w", model.ErrInsufficientStock)
+	}
+
 	if checkSKU.Price == 0 {
-		return model.ErrNoProductInStock
+		return fmt.Errorf("AddProduct %w", model.ErrNoProductInStock)
 	}
 
 	return nil

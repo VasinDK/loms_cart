@@ -99,6 +99,7 @@ func TestAddProduct(t *testing.T) {
 			repoMock.CheckSKUMock.Optional().Expect(tt.CheckSKUReq).Return(tt.CheckSKURespParam1, tt.CheckSKURespParam2)
 			repoMock.GetProductCartMock.Optional().Expect(tt.GetProdReq, tt.UserId).Return(tt.GetProdRespParam1, tt.GetProdRespParam2)
 			repoMock.AddProductCartMock.Optional().Expect(tt.AddProdReq, tt.UserId).Return(tt.AddProdResp)
+			repoMock.StockInfoMock.Optional().Expect(tt.CheckSKUReq).Return(1000, nil)
 
 			NewRepo := New(repoMock)
 			err := NewRepo.AddProduct(tt.AddProdReq, tt.UserId)

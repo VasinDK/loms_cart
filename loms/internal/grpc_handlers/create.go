@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// OrderCreate - создает ордер
 func (h *Handlers) OrderCreate(ctx context.Context, order *loms.OrderCreateRequest) (*loms.OrderId, error) {
 	const op = "OrderCreate"
 

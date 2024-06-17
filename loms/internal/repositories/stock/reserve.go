@@ -4,6 +4,7 @@ import (
 	"route256/loms/internal/model"
 )
 
+// Reserve - резервирует sku
 func (s *StockRepository) Reserve(item *model.OrderItem) error {
 	if _, ok := s.Repo[item.Sku]; !ok {
 		return model.ErrSkuNoSuch

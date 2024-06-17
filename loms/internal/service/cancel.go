@@ -5,6 +5,7 @@ import (
 	"route256/loms/internal/model"
 )
 
+// OrderCancel - удаляет ордер
 func (s *Service) OrderCancel(orderId model.OrderId) error {
 	order, err := s.OrderRepository.GetById(orderId)
 	if err != nil {

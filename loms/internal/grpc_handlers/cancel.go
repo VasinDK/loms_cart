@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// OrderCancel - отменяет ордер
 func (h *Handlers) OrderCancel(ctx context.Context, orderId *loms.OrderId) (*emptypb.Empty, error) {
 	const op = "OrderCancel"
 

@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// OrderPay - покупка
 func (h *Handlers) OrderPay(ctx context.Context, orderId *loms.OrderId) (*emptypb.Empty, error) {
 	const op = "OrderPay"
 
