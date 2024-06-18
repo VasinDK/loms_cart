@@ -1,6 +1,7 @@
 package clear_cart
 
 import (
+	"context"
 	"route256/cart/internal/service/list/clear_cart/mock"
 	"testing"
 
@@ -32,10 +33,10 @@ func TestClearCart(t *testing.T) {
 			t.Parallel()
 			ctrl := minimock.NewController(t)
 			repositoryMock := mock.NewRepositoryMock(ctrl)
-			repositoryMock.ClearCartMock.Expect(tt.cartId).Return(tt.WantError)
+			repositoryMock.ClearCartMock.Expect(context.Background(), tt.cartId).Return(tt.WantError)
 
 			NewHandler := New(repositoryMock)
-			err := NewHandler.ClearCart(tt.cartId)
+			err := NewHandler.ClearCart(context.Background(), tt.cartId)
 			assert.Equal(t, tt.WantError, err)
 		})
 	}

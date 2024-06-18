@@ -10,7 +10,7 @@ import (
 )
 
 // OrderCreate - создает ордер
-func (h *Handlers) OrderCreate(ctx context.Context, order *loms.OrderCreateRequest) (*loms.OrderId, error) {
+func (h *Handlers) OrderCreate(ctx context.Context, order *loms.OrderCreateRequest) (*loms.OrderCreateResponse, error) {
 	const op = "OrderCreate"
 
 	orderModel, err := h.RepackOrderToModel(order)
@@ -19,11 +19,13 @@ func (h *Handlers) OrderCreate(ctx context.Context, order *loms.OrderCreateReque
 		return nil, status.Error(codes.FailedPrecondition, "so")
 	}
 
-	orderIdModel, err := h.service.Create(orderModel)
+	orderIdModel, err := h.service.Create(ctx, orderModel)
 	if err != nil {
 		slog.Error(op, "h.service.OrderCreate", err.Error())
 		return nil, status.Error(codes.FailedPrecondition, "I am sorry")
 	}
 
-	return h.RepackOrderIdToProto(orderIdModel), nil
+	return &loms.OrderCreateResponse{
+		OrderId: int64(orderIdModel),
+	}, nil
 }

@@ -1,14 +1,15 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"route256/loms/internal/model"
 )
 
 // OrderInfo - получает ордер по id
-func (s *Service) OrderInfo(orderId model.OrderId) (*model.Order, error) {
+func (s *Service) OrderInfo(ctx context.Context, orderId model.OrderId) (*model.Order, error) {
 	const op = "OrderInfo"
-	order, err := s.OrderRepository.GetById(orderId)
+	order, err := s.OrderRepository.GetById(ctx, orderId)
 
 	if err != nil {
 		return nil, fmt.Errorf("%v, s.OrderRepository.GetById %w", op, err)

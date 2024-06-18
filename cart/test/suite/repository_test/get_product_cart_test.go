@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"route256/cart/internal/model"
 	"testing"
 
@@ -44,7 +45,7 @@ func (s *SuiteRepo) TestGetProductCart() {
 				SKU: tt.SKU,
 			}
 
-			item, err := s.Repo.GetProductCart(product, tt.UserId)
+			item, err := s.Repo.GetProductCart(context.Background(), product, tt.UserId)
 
 			assert.Equal(t, err, tt.WantErr)
 			assert.Equal(t, item.Count, tt.WantCount)

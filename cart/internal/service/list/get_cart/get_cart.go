@@ -1,6 +1,7 @@
 package get_cart
 
 import (
+	"context"
 	"fmt"
 	"route256/cart/internal/model"
 	"sort"
@@ -8,8 +9,8 @@ import (
 )
 
 type Repository interface {
-	CheckSKU(int64) (*model.Product, error)
-	GetCart(int64) (map[int64]*model.Product, error)
+	CheckSKU(context.Context, int64) (*model.Product, error)
+	GetCart(context.Context, int64) (map[int64]*model.Product, error)
 }
 
 type Handler struct {
@@ -24,11 +25,11 @@ func New(repository Repository) *Handler {
 }
 
 // GetCart - получает содержимое конкретной корзины
-func (h *Handler) GetCart(cartId int64) (*model.Cart, error) {
+func (h *Handler) GetCart(ctx context.Context, cartId int64) (*model.Cart, error) {
 	var totalPrice uint32
 	cart := &model.Cart{}
 
-	productsList, err := h.Repository.GetCart(cartId)
+	productsList, err := h.Repository.GetCart(ctx, cartId)
 	if err != nil {
 		return cart, fmt.Errorf("s.Repository.GetCart %w", err)
 	}
@@ -38,7 +39,7 @@ func (h *Handler) GetCart(cartId int64) (*model.Cart, error) {
 	errorsSKU := make([]string, 0)
 
 	for i := range productsList {
-		item, err := h.Repository.CheckSKU(i)
+		item, err := h.Repository.CheckSKU(ctx, i)
 
 		if err != nil {
 			errorsSKU = append(errorsSKU, err.Error())

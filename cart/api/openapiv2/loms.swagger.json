@@ -23,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/loms_grpcOrderId"
+              "$ref": "#/definitions/loms_grpcOrderCreateResponse"
             }
           },
           "default": {
@@ -55,8 +55,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/loms_grpcOrderCancelResponse"
             }
           },
           "default": {
@@ -118,8 +117,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/loms_grpcOrderPayResponse"
             }
           },
           "default": {
@@ -152,7 +150,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/loms_grpcCount"
+              "$ref": "#/definitions/loms_grpcStocksInfoResponse"
             }
           },
           "default": {
@@ -178,15 +176,6 @@
     }
   },
   "definitions": {
-    "loms_grpcCount": {
-      "type": "object",
-      "properties": {
-        "count": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
     "loms_grpcItemRequest": {
       "type": "object",
       "properties": {
@@ -199,6 +188,9 @@
           "format": "int64"
         }
       }
+    },
+    "loms_grpcOrderCancelResponse": {
+      "type": "object"
     },
     "loms_grpcOrderCreateRequest": {
       "type": "object",
@@ -216,7 +208,7 @@
         }
       }
     },
-    "loms_grpcOrderId": {
+    "loms_grpcOrderCreateResponse": {
       "type": "object",
       "properties": {
         "orderId": {
@@ -241,6 +233,18 @@
             "type": "object",
             "$ref": "#/definitions/loms_grpcItemRequest"
           }
+        }
+      }
+    },
+    "loms_grpcOrderPayResponse": {
+      "type": "object"
+    },
+    "loms_grpcStocksInfoResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },

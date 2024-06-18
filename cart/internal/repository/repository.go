@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"route256/cart/internal/model"
 	"route256/loms/pkg/api/loms/v1"
-	"time"
 )
 
 type Config interface {
@@ -37,7 +36,7 @@ func NewRepository(config Config, loms loms.LomsClient) *Repository {
 }
 
 // CheckSKU - проверяет наличие sku на удаленном сервере
-func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
+func (r *Repository) CheckSKU(ctx context.Context, sku int64) (*model.Product, error) {
 	// CheckSkuRequest - структура для отправки запроса SKU
 	type CheckSkuRequest struct {
 		Token string `json:"token"`
@@ -94,7 +93,7 @@ func (r *Repository) CheckSKU(sku int64) (*model.Product, error) {
 }
 
 // GetProductCart - получает конкретный товар из корзины пользователя
-func (r *Repository) GetProductCart(productRequest *model.Product, cartId int64) (*model.Product, error) {
+func (r *Repository) GetProductCart(ctx context.Context, productRequest *model.Product, cartId int64) (*model.Product, error) {
 	item := &model.Product{}
 
 	if _, ok := r.Carts[cartId]; ok {
@@ -108,7 +107,7 @@ func (r *Repository) GetProductCart(productRequest *model.Product, cartId int64)
 }
 
 // AddProductCart - добавляет товар в корзину
-func (r *Repository) AddProductCart(productRequest *model.Product, cartId int64) error {
+func (r *Repository) AddProductCart(ctx context.Context, productRequest *model.Product, cartId int64) error {
 	if _, ok := r.Carts[cartId]; !ok {
 		r.Carts[cartId] = make(map[int64]*model.Product)
 	}
@@ -121,27 +120,24 @@ func (r *Repository) AddProductCart(productRequest *model.Product, cartId int64)
 }
 
 // DeleteProductCart - удаляет товар из корзины
-func (r *Repository) DeleteProductCart(cartId, sku int64) error {
+func (r *Repository) DeleteProductCart(ctx context.Context, cartId, sku int64) error {
 	delete(r.Carts[cartId], sku)
 	return nil
 }
 
 // ClearCart - чистит корзину
-func (r *Repository) ClearCart(cartId int64) error {
+func (r *Repository) ClearCart(ctx context.Context, cartId int64) error {
 	delete(r.Carts, cartId)
 	return nil
 }
 
 // GetCart - получает содержимое корзины
-func (r *Repository) GetCart(cartId int64) (map[int64]*model.Product, error) {
+func (r *Repository) GetCart(ctx context.Context, cartId int64) (map[int64]*model.Product, error) {
 	return r.Carts[cartId], nil
 }
 
 // Checkout - создаент ордера на уделенном сервере
-func (r *Repository) Checkout(userId int64, cart []*model.Product) (int64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
+func (r *Repository) Checkout(ctx context.Context, userId int64, cart []*model.Product) (int64, error) {
 	items := []*loms.ItemRequest{}
 
 	for i, _ := range cart {
@@ -165,11 +161,8 @@ func (r *Repository) Checkout(userId int64, cart []*model.Product) (int64, error
 }
 
 // StockInfo - инфа по остаткам
-func (r *Repository) StockInfo(sku int64) (int64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	countloms, err := r.ClientLoms.StocksInfo(ctx, &loms.Sku{Sku: uint32(sku)})
+func (r *Repository) StockInfo(ctx context.Context, sku int64) (int64, error) {
+	countloms, err := r.ClientLoms.StocksInfo(ctx, &loms.StocksInfoRequest{Sku: uint32(sku)})
 	if err != nil {
 		return 0, err
 	}

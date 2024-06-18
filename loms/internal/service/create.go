@@ -1,25 +1,26 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"route256/loms/internal/model"
 )
 
 // Create - создает ордер
-func (s *Service) Create(order *model.Order) (model.OrderId, error) {
+func (s *Service) Create(ctx context.Context, order *model.Order) (model.OrderId, error) {
 	const op = "Service.OrderCreate"
 
 	order.Status = model.StatusNew
-	orderId, err := s.OrderRepository.Add(order)
+	orderId, err := s.OrderRepository.Add(ctx, order)
 	if err != nil {
 		return 0, fmt.Errorf("%v s.OrderRepository.Add %w", op, err)
 	}
 
 	for _, item := range order.Items {
-		err = s.StockRepository.Reserve(item)
+		err = s.StockRepository.Reserve(ctx, item)
 
 		if err != nil {
-			errChangStatus := s.OrderRepository.SetStatus(orderId, model.StatusFailed)
+			errChangStatus := s.OrderRepository.SetStatus(ctx, orderId, model.StatusFailed)
 			if errChangStatus != nil {
 				return 0, fmt.Errorf("%v, %w", errChangStatus.Error(), err)
 			}
@@ -28,7 +29,7 @@ func (s *Service) Create(order *model.Order) (model.OrderId, error) {
 		}
 	}
 
-	err = s.OrderRepository.SetStatus(orderId, model.StatusAwaitingPayment)
+	err = s.OrderRepository.SetStatus(ctx, orderId, model.StatusAwaitingPayment)
 	if err != nil {
 		return 0, err
 	}

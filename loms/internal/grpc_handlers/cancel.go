@@ -9,23 +9,22 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // OrderCancel - отменяет ордер
-func (h *Handlers) OrderCancel(ctx context.Context, orderId *loms.OrderId) (*emptypb.Empty, error) {
+func (h *Handlers) OrderCancel(ctx context.Context, orderId *loms.OrderCancelRequest) (*loms.OrderCancelResponse, error) {
 	const op = "OrderCancel"
 
-	err := h.service.OrderCancel(model.OrderId(orderId.GetOrderId()))
+	err := h.service.OrderCancel(ctx, model.OrderId(orderId.GetOrderId()))
 	if errors.Is(err, model.ErrSkuNoSuch) {
 		slog.Error(op, "h.service.OrderCancel", err.Error())
-		return &emptypb.Empty{}, model.ErrSkuNoSuch
+		return &loms.OrderCancelResponse{}, model.ErrSkuNoSuch
 	}
 
 	if err != nil {
 		slog.Error(op, "h.service.OrderCancel", err.Error())
-		return &emptypb.Empty{}, status.Error(codes.Internal, "wtf")
+		return &loms.OrderCancelResponse{}, status.Error(codes.Internal, "wtf")
 	}
 
-	return &emptypb.Empty{}, nil
+	return &loms.OrderCancelResponse{}, nil
 }

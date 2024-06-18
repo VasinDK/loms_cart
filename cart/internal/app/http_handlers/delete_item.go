@@ -1,6 +1,7 @@
 package http_handlers
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"route256/cart/internal/service/item/delete_item"
@@ -35,7 +36,7 @@ func (s *Server) DeleteItem(h *delete_item.Handler) http.HandlerFunc {
 			return
 		}
 
-		err = h.DeleteProductCart(userId, sku)
+		err = h.DeleteProductCart(context.Background(), userId, sku)
 		if err != nil {
 			slog.Error(op, err)
 			w.WriteHeader(http.StatusInternalServerError)

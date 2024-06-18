@@ -1,7 +1,9 @@
 package delete_item
 
+import "context"
+
 type Repository interface {
-	DeleteProductCart(int64, int64) error
+	DeleteProductCart(context.Context, int64, int64) error
 }
 
 type Handler struct {
@@ -16,7 +18,7 @@ func New(repository Repository) *Handler {
 }
 
 // DeleteProductCart - удаляет товар из корзины
-func (h *Handler) DeleteProductCart(cartId, sku int64) error {
-	err := h.Repository.DeleteProductCart(cartId, sku)
+func (h *Handler) DeleteProductCart(ctx context.Context, cartId, sku int64) error {
+	err := h.Repository.DeleteProductCart(ctx, cartId, sku)
 	return err
 }

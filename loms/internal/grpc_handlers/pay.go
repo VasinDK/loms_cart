@@ -9,29 +9,28 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // OrderPay - покупка
-func (h *Handlers) OrderPay(ctx context.Context, orderId *loms.OrderId) (*emptypb.Empty, error) {
+func (h *Handlers) OrderPay(ctx context.Context, orderId *loms.OrderPayRequest) (*loms.OrderPayResponse, error) {
 	const op = "OrderPay"
 
-	err := h.service.OrderPay(model.OrderId(orderId.GetOrderId()))
+	err := h.service.OrderPay(ctx, model.OrderId(orderId.GetOrderId()))
 
 	if errors.Is(err, model.ErrStatusNoAwaitingPayment) {
 		slog.Error(op, "h.service.OrderPay", err.Error())
-		return &emptypb.Empty{}, model.ErrStatusNoAwaitingPayment
+		return &loms.OrderPayResponse{}, model.ErrStatusNoAwaitingPayment
 	}
 
 	if errors.Is(err, model.ErrSkuNoSuch) {
 		slog.Error(op, "h.service.OrderPay", err.Error())
-		return &emptypb.Empty{}, model.ErrSkuNoSuch
+		return &loms.OrderPayResponse{}, model.ErrSkuNoSuch
 	}
 
 	if err != nil {
 		slog.Error(op, "h.service.OrderPay", err.Error())
-		return &emptypb.Empty{}, status.Error(codes.Internal, "wtf")
+		return &loms.OrderPayResponse{}, status.Error(codes.Internal, "wtf")
 	}
 
-	return &emptypb.Empty{}, nil
+	return &loms.OrderPayResponse{}, nil
 }

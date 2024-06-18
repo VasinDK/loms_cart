@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"route256/cart/internal/model"
 	"testing"
 
@@ -33,7 +34,7 @@ func (s *SuiteRepo) TestCheckSKU() {
 
 	for _, tt := range tests {
 		s.T().Run(tt.Name, func(t *testing.T) {
-			res, err := s.Repo.CheckSKU(tt.SKU)
+			res, err := s.Repo.CheckSKU(context.Background(), tt.SKU)
 			assert.Equal(t, err, tt.WantErr)
 			assert.Equal(t, res, tt.WantRes)
 		})

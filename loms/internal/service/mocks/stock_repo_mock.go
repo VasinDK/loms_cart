@@ -5,6 +5,7 @@ package mocks
 //go:generate minimock -i route256/loms/internal/service.StockRepo -o stock_repo_mock.go -n StockRepoMock -p mocks
 
 import (
+	"context"
 	"route256/loms/internal/model"
 	"sync"
 	mm_atomic "sync/atomic"
@@ -18,26 +19,26 @@ type StockRepoMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
-	funcGetStockItemBySku          func(u1 uint32) (sp1 *model.StockItem, err error)
-	inspectFuncGetStockItemBySku   func(u1 uint32)
+	funcGetStockItemBySku          func(ctx context.Context, u1 uint32) (sp1 *model.StockItem, err error)
+	inspectFuncGetStockItemBySku   func(ctx context.Context, u1 uint32)
 	afterGetStockItemBySkuCounter  uint64
 	beforeGetStockItemBySkuCounter uint64
 	GetStockItemBySkuMock          mStockRepoMockGetStockItemBySku
 
-	funcReserve          func(op1 *model.OrderItem) (err error)
-	inspectFuncReserve   func(op1 *model.OrderItem)
+	funcReserve          func(ctx context.Context, op1 *model.OrderItem) (err error)
+	inspectFuncReserve   func(ctx context.Context, op1 *model.OrderItem)
 	afterReserveCounter  uint64
 	beforeReserveCounter uint64
 	ReserveMock          mStockRepoMockReserve
 
-	funcReserveRemove          func(op1 *model.OrderItem) (err error)
-	inspectFuncReserveRemove   func(op1 *model.OrderItem)
+	funcReserveRemove          func(ctx context.Context, op1 *model.OrderItem) (err error)
+	inspectFuncReserveRemove   func(ctx context.Context, op1 *model.OrderItem)
 	afterReserveRemoveCounter  uint64
 	beforeReserveRemoveCounter uint64
 	ReserveRemoveMock          mStockRepoMockReserveRemove
 
-	funcStockRemoveItem          func(op1 *model.OrderItem) (err error)
-	inspectFuncStockRemoveItem   func(op1 *model.OrderItem)
+	funcStockRemoveItem          func(ctx context.Context, op1 *model.OrderItem) (err error)
+	inspectFuncStockRemoveItem   func(ctx context.Context, op1 *model.OrderItem)
 	afterStockRemoveItemCounter  uint64
 	beforeStockRemoveItemCounter uint64
 	StockRemoveItemMock          mStockRepoMockStockRemoveItem
@@ -91,12 +92,14 @@ type StockRepoMockGetStockItemBySkuExpectation struct {
 
 // StockRepoMockGetStockItemBySkuParams contains parameters of the StockRepo.GetStockItemBySku
 type StockRepoMockGetStockItemBySkuParams struct {
-	u1 uint32
+	ctx context.Context
+	u1  uint32
 }
 
 // StockRepoMockGetStockItemBySkuParamPtrs contains pointers to parameters of the StockRepo.GetStockItemBySku
 type StockRepoMockGetStockItemBySkuParamPtrs struct {
-	u1 *uint32
+	ctx *context.Context
+	u1  *uint32
 }
 
 // StockRepoMockGetStockItemBySkuResults contains results of the StockRepo.GetStockItemBySku
@@ -116,7 +119,7 @@ func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Optional() *mStockRe
 }
 
 // Expect sets up expected params for StockRepo.GetStockItemBySku
-func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Expect(u1 uint32) *mStockRepoMockGetStockItemBySku {
+func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Expect(ctx context.Context, u1 uint32) *mStockRepoMockGetStockItemBySku {
 	if mmGetStockItemBySku.mock.funcGetStockItemBySku != nil {
 		mmGetStockItemBySku.mock.t.Fatalf("StockRepoMock.GetStockItemBySku mock is already set by Set")
 	}
@@ -129,7 +132,7 @@ func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Expect(u1 uint32) *m
 		mmGetStockItemBySku.mock.t.Fatalf("StockRepoMock.GetStockItemBySku mock is already set by ExpectParams functions")
 	}
 
-	mmGetStockItemBySku.defaultExpectation.params = &StockRepoMockGetStockItemBySkuParams{u1}
+	mmGetStockItemBySku.defaultExpectation.params = &StockRepoMockGetStockItemBySkuParams{ctx, u1}
 	for _, e := range mmGetStockItemBySku.expectations {
 		if minimock.Equal(e.params, mmGetStockItemBySku.defaultExpectation.params) {
 			mmGetStockItemBySku.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetStockItemBySku.defaultExpectation.params)
@@ -139,8 +142,30 @@ func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Expect(u1 uint32) *m
 	return mmGetStockItemBySku
 }
 
-// ExpectU1Param1 sets up expected param u1 for StockRepo.GetStockItemBySku
-func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) ExpectU1Param1(u1 uint32) *mStockRepoMockGetStockItemBySku {
+// ExpectCtxParam1 sets up expected param ctx for StockRepo.GetStockItemBySku
+func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) ExpectCtxParam1(ctx context.Context) *mStockRepoMockGetStockItemBySku {
+	if mmGetStockItemBySku.mock.funcGetStockItemBySku != nil {
+		mmGetStockItemBySku.mock.t.Fatalf("StockRepoMock.GetStockItemBySku mock is already set by Set")
+	}
+
+	if mmGetStockItemBySku.defaultExpectation == nil {
+		mmGetStockItemBySku.defaultExpectation = &StockRepoMockGetStockItemBySkuExpectation{}
+	}
+
+	if mmGetStockItemBySku.defaultExpectation.params != nil {
+		mmGetStockItemBySku.mock.t.Fatalf("StockRepoMock.GetStockItemBySku mock is already set by Expect")
+	}
+
+	if mmGetStockItemBySku.defaultExpectation.paramPtrs == nil {
+		mmGetStockItemBySku.defaultExpectation.paramPtrs = &StockRepoMockGetStockItemBySkuParamPtrs{}
+	}
+	mmGetStockItemBySku.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmGetStockItemBySku
+}
+
+// ExpectU1Param2 sets up expected param u1 for StockRepo.GetStockItemBySku
+func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) ExpectU1Param2(u1 uint32) *mStockRepoMockGetStockItemBySku {
 	if mmGetStockItemBySku.mock.funcGetStockItemBySku != nil {
 		mmGetStockItemBySku.mock.t.Fatalf("StockRepoMock.GetStockItemBySku mock is already set by Set")
 	}
@@ -162,7 +187,7 @@ func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) ExpectU1Param1(u1 ui
 }
 
 // Inspect accepts an inspector function that has same arguments as the StockRepo.GetStockItemBySku
-func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Inspect(f func(u1 uint32)) *mStockRepoMockGetStockItemBySku {
+func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Inspect(f func(ctx context.Context, u1 uint32)) *mStockRepoMockGetStockItemBySku {
 	if mmGetStockItemBySku.mock.inspectFuncGetStockItemBySku != nil {
 		mmGetStockItemBySku.mock.t.Fatalf("Inspect function is already set for StockRepoMock.GetStockItemBySku")
 	}
@@ -186,7 +211,7 @@ func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Return(sp1 *model.St
 }
 
 // Set uses given function f to mock the StockRepo.GetStockItemBySku method
-func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Set(f func(u1 uint32) (sp1 *model.StockItem, err error)) *StockRepoMock {
+func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Set(f func(ctx context.Context, u1 uint32) (sp1 *model.StockItem, err error)) *StockRepoMock {
 	if mmGetStockItemBySku.defaultExpectation != nil {
 		mmGetStockItemBySku.mock.t.Fatalf("Default expectation is already set for the StockRepo.GetStockItemBySku method")
 	}
@@ -201,14 +226,14 @@ func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) Set(f func(u1 uint32
 
 // When sets expectation for the StockRepo.GetStockItemBySku which will trigger the result defined by the following
 // Then helper
-func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) When(u1 uint32) *StockRepoMockGetStockItemBySkuExpectation {
+func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) When(ctx context.Context, u1 uint32) *StockRepoMockGetStockItemBySkuExpectation {
 	if mmGetStockItemBySku.mock.funcGetStockItemBySku != nil {
 		mmGetStockItemBySku.mock.t.Fatalf("StockRepoMock.GetStockItemBySku mock is already set by Set")
 	}
 
 	expectation := &StockRepoMockGetStockItemBySkuExpectation{
 		mock:   mmGetStockItemBySku.mock,
-		params: &StockRepoMockGetStockItemBySkuParams{u1},
+		params: &StockRepoMockGetStockItemBySkuParams{ctx, u1},
 	}
 	mmGetStockItemBySku.expectations = append(mmGetStockItemBySku.expectations, expectation)
 	return expectation
@@ -241,15 +266,15 @@ func (mmGetStockItemBySku *mStockRepoMockGetStockItemBySku) invocationsDone() bo
 }
 
 // GetStockItemBySku implements service.StockRepo
-func (mmGetStockItemBySku *StockRepoMock) GetStockItemBySku(u1 uint32) (sp1 *model.StockItem, err error) {
+func (mmGetStockItemBySku *StockRepoMock) GetStockItemBySku(ctx context.Context, u1 uint32) (sp1 *model.StockItem, err error) {
 	mm_atomic.AddUint64(&mmGetStockItemBySku.beforeGetStockItemBySkuCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetStockItemBySku.afterGetStockItemBySkuCounter, 1)
 
 	if mmGetStockItemBySku.inspectFuncGetStockItemBySku != nil {
-		mmGetStockItemBySku.inspectFuncGetStockItemBySku(u1)
+		mmGetStockItemBySku.inspectFuncGetStockItemBySku(ctx, u1)
 	}
 
-	mm_params := StockRepoMockGetStockItemBySkuParams{u1}
+	mm_params := StockRepoMockGetStockItemBySkuParams{ctx, u1}
 
 	// Record call args
 	mmGetStockItemBySku.GetStockItemBySkuMock.mutex.Lock()
@@ -268,9 +293,13 @@ func (mmGetStockItemBySku *StockRepoMock) GetStockItemBySku(u1 uint32) (sp1 *mod
 		mm_want := mmGetStockItemBySku.GetStockItemBySkuMock.defaultExpectation.params
 		mm_want_ptrs := mmGetStockItemBySku.GetStockItemBySkuMock.defaultExpectation.paramPtrs
 
-		mm_got := StockRepoMockGetStockItemBySkuParams{u1}
+		mm_got := StockRepoMockGetStockItemBySkuParams{ctx, u1}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetStockItemBySku.t.Errorf("StockRepoMock.GetStockItemBySku got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.u1 != nil && !minimock.Equal(*mm_want_ptrs.u1, mm_got.u1) {
 				mmGetStockItemBySku.t.Errorf("StockRepoMock.GetStockItemBySku got unexpected parameter u1, want: %#v, got: %#v%s\n", *mm_want_ptrs.u1, mm_got.u1, minimock.Diff(*mm_want_ptrs.u1, mm_got.u1))
@@ -287,9 +316,9 @@ func (mmGetStockItemBySku *StockRepoMock) GetStockItemBySku(u1 uint32) (sp1 *mod
 		return (*mm_results).sp1, (*mm_results).err
 	}
 	if mmGetStockItemBySku.funcGetStockItemBySku != nil {
-		return mmGetStockItemBySku.funcGetStockItemBySku(u1)
+		return mmGetStockItemBySku.funcGetStockItemBySku(ctx, u1)
 	}
-	mmGetStockItemBySku.t.Fatalf("Unexpected call to StockRepoMock.GetStockItemBySku. %v", u1)
+	mmGetStockItemBySku.t.Fatalf("Unexpected call to StockRepoMock.GetStockItemBySku. %v %v", ctx, u1)
 	return
 }
 
@@ -384,11 +413,13 @@ type StockRepoMockReserveExpectation struct {
 
 // StockRepoMockReserveParams contains parameters of the StockRepo.Reserve
 type StockRepoMockReserveParams struct {
+	ctx context.Context
 	op1 *model.OrderItem
 }
 
 // StockRepoMockReserveParamPtrs contains pointers to parameters of the StockRepo.Reserve
 type StockRepoMockReserveParamPtrs struct {
+	ctx *context.Context
 	op1 **model.OrderItem
 }
 
@@ -408,7 +439,7 @@ func (mmReserve *mStockRepoMockReserve) Optional() *mStockRepoMockReserve {
 }
 
 // Expect sets up expected params for StockRepo.Reserve
-func (mmReserve *mStockRepoMockReserve) Expect(op1 *model.OrderItem) *mStockRepoMockReserve {
+func (mmReserve *mStockRepoMockReserve) Expect(ctx context.Context, op1 *model.OrderItem) *mStockRepoMockReserve {
 	if mmReserve.mock.funcReserve != nil {
 		mmReserve.mock.t.Fatalf("StockRepoMock.Reserve mock is already set by Set")
 	}
@@ -421,7 +452,7 @@ func (mmReserve *mStockRepoMockReserve) Expect(op1 *model.OrderItem) *mStockRepo
 		mmReserve.mock.t.Fatalf("StockRepoMock.Reserve mock is already set by ExpectParams functions")
 	}
 
-	mmReserve.defaultExpectation.params = &StockRepoMockReserveParams{op1}
+	mmReserve.defaultExpectation.params = &StockRepoMockReserveParams{ctx, op1}
 	for _, e := range mmReserve.expectations {
 		if minimock.Equal(e.params, mmReserve.defaultExpectation.params) {
 			mmReserve.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmReserve.defaultExpectation.params)
@@ -431,8 +462,30 @@ func (mmReserve *mStockRepoMockReserve) Expect(op1 *model.OrderItem) *mStockRepo
 	return mmReserve
 }
 
-// ExpectOp1Param1 sets up expected param op1 for StockRepo.Reserve
-func (mmReserve *mStockRepoMockReserve) ExpectOp1Param1(op1 *model.OrderItem) *mStockRepoMockReserve {
+// ExpectCtxParam1 sets up expected param ctx for StockRepo.Reserve
+func (mmReserve *mStockRepoMockReserve) ExpectCtxParam1(ctx context.Context) *mStockRepoMockReserve {
+	if mmReserve.mock.funcReserve != nil {
+		mmReserve.mock.t.Fatalf("StockRepoMock.Reserve mock is already set by Set")
+	}
+
+	if mmReserve.defaultExpectation == nil {
+		mmReserve.defaultExpectation = &StockRepoMockReserveExpectation{}
+	}
+
+	if mmReserve.defaultExpectation.params != nil {
+		mmReserve.mock.t.Fatalf("StockRepoMock.Reserve mock is already set by Expect")
+	}
+
+	if mmReserve.defaultExpectation.paramPtrs == nil {
+		mmReserve.defaultExpectation.paramPtrs = &StockRepoMockReserveParamPtrs{}
+	}
+	mmReserve.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmReserve
+}
+
+// ExpectOp1Param2 sets up expected param op1 for StockRepo.Reserve
+func (mmReserve *mStockRepoMockReserve) ExpectOp1Param2(op1 *model.OrderItem) *mStockRepoMockReserve {
 	if mmReserve.mock.funcReserve != nil {
 		mmReserve.mock.t.Fatalf("StockRepoMock.Reserve mock is already set by Set")
 	}
@@ -454,7 +507,7 @@ func (mmReserve *mStockRepoMockReserve) ExpectOp1Param1(op1 *model.OrderItem) *m
 }
 
 // Inspect accepts an inspector function that has same arguments as the StockRepo.Reserve
-func (mmReserve *mStockRepoMockReserve) Inspect(f func(op1 *model.OrderItem)) *mStockRepoMockReserve {
+func (mmReserve *mStockRepoMockReserve) Inspect(f func(ctx context.Context, op1 *model.OrderItem)) *mStockRepoMockReserve {
 	if mmReserve.mock.inspectFuncReserve != nil {
 		mmReserve.mock.t.Fatalf("Inspect function is already set for StockRepoMock.Reserve")
 	}
@@ -478,7 +531,7 @@ func (mmReserve *mStockRepoMockReserve) Return(err error) *StockRepoMock {
 }
 
 // Set uses given function f to mock the StockRepo.Reserve method
-func (mmReserve *mStockRepoMockReserve) Set(f func(op1 *model.OrderItem) (err error)) *StockRepoMock {
+func (mmReserve *mStockRepoMockReserve) Set(f func(ctx context.Context, op1 *model.OrderItem) (err error)) *StockRepoMock {
 	if mmReserve.defaultExpectation != nil {
 		mmReserve.mock.t.Fatalf("Default expectation is already set for the StockRepo.Reserve method")
 	}
@@ -493,14 +546,14 @@ func (mmReserve *mStockRepoMockReserve) Set(f func(op1 *model.OrderItem) (err er
 
 // When sets expectation for the StockRepo.Reserve which will trigger the result defined by the following
 // Then helper
-func (mmReserve *mStockRepoMockReserve) When(op1 *model.OrderItem) *StockRepoMockReserveExpectation {
+func (mmReserve *mStockRepoMockReserve) When(ctx context.Context, op1 *model.OrderItem) *StockRepoMockReserveExpectation {
 	if mmReserve.mock.funcReserve != nil {
 		mmReserve.mock.t.Fatalf("StockRepoMock.Reserve mock is already set by Set")
 	}
 
 	expectation := &StockRepoMockReserveExpectation{
 		mock:   mmReserve.mock,
-		params: &StockRepoMockReserveParams{op1},
+		params: &StockRepoMockReserveParams{ctx, op1},
 	}
 	mmReserve.expectations = append(mmReserve.expectations, expectation)
 	return expectation
@@ -533,15 +586,15 @@ func (mmReserve *mStockRepoMockReserve) invocationsDone() bool {
 }
 
 // Reserve implements service.StockRepo
-func (mmReserve *StockRepoMock) Reserve(op1 *model.OrderItem) (err error) {
+func (mmReserve *StockRepoMock) Reserve(ctx context.Context, op1 *model.OrderItem) (err error) {
 	mm_atomic.AddUint64(&mmReserve.beforeReserveCounter, 1)
 	defer mm_atomic.AddUint64(&mmReserve.afterReserveCounter, 1)
 
 	if mmReserve.inspectFuncReserve != nil {
-		mmReserve.inspectFuncReserve(op1)
+		mmReserve.inspectFuncReserve(ctx, op1)
 	}
 
-	mm_params := StockRepoMockReserveParams{op1}
+	mm_params := StockRepoMockReserveParams{ctx, op1}
 
 	// Record call args
 	mmReserve.ReserveMock.mutex.Lock()
@@ -560,9 +613,13 @@ func (mmReserve *StockRepoMock) Reserve(op1 *model.OrderItem) (err error) {
 		mm_want := mmReserve.ReserveMock.defaultExpectation.params
 		mm_want_ptrs := mmReserve.ReserveMock.defaultExpectation.paramPtrs
 
-		mm_got := StockRepoMockReserveParams{op1}
+		mm_got := StockRepoMockReserveParams{ctx, op1}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmReserve.t.Errorf("StockRepoMock.Reserve got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.op1 != nil && !minimock.Equal(*mm_want_ptrs.op1, mm_got.op1) {
 				mmReserve.t.Errorf("StockRepoMock.Reserve got unexpected parameter op1, want: %#v, got: %#v%s\n", *mm_want_ptrs.op1, mm_got.op1, minimock.Diff(*mm_want_ptrs.op1, mm_got.op1))
@@ -579,9 +636,9 @@ func (mmReserve *StockRepoMock) Reserve(op1 *model.OrderItem) (err error) {
 		return (*mm_results).err
 	}
 	if mmReserve.funcReserve != nil {
-		return mmReserve.funcReserve(op1)
+		return mmReserve.funcReserve(ctx, op1)
 	}
-	mmReserve.t.Fatalf("Unexpected call to StockRepoMock.Reserve. %v", op1)
+	mmReserve.t.Fatalf("Unexpected call to StockRepoMock.Reserve. %v %v", ctx, op1)
 	return
 }
 
@@ -676,11 +733,13 @@ type StockRepoMockReserveRemoveExpectation struct {
 
 // StockRepoMockReserveRemoveParams contains parameters of the StockRepo.ReserveRemove
 type StockRepoMockReserveRemoveParams struct {
+	ctx context.Context
 	op1 *model.OrderItem
 }
 
 // StockRepoMockReserveRemoveParamPtrs contains pointers to parameters of the StockRepo.ReserveRemove
 type StockRepoMockReserveRemoveParamPtrs struct {
+	ctx *context.Context
 	op1 **model.OrderItem
 }
 
@@ -700,7 +759,7 @@ func (mmReserveRemove *mStockRepoMockReserveRemove) Optional() *mStockRepoMockRe
 }
 
 // Expect sets up expected params for StockRepo.ReserveRemove
-func (mmReserveRemove *mStockRepoMockReserveRemove) Expect(op1 *model.OrderItem) *mStockRepoMockReserveRemove {
+func (mmReserveRemove *mStockRepoMockReserveRemove) Expect(ctx context.Context, op1 *model.OrderItem) *mStockRepoMockReserveRemove {
 	if mmReserveRemove.mock.funcReserveRemove != nil {
 		mmReserveRemove.mock.t.Fatalf("StockRepoMock.ReserveRemove mock is already set by Set")
 	}
@@ -713,7 +772,7 @@ func (mmReserveRemove *mStockRepoMockReserveRemove) Expect(op1 *model.OrderItem)
 		mmReserveRemove.mock.t.Fatalf("StockRepoMock.ReserveRemove mock is already set by ExpectParams functions")
 	}
 
-	mmReserveRemove.defaultExpectation.params = &StockRepoMockReserveRemoveParams{op1}
+	mmReserveRemove.defaultExpectation.params = &StockRepoMockReserveRemoveParams{ctx, op1}
 	for _, e := range mmReserveRemove.expectations {
 		if minimock.Equal(e.params, mmReserveRemove.defaultExpectation.params) {
 			mmReserveRemove.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmReserveRemove.defaultExpectation.params)
@@ -723,8 +782,30 @@ func (mmReserveRemove *mStockRepoMockReserveRemove) Expect(op1 *model.OrderItem)
 	return mmReserveRemove
 }
 
-// ExpectOp1Param1 sets up expected param op1 for StockRepo.ReserveRemove
-func (mmReserveRemove *mStockRepoMockReserveRemove) ExpectOp1Param1(op1 *model.OrderItem) *mStockRepoMockReserveRemove {
+// ExpectCtxParam1 sets up expected param ctx for StockRepo.ReserveRemove
+func (mmReserveRemove *mStockRepoMockReserveRemove) ExpectCtxParam1(ctx context.Context) *mStockRepoMockReserveRemove {
+	if mmReserveRemove.mock.funcReserveRemove != nil {
+		mmReserveRemove.mock.t.Fatalf("StockRepoMock.ReserveRemove mock is already set by Set")
+	}
+
+	if mmReserveRemove.defaultExpectation == nil {
+		mmReserveRemove.defaultExpectation = &StockRepoMockReserveRemoveExpectation{}
+	}
+
+	if mmReserveRemove.defaultExpectation.params != nil {
+		mmReserveRemove.mock.t.Fatalf("StockRepoMock.ReserveRemove mock is already set by Expect")
+	}
+
+	if mmReserveRemove.defaultExpectation.paramPtrs == nil {
+		mmReserveRemove.defaultExpectation.paramPtrs = &StockRepoMockReserveRemoveParamPtrs{}
+	}
+	mmReserveRemove.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmReserveRemove
+}
+
+// ExpectOp1Param2 sets up expected param op1 for StockRepo.ReserveRemove
+func (mmReserveRemove *mStockRepoMockReserveRemove) ExpectOp1Param2(op1 *model.OrderItem) *mStockRepoMockReserveRemove {
 	if mmReserveRemove.mock.funcReserveRemove != nil {
 		mmReserveRemove.mock.t.Fatalf("StockRepoMock.ReserveRemove mock is already set by Set")
 	}
@@ -746,7 +827,7 @@ func (mmReserveRemove *mStockRepoMockReserveRemove) ExpectOp1Param1(op1 *model.O
 }
 
 // Inspect accepts an inspector function that has same arguments as the StockRepo.ReserveRemove
-func (mmReserveRemove *mStockRepoMockReserveRemove) Inspect(f func(op1 *model.OrderItem)) *mStockRepoMockReserveRemove {
+func (mmReserveRemove *mStockRepoMockReserveRemove) Inspect(f func(ctx context.Context, op1 *model.OrderItem)) *mStockRepoMockReserveRemove {
 	if mmReserveRemove.mock.inspectFuncReserveRemove != nil {
 		mmReserveRemove.mock.t.Fatalf("Inspect function is already set for StockRepoMock.ReserveRemove")
 	}
@@ -770,7 +851,7 @@ func (mmReserveRemove *mStockRepoMockReserveRemove) Return(err error) *StockRepo
 }
 
 // Set uses given function f to mock the StockRepo.ReserveRemove method
-func (mmReserveRemove *mStockRepoMockReserveRemove) Set(f func(op1 *model.OrderItem) (err error)) *StockRepoMock {
+func (mmReserveRemove *mStockRepoMockReserveRemove) Set(f func(ctx context.Context, op1 *model.OrderItem) (err error)) *StockRepoMock {
 	if mmReserveRemove.defaultExpectation != nil {
 		mmReserveRemove.mock.t.Fatalf("Default expectation is already set for the StockRepo.ReserveRemove method")
 	}
@@ -785,14 +866,14 @@ func (mmReserveRemove *mStockRepoMockReserveRemove) Set(f func(op1 *model.OrderI
 
 // When sets expectation for the StockRepo.ReserveRemove which will trigger the result defined by the following
 // Then helper
-func (mmReserveRemove *mStockRepoMockReserveRemove) When(op1 *model.OrderItem) *StockRepoMockReserveRemoveExpectation {
+func (mmReserveRemove *mStockRepoMockReserveRemove) When(ctx context.Context, op1 *model.OrderItem) *StockRepoMockReserveRemoveExpectation {
 	if mmReserveRemove.mock.funcReserveRemove != nil {
 		mmReserveRemove.mock.t.Fatalf("StockRepoMock.ReserveRemove mock is already set by Set")
 	}
 
 	expectation := &StockRepoMockReserveRemoveExpectation{
 		mock:   mmReserveRemove.mock,
-		params: &StockRepoMockReserveRemoveParams{op1},
+		params: &StockRepoMockReserveRemoveParams{ctx, op1},
 	}
 	mmReserveRemove.expectations = append(mmReserveRemove.expectations, expectation)
 	return expectation
@@ -825,15 +906,15 @@ func (mmReserveRemove *mStockRepoMockReserveRemove) invocationsDone() bool {
 }
 
 // ReserveRemove implements service.StockRepo
-func (mmReserveRemove *StockRepoMock) ReserveRemove(op1 *model.OrderItem) (err error) {
+func (mmReserveRemove *StockRepoMock) ReserveRemove(ctx context.Context, op1 *model.OrderItem) (err error) {
 	mm_atomic.AddUint64(&mmReserveRemove.beforeReserveRemoveCounter, 1)
 	defer mm_atomic.AddUint64(&mmReserveRemove.afterReserveRemoveCounter, 1)
 
 	if mmReserveRemove.inspectFuncReserveRemove != nil {
-		mmReserveRemove.inspectFuncReserveRemove(op1)
+		mmReserveRemove.inspectFuncReserveRemove(ctx, op1)
 	}
 
-	mm_params := StockRepoMockReserveRemoveParams{op1}
+	mm_params := StockRepoMockReserveRemoveParams{ctx, op1}
 
 	// Record call args
 	mmReserveRemove.ReserveRemoveMock.mutex.Lock()
@@ -852,9 +933,13 @@ func (mmReserveRemove *StockRepoMock) ReserveRemove(op1 *model.OrderItem) (err e
 		mm_want := mmReserveRemove.ReserveRemoveMock.defaultExpectation.params
 		mm_want_ptrs := mmReserveRemove.ReserveRemoveMock.defaultExpectation.paramPtrs
 
-		mm_got := StockRepoMockReserveRemoveParams{op1}
+		mm_got := StockRepoMockReserveRemoveParams{ctx, op1}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmReserveRemove.t.Errorf("StockRepoMock.ReserveRemove got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.op1 != nil && !minimock.Equal(*mm_want_ptrs.op1, mm_got.op1) {
 				mmReserveRemove.t.Errorf("StockRepoMock.ReserveRemove got unexpected parameter op1, want: %#v, got: %#v%s\n", *mm_want_ptrs.op1, mm_got.op1, minimock.Diff(*mm_want_ptrs.op1, mm_got.op1))
@@ -871,9 +956,9 @@ func (mmReserveRemove *StockRepoMock) ReserveRemove(op1 *model.OrderItem) (err e
 		return (*mm_results).err
 	}
 	if mmReserveRemove.funcReserveRemove != nil {
-		return mmReserveRemove.funcReserveRemove(op1)
+		return mmReserveRemove.funcReserveRemove(ctx, op1)
 	}
-	mmReserveRemove.t.Fatalf("Unexpected call to StockRepoMock.ReserveRemove. %v", op1)
+	mmReserveRemove.t.Fatalf("Unexpected call to StockRepoMock.ReserveRemove. %v %v", ctx, op1)
 	return
 }
 
@@ -968,11 +1053,13 @@ type StockRepoMockStockRemoveItemExpectation struct {
 
 // StockRepoMockStockRemoveItemParams contains parameters of the StockRepo.StockRemoveItem
 type StockRepoMockStockRemoveItemParams struct {
+	ctx context.Context
 	op1 *model.OrderItem
 }
 
 // StockRepoMockStockRemoveItemParamPtrs contains pointers to parameters of the StockRepo.StockRemoveItem
 type StockRepoMockStockRemoveItemParamPtrs struct {
+	ctx *context.Context
 	op1 **model.OrderItem
 }
 
@@ -992,7 +1079,7 @@ func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Optional() *mStockRepoMo
 }
 
 // Expect sets up expected params for StockRepo.StockRemoveItem
-func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Expect(op1 *model.OrderItem) *mStockRepoMockStockRemoveItem {
+func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Expect(ctx context.Context, op1 *model.OrderItem) *mStockRepoMockStockRemoveItem {
 	if mmStockRemoveItem.mock.funcStockRemoveItem != nil {
 		mmStockRemoveItem.mock.t.Fatalf("StockRepoMock.StockRemoveItem mock is already set by Set")
 	}
@@ -1005,7 +1092,7 @@ func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Expect(op1 *model.OrderI
 		mmStockRemoveItem.mock.t.Fatalf("StockRepoMock.StockRemoveItem mock is already set by ExpectParams functions")
 	}
 
-	mmStockRemoveItem.defaultExpectation.params = &StockRepoMockStockRemoveItemParams{op1}
+	mmStockRemoveItem.defaultExpectation.params = &StockRepoMockStockRemoveItemParams{ctx, op1}
 	for _, e := range mmStockRemoveItem.expectations {
 		if minimock.Equal(e.params, mmStockRemoveItem.defaultExpectation.params) {
 			mmStockRemoveItem.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmStockRemoveItem.defaultExpectation.params)
@@ -1015,8 +1102,30 @@ func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Expect(op1 *model.OrderI
 	return mmStockRemoveItem
 }
 
-// ExpectOp1Param1 sets up expected param op1 for StockRepo.StockRemoveItem
-func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) ExpectOp1Param1(op1 *model.OrderItem) *mStockRepoMockStockRemoveItem {
+// ExpectCtxParam1 sets up expected param ctx for StockRepo.StockRemoveItem
+func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) ExpectCtxParam1(ctx context.Context) *mStockRepoMockStockRemoveItem {
+	if mmStockRemoveItem.mock.funcStockRemoveItem != nil {
+		mmStockRemoveItem.mock.t.Fatalf("StockRepoMock.StockRemoveItem mock is already set by Set")
+	}
+
+	if mmStockRemoveItem.defaultExpectation == nil {
+		mmStockRemoveItem.defaultExpectation = &StockRepoMockStockRemoveItemExpectation{}
+	}
+
+	if mmStockRemoveItem.defaultExpectation.params != nil {
+		mmStockRemoveItem.mock.t.Fatalf("StockRepoMock.StockRemoveItem mock is already set by Expect")
+	}
+
+	if mmStockRemoveItem.defaultExpectation.paramPtrs == nil {
+		mmStockRemoveItem.defaultExpectation.paramPtrs = &StockRepoMockStockRemoveItemParamPtrs{}
+	}
+	mmStockRemoveItem.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmStockRemoveItem
+}
+
+// ExpectOp1Param2 sets up expected param op1 for StockRepo.StockRemoveItem
+func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) ExpectOp1Param2(op1 *model.OrderItem) *mStockRepoMockStockRemoveItem {
 	if mmStockRemoveItem.mock.funcStockRemoveItem != nil {
 		mmStockRemoveItem.mock.t.Fatalf("StockRepoMock.StockRemoveItem mock is already set by Set")
 	}
@@ -1038,7 +1147,7 @@ func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) ExpectOp1Param1(op1 *mod
 }
 
 // Inspect accepts an inspector function that has same arguments as the StockRepo.StockRemoveItem
-func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Inspect(f func(op1 *model.OrderItem)) *mStockRepoMockStockRemoveItem {
+func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Inspect(f func(ctx context.Context, op1 *model.OrderItem)) *mStockRepoMockStockRemoveItem {
 	if mmStockRemoveItem.mock.inspectFuncStockRemoveItem != nil {
 		mmStockRemoveItem.mock.t.Fatalf("Inspect function is already set for StockRepoMock.StockRemoveItem")
 	}
@@ -1062,7 +1171,7 @@ func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Return(err error) *Stock
 }
 
 // Set uses given function f to mock the StockRepo.StockRemoveItem method
-func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Set(f func(op1 *model.OrderItem) (err error)) *StockRepoMock {
+func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Set(f func(ctx context.Context, op1 *model.OrderItem) (err error)) *StockRepoMock {
 	if mmStockRemoveItem.defaultExpectation != nil {
 		mmStockRemoveItem.mock.t.Fatalf("Default expectation is already set for the StockRepo.StockRemoveItem method")
 	}
@@ -1077,14 +1186,14 @@ func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) Set(f func(op1 *model.Or
 
 // When sets expectation for the StockRepo.StockRemoveItem which will trigger the result defined by the following
 // Then helper
-func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) When(op1 *model.OrderItem) *StockRepoMockStockRemoveItemExpectation {
+func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) When(ctx context.Context, op1 *model.OrderItem) *StockRepoMockStockRemoveItemExpectation {
 	if mmStockRemoveItem.mock.funcStockRemoveItem != nil {
 		mmStockRemoveItem.mock.t.Fatalf("StockRepoMock.StockRemoveItem mock is already set by Set")
 	}
 
 	expectation := &StockRepoMockStockRemoveItemExpectation{
 		mock:   mmStockRemoveItem.mock,
-		params: &StockRepoMockStockRemoveItemParams{op1},
+		params: &StockRepoMockStockRemoveItemParams{ctx, op1},
 	}
 	mmStockRemoveItem.expectations = append(mmStockRemoveItem.expectations, expectation)
 	return expectation
@@ -1117,15 +1226,15 @@ func (mmStockRemoveItem *mStockRepoMockStockRemoveItem) invocationsDone() bool {
 }
 
 // StockRemoveItem implements service.StockRepo
-func (mmStockRemoveItem *StockRepoMock) StockRemoveItem(op1 *model.OrderItem) (err error) {
+func (mmStockRemoveItem *StockRepoMock) StockRemoveItem(ctx context.Context, op1 *model.OrderItem) (err error) {
 	mm_atomic.AddUint64(&mmStockRemoveItem.beforeStockRemoveItemCounter, 1)
 	defer mm_atomic.AddUint64(&mmStockRemoveItem.afterStockRemoveItemCounter, 1)
 
 	if mmStockRemoveItem.inspectFuncStockRemoveItem != nil {
-		mmStockRemoveItem.inspectFuncStockRemoveItem(op1)
+		mmStockRemoveItem.inspectFuncStockRemoveItem(ctx, op1)
 	}
 
-	mm_params := StockRepoMockStockRemoveItemParams{op1}
+	mm_params := StockRepoMockStockRemoveItemParams{ctx, op1}
 
 	// Record call args
 	mmStockRemoveItem.StockRemoveItemMock.mutex.Lock()
@@ -1144,9 +1253,13 @@ func (mmStockRemoveItem *StockRepoMock) StockRemoveItem(op1 *model.OrderItem) (e
 		mm_want := mmStockRemoveItem.StockRemoveItemMock.defaultExpectation.params
 		mm_want_ptrs := mmStockRemoveItem.StockRemoveItemMock.defaultExpectation.paramPtrs
 
-		mm_got := StockRepoMockStockRemoveItemParams{op1}
+		mm_got := StockRepoMockStockRemoveItemParams{ctx, op1}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmStockRemoveItem.t.Errorf("StockRepoMock.StockRemoveItem got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.op1 != nil && !minimock.Equal(*mm_want_ptrs.op1, mm_got.op1) {
 				mmStockRemoveItem.t.Errorf("StockRepoMock.StockRemoveItem got unexpected parameter op1, want: %#v, got: %#v%s\n", *mm_want_ptrs.op1, mm_got.op1, minimock.Diff(*mm_want_ptrs.op1, mm_got.op1))
@@ -1163,9 +1276,9 @@ func (mmStockRemoveItem *StockRepoMock) StockRemoveItem(op1 *model.OrderItem) (e
 		return (*mm_results).err
 	}
 	if mmStockRemoveItem.funcStockRemoveItem != nil {
-		return mmStockRemoveItem.funcStockRemoveItem(op1)
+		return mmStockRemoveItem.funcStockRemoveItem(ctx, op1)
 	}
-	mmStockRemoveItem.t.Fatalf("Unexpected call to StockRepoMock.StockRemoveItem. %v", op1)
+	mmStockRemoveItem.t.Fatalf("Unexpected call to StockRepoMock.StockRemoveItem. %v %v", ctx, op1)
 	return
 }
 

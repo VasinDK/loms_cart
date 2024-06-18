@@ -1,6 +1,7 @@
 package get_cart
 
 import (
+	"context"
 	"route256/cart/internal/model"
 	"route256/cart/internal/service/list/get_cart/mock"
 	"testing"
@@ -64,8 +65,8 @@ func TestGetCart(t *testing.T) {
 			t.Parallel()
 			ctrl := minimock.NewController(t)
 			repositoryMock := mock.NewRepositoryMock(ctrl)
-			repositoryMock.GetCartMock.Optional().Expect(tt.CartId).Return(tt.CartProd, nil)
-			repositoryMock.CheckSKUMock.Optional().Set(func(i int64) (*model.Product, error) {
+			repositoryMock.GetCartMock.Optional().Expect(context.Background(), tt.CartId).Return(tt.CartProd, nil)
+			repositoryMock.CheckSKUMock.Optional().Set(func(ctx context.Context, i int64) (*model.Product, error) {
 				switch i {
 				case 123:
 					return CheckSKUResp1, nil
@@ -77,7 +78,7 @@ func TestGetCart(t *testing.T) {
 			})
 
 			NewHandler := New(repositoryMock)
-			Cart, err := NewHandler.GetCart(tt.CartId)
+			Cart, err := NewHandler.GetCart(context.Background(), tt.CartId)
 
 			assert.Equal(t, tt.WantError, err)
 			assert.Equal(t, tt.WantRes, Cart.TotalPrice)

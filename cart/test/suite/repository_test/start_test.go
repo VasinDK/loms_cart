@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"route256/cart/internal/model"
 	"route256/cart/internal/pkg/config"
 	"route256/cart/internal/repository"
@@ -50,7 +51,7 @@ func (s *SuiteRepo) SetupTest() {
 			Count: prod.Count,
 		}
 
-		err := s.Repo.AddProductCart(product, prod.UserId)
+		err := s.Repo.AddProductCart(context.Background(), product, prod.UserId)
 		if err != nil {
 			s.T().Error("SetupTest")
 		}

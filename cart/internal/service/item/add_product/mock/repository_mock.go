@@ -5,6 +5,7 @@ package mock
 //go:generate minimock -i route256/cart/internal/service/item/add_product.Repository -o repository_mock.go -n RepositoryMock -p mock
 
 import (
+	"context"
 	"route256/cart/internal/model"
 	"sync"
 	mm_atomic "sync/atomic"
@@ -18,26 +19,26 @@ type RepositoryMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
-	funcAddProductCart          func(pp1 *model.Product, i1 int64) (err error)
-	inspectFuncAddProductCart   func(pp1 *model.Product, i1 int64)
+	funcAddProductCart          func(ctx context.Context, pp1 *model.Product, i1 int64) (err error)
+	inspectFuncAddProductCart   func(ctx context.Context, pp1 *model.Product, i1 int64)
 	afterAddProductCartCounter  uint64
 	beforeAddProductCartCounter uint64
 	AddProductCartMock          mRepositoryMockAddProductCart
 
-	funcCheckSKU          func(i1 int64) (pp1 *model.Product, err error)
-	inspectFuncCheckSKU   func(i1 int64)
+	funcCheckSKU          func(ctx context.Context, i1 int64) (pp1 *model.Product, err error)
+	inspectFuncCheckSKU   func(ctx context.Context, i1 int64)
 	afterCheckSKUCounter  uint64
 	beforeCheckSKUCounter uint64
 	CheckSKUMock          mRepositoryMockCheckSKU
 
-	funcGetProductCart          func(pp1 *model.Product, i1 int64) (pp2 *model.Product, err error)
-	inspectFuncGetProductCart   func(pp1 *model.Product, i1 int64)
+	funcGetProductCart          func(ctx context.Context, pp1 *model.Product, i1 int64) (pp2 *model.Product, err error)
+	inspectFuncGetProductCart   func(ctx context.Context, pp1 *model.Product, i1 int64)
 	afterGetProductCartCounter  uint64
 	beforeGetProductCartCounter uint64
 	GetProductCartMock          mRepositoryMockGetProductCart
 
-	funcStockInfo          func(sku int64) (i1 int64, err error)
-	inspectFuncStockInfo   func(sku int64)
+	funcStockInfo          func(ctx context.Context, i1 int64) (i2 int64, err error)
+	inspectFuncStockInfo   func(ctx context.Context, i1 int64)
 	afterStockInfoCounter  uint64
 	beforeStockInfoCounter uint64
 	StockInfoMock          mRepositoryMockStockInfo
@@ -91,12 +92,14 @@ type RepositoryMockAddProductCartExpectation struct {
 
 // RepositoryMockAddProductCartParams contains parameters of the Repository.AddProductCart
 type RepositoryMockAddProductCartParams struct {
+	ctx context.Context
 	pp1 *model.Product
 	i1  int64
 }
 
 // RepositoryMockAddProductCartParamPtrs contains pointers to parameters of the Repository.AddProductCart
 type RepositoryMockAddProductCartParamPtrs struct {
+	ctx *context.Context
 	pp1 **model.Product
 	i1  *int64
 }
@@ -117,7 +120,7 @@ func (mmAddProductCart *mRepositoryMockAddProductCart) Optional() *mRepositoryMo
 }
 
 // Expect sets up expected params for Repository.AddProductCart
-func (mmAddProductCart *mRepositoryMockAddProductCart) Expect(pp1 *model.Product, i1 int64) *mRepositoryMockAddProductCart {
+func (mmAddProductCart *mRepositoryMockAddProductCart) Expect(ctx context.Context, pp1 *model.Product, i1 int64) *mRepositoryMockAddProductCart {
 	if mmAddProductCart.mock.funcAddProductCart != nil {
 		mmAddProductCart.mock.t.Fatalf("RepositoryMock.AddProductCart mock is already set by Set")
 	}
@@ -130,7 +133,7 @@ func (mmAddProductCart *mRepositoryMockAddProductCart) Expect(pp1 *model.Product
 		mmAddProductCart.mock.t.Fatalf("RepositoryMock.AddProductCart mock is already set by ExpectParams functions")
 	}
 
-	mmAddProductCart.defaultExpectation.params = &RepositoryMockAddProductCartParams{pp1, i1}
+	mmAddProductCart.defaultExpectation.params = &RepositoryMockAddProductCartParams{ctx, pp1, i1}
 	for _, e := range mmAddProductCart.expectations {
 		if minimock.Equal(e.params, mmAddProductCart.defaultExpectation.params) {
 			mmAddProductCart.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmAddProductCart.defaultExpectation.params)
@@ -140,8 +143,30 @@ func (mmAddProductCart *mRepositoryMockAddProductCart) Expect(pp1 *model.Product
 	return mmAddProductCart
 }
 
-// ExpectPp1Param1 sets up expected param pp1 for Repository.AddProductCart
-func (mmAddProductCart *mRepositoryMockAddProductCart) ExpectPp1Param1(pp1 *model.Product) *mRepositoryMockAddProductCart {
+// ExpectCtxParam1 sets up expected param ctx for Repository.AddProductCart
+func (mmAddProductCart *mRepositoryMockAddProductCart) ExpectCtxParam1(ctx context.Context) *mRepositoryMockAddProductCart {
+	if mmAddProductCart.mock.funcAddProductCart != nil {
+		mmAddProductCart.mock.t.Fatalf("RepositoryMock.AddProductCart mock is already set by Set")
+	}
+
+	if mmAddProductCart.defaultExpectation == nil {
+		mmAddProductCart.defaultExpectation = &RepositoryMockAddProductCartExpectation{}
+	}
+
+	if mmAddProductCart.defaultExpectation.params != nil {
+		mmAddProductCart.mock.t.Fatalf("RepositoryMock.AddProductCart mock is already set by Expect")
+	}
+
+	if mmAddProductCart.defaultExpectation.paramPtrs == nil {
+		mmAddProductCart.defaultExpectation.paramPtrs = &RepositoryMockAddProductCartParamPtrs{}
+	}
+	mmAddProductCart.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmAddProductCart
+}
+
+// ExpectPp1Param2 sets up expected param pp1 for Repository.AddProductCart
+func (mmAddProductCart *mRepositoryMockAddProductCart) ExpectPp1Param2(pp1 *model.Product) *mRepositoryMockAddProductCart {
 	if mmAddProductCart.mock.funcAddProductCart != nil {
 		mmAddProductCart.mock.t.Fatalf("RepositoryMock.AddProductCart mock is already set by Set")
 	}
@@ -162,8 +187,8 @@ func (mmAddProductCart *mRepositoryMockAddProductCart) ExpectPp1Param1(pp1 *mode
 	return mmAddProductCart
 }
 
-// ExpectI1Param2 sets up expected param i1 for Repository.AddProductCart
-func (mmAddProductCart *mRepositoryMockAddProductCart) ExpectI1Param2(i1 int64) *mRepositoryMockAddProductCart {
+// ExpectI1Param3 sets up expected param i1 for Repository.AddProductCart
+func (mmAddProductCart *mRepositoryMockAddProductCart) ExpectI1Param3(i1 int64) *mRepositoryMockAddProductCart {
 	if mmAddProductCart.mock.funcAddProductCart != nil {
 		mmAddProductCart.mock.t.Fatalf("RepositoryMock.AddProductCart mock is already set by Set")
 	}
@@ -185,7 +210,7 @@ func (mmAddProductCart *mRepositoryMockAddProductCart) ExpectI1Param2(i1 int64) 
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.AddProductCart
-func (mmAddProductCart *mRepositoryMockAddProductCart) Inspect(f func(pp1 *model.Product, i1 int64)) *mRepositoryMockAddProductCart {
+func (mmAddProductCart *mRepositoryMockAddProductCart) Inspect(f func(ctx context.Context, pp1 *model.Product, i1 int64)) *mRepositoryMockAddProductCart {
 	if mmAddProductCart.mock.inspectFuncAddProductCart != nil {
 		mmAddProductCart.mock.t.Fatalf("Inspect function is already set for RepositoryMock.AddProductCart")
 	}
@@ -209,7 +234,7 @@ func (mmAddProductCart *mRepositoryMockAddProductCart) Return(err error) *Reposi
 }
 
 // Set uses given function f to mock the Repository.AddProductCart method
-func (mmAddProductCart *mRepositoryMockAddProductCart) Set(f func(pp1 *model.Product, i1 int64) (err error)) *RepositoryMock {
+func (mmAddProductCart *mRepositoryMockAddProductCart) Set(f func(ctx context.Context, pp1 *model.Product, i1 int64) (err error)) *RepositoryMock {
 	if mmAddProductCart.defaultExpectation != nil {
 		mmAddProductCart.mock.t.Fatalf("Default expectation is already set for the Repository.AddProductCart method")
 	}
@@ -224,14 +249,14 @@ func (mmAddProductCart *mRepositoryMockAddProductCart) Set(f func(pp1 *model.Pro
 
 // When sets expectation for the Repository.AddProductCart which will trigger the result defined by the following
 // Then helper
-func (mmAddProductCart *mRepositoryMockAddProductCart) When(pp1 *model.Product, i1 int64) *RepositoryMockAddProductCartExpectation {
+func (mmAddProductCart *mRepositoryMockAddProductCart) When(ctx context.Context, pp1 *model.Product, i1 int64) *RepositoryMockAddProductCartExpectation {
 	if mmAddProductCart.mock.funcAddProductCart != nil {
 		mmAddProductCart.mock.t.Fatalf("RepositoryMock.AddProductCart mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockAddProductCartExpectation{
 		mock:   mmAddProductCart.mock,
-		params: &RepositoryMockAddProductCartParams{pp1, i1},
+		params: &RepositoryMockAddProductCartParams{ctx, pp1, i1},
 	}
 	mmAddProductCart.expectations = append(mmAddProductCart.expectations, expectation)
 	return expectation
@@ -264,15 +289,15 @@ func (mmAddProductCart *mRepositoryMockAddProductCart) invocationsDone() bool {
 }
 
 // AddProductCart implements add_product.Repository
-func (mmAddProductCart *RepositoryMock) AddProductCart(pp1 *model.Product, i1 int64) (err error) {
+func (mmAddProductCart *RepositoryMock) AddProductCart(ctx context.Context, pp1 *model.Product, i1 int64) (err error) {
 	mm_atomic.AddUint64(&mmAddProductCart.beforeAddProductCartCounter, 1)
 	defer mm_atomic.AddUint64(&mmAddProductCart.afterAddProductCartCounter, 1)
 
 	if mmAddProductCart.inspectFuncAddProductCart != nil {
-		mmAddProductCart.inspectFuncAddProductCart(pp1, i1)
+		mmAddProductCart.inspectFuncAddProductCart(ctx, pp1, i1)
 	}
 
-	mm_params := RepositoryMockAddProductCartParams{pp1, i1}
+	mm_params := RepositoryMockAddProductCartParams{ctx, pp1, i1}
 
 	// Record call args
 	mmAddProductCart.AddProductCartMock.mutex.Lock()
@@ -291,9 +316,13 @@ func (mmAddProductCart *RepositoryMock) AddProductCart(pp1 *model.Product, i1 in
 		mm_want := mmAddProductCart.AddProductCartMock.defaultExpectation.params
 		mm_want_ptrs := mmAddProductCart.AddProductCartMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockAddProductCartParams{pp1, i1}
+		mm_got := RepositoryMockAddProductCartParams{ctx, pp1, i1}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmAddProductCart.t.Errorf("RepositoryMock.AddProductCart got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.pp1 != nil && !minimock.Equal(*mm_want_ptrs.pp1, mm_got.pp1) {
 				mmAddProductCart.t.Errorf("RepositoryMock.AddProductCart got unexpected parameter pp1, want: %#v, got: %#v%s\n", *mm_want_ptrs.pp1, mm_got.pp1, minimock.Diff(*mm_want_ptrs.pp1, mm_got.pp1))
@@ -314,9 +343,9 @@ func (mmAddProductCart *RepositoryMock) AddProductCart(pp1 *model.Product, i1 in
 		return (*mm_results).err
 	}
 	if mmAddProductCart.funcAddProductCart != nil {
-		return mmAddProductCart.funcAddProductCart(pp1, i1)
+		return mmAddProductCart.funcAddProductCart(ctx, pp1, i1)
 	}
-	mmAddProductCart.t.Fatalf("Unexpected call to RepositoryMock.AddProductCart. %v %v", pp1, i1)
+	mmAddProductCart.t.Fatalf("Unexpected call to RepositoryMock.AddProductCart. %v %v %v", ctx, pp1, i1)
 	return
 }
 
@@ -411,12 +440,14 @@ type RepositoryMockCheckSKUExpectation struct {
 
 // RepositoryMockCheckSKUParams contains parameters of the Repository.CheckSKU
 type RepositoryMockCheckSKUParams struct {
-	i1 int64
+	ctx context.Context
+	i1  int64
 }
 
 // RepositoryMockCheckSKUParamPtrs contains pointers to parameters of the Repository.CheckSKU
 type RepositoryMockCheckSKUParamPtrs struct {
-	i1 *int64
+	ctx *context.Context
+	i1  *int64
 }
 
 // RepositoryMockCheckSKUResults contains results of the Repository.CheckSKU
@@ -436,7 +467,7 @@ func (mmCheckSKU *mRepositoryMockCheckSKU) Optional() *mRepositoryMockCheckSKU {
 }
 
 // Expect sets up expected params for Repository.CheckSKU
-func (mmCheckSKU *mRepositoryMockCheckSKU) Expect(i1 int64) *mRepositoryMockCheckSKU {
+func (mmCheckSKU *mRepositoryMockCheckSKU) Expect(ctx context.Context, i1 int64) *mRepositoryMockCheckSKU {
 	if mmCheckSKU.mock.funcCheckSKU != nil {
 		mmCheckSKU.mock.t.Fatalf("RepositoryMock.CheckSKU mock is already set by Set")
 	}
@@ -449,7 +480,7 @@ func (mmCheckSKU *mRepositoryMockCheckSKU) Expect(i1 int64) *mRepositoryMockChec
 		mmCheckSKU.mock.t.Fatalf("RepositoryMock.CheckSKU mock is already set by ExpectParams functions")
 	}
 
-	mmCheckSKU.defaultExpectation.params = &RepositoryMockCheckSKUParams{i1}
+	mmCheckSKU.defaultExpectation.params = &RepositoryMockCheckSKUParams{ctx, i1}
 	for _, e := range mmCheckSKU.expectations {
 		if minimock.Equal(e.params, mmCheckSKU.defaultExpectation.params) {
 			mmCheckSKU.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCheckSKU.defaultExpectation.params)
@@ -459,8 +490,30 @@ func (mmCheckSKU *mRepositoryMockCheckSKU) Expect(i1 int64) *mRepositoryMockChec
 	return mmCheckSKU
 }
 
-// ExpectI1Param1 sets up expected param i1 for Repository.CheckSKU
-func (mmCheckSKU *mRepositoryMockCheckSKU) ExpectI1Param1(i1 int64) *mRepositoryMockCheckSKU {
+// ExpectCtxParam1 sets up expected param ctx for Repository.CheckSKU
+func (mmCheckSKU *mRepositoryMockCheckSKU) ExpectCtxParam1(ctx context.Context) *mRepositoryMockCheckSKU {
+	if mmCheckSKU.mock.funcCheckSKU != nil {
+		mmCheckSKU.mock.t.Fatalf("RepositoryMock.CheckSKU mock is already set by Set")
+	}
+
+	if mmCheckSKU.defaultExpectation == nil {
+		mmCheckSKU.defaultExpectation = &RepositoryMockCheckSKUExpectation{}
+	}
+
+	if mmCheckSKU.defaultExpectation.params != nil {
+		mmCheckSKU.mock.t.Fatalf("RepositoryMock.CheckSKU mock is already set by Expect")
+	}
+
+	if mmCheckSKU.defaultExpectation.paramPtrs == nil {
+		mmCheckSKU.defaultExpectation.paramPtrs = &RepositoryMockCheckSKUParamPtrs{}
+	}
+	mmCheckSKU.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmCheckSKU
+}
+
+// ExpectI1Param2 sets up expected param i1 for Repository.CheckSKU
+func (mmCheckSKU *mRepositoryMockCheckSKU) ExpectI1Param2(i1 int64) *mRepositoryMockCheckSKU {
 	if mmCheckSKU.mock.funcCheckSKU != nil {
 		mmCheckSKU.mock.t.Fatalf("RepositoryMock.CheckSKU mock is already set by Set")
 	}
@@ -482,7 +535,7 @@ func (mmCheckSKU *mRepositoryMockCheckSKU) ExpectI1Param1(i1 int64) *mRepository
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.CheckSKU
-func (mmCheckSKU *mRepositoryMockCheckSKU) Inspect(f func(i1 int64)) *mRepositoryMockCheckSKU {
+func (mmCheckSKU *mRepositoryMockCheckSKU) Inspect(f func(ctx context.Context, i1 int64)) *mRepositoryMockCheckSKU {
 	if mmCheckSKU.mock.inspectFuncCheckSKU != nil {
 		mmCheckSKU.mock.t.Fatalf("Inspect function is already set for RepositoryMock.CheckSKU")
 	}
@@ -506,7 +559,7 @@ func (mmCheckSKU *mRepositoryMockCheckSKU) Return(pp1 *model.Product, err error)
 }
 
 // Set uses given function f to mock the Repository.CheckSKU method
-func (mmCheckSKU *mRepositoryMockCheckSKU) Set(f func(i1 int64) (pp1 *model.Product, err error)) *RepositoryMock {
+func (mmCheckSKU *mRepositoryMockCheckSKU) Set(f func(ctx context.Context, i1 int64) (pp1 *model.Product, err error)) *RepositoryMock {
 	if mmCheckSKU.defaultExpectation != nil {
 		mmCheckSKU.mock.t.Fatalf("Default expectation is already set for the Repository.CheckSKU method")
 	}
@@ -521,14 +574,14 @@ func (mmCheckSKU *mRepositoryMockCheckSKU) Set(f func(i1 int64) (pp1 *model.Prod
 
 // When sets expectation for the Repository.CheckSKU which will trigger the result defined by the following
 // Then helper
-func (mmCheckSKU *mRepositoryMockCheckSKU) When(i1 int64) *RepositoryMockCheckSKUExpectation {
+func (mmCheckSKU *mRepositoryMockCheckSKU) When(ctx context.Context, i1 int64) *RepositoryMockCheckSKUExpectation {
 	if mmCheckSKU.mock.funcCheckSKU != nil {
 		mmCheckSKU.mock.t.Fatalf("RepositoryMock.CheckSKU mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockCheckSKUExpectation{
 		mock:   mmCheckSKU.mock,
-		params: &RepositoryMockCheckSKUParams{i1},
+		params: &RepositoryMockCheckSKUParams{ctx, i1},
 	}
 	mmCheckSKU.expectations = append(mmCheckSKU.expectations, expectation)
 	return expectation
@@ -561,15 +614,15 @@ func (mmCheckSKU *mRepositoryMockCheckSKU) invocationsDone() bool {
 }
 
 // CheckSKU implements add_product.Repository
-func (mmCheckSKU *RepositoryMock) CheckSKU(i1 int64) (pp1 *model.Product, err error) {
+func (mmCheckSKU *RepositoryMock) CheckSKU(ctx context.Context, i1 int64) (pp1 *model.Product, err error) {
 	mm_atomic.AddUint64(&mmCheckSKU.beforeCheckSKUCounter, 1)
 	defer mm_atomic.AddUint64(&mmCheckSKU.afterCheckSKUCounter, 1)
 
 	if mmCheckSKU.inspectFuncCheckSKU != nil {
-		mmCheckSKU.inspectFuncCheckSKU(i1)
+		mmCheckSKU.inspectFuncCheckSKU(ctx, i1)
 	}
 
-	mm_params := RepositoryMockCheckSKUParams{i1}
+	mm_params := RepositoryMockCheckSKUParams{ctx, i1}
 
 	// Record call args
 	mmCheckSKU.CheckSKUMock.mutex.Lock()
@@ -588,9 +641,13 @@ func (mmCheckSKU *RepositoryMock) CheckSKU(i1 int64) (pp1 *model.Product, err er
 		mm_want := mmCheckSKU.CheckSKUMock.defaultExpectation.params
 		mm_want_ptrs := mmCheckSKU.CheckSKUMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockCheckSKUParams{i1}
+		mm_got := RepositoryMockCheckSKUParams{ctx, i1}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmCheckSKU.t.Errorf("RepositoryMock.CheckSKU got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.i1 != nil && !minimock.Equal(*mm_want_ptrs.i1, mm_got.i1) {
 				mmCheckSKU.t.Errorf("RepositoryMock.CheckSKU got unexpected parameter i1, want: %#v, got: %#v%s\n", *mm_want_ptrs.i1, mm_got.i1, minimock.Diff(*mm_want_ptrs.i1, mm_got.i1))
@@ -607,9 +664,9 @@ func (mmCheckSKU *RepositoryMock) CheckSKU(i1 int64) (pp1 *model.Product, err er
 		return (*mm_results).pp1, (*mm_results).err
 	}
 	if mmCheckSKU.funcCheckSKU != nil {
-		return mmCheckSKU.funcCheckSKU(i1)
+		return mmCheckSKU.funcCheckSKU(ctx, i1)
 	}
-	mmCheckSKU.t.Fatalf("Unexpected call to RepositoryMock.CheckSKU. %v", i1)
+	mmCheckSKU.t.Fatalf("Unexpected call to RepositoryMock.CheckSKU. %v %v", ctx, i1)
 	return
 }
 
@@ -704,12 +761,14 @@ type RepositoryMockGetProductCartExpectation struct {
 
 // RepositoryMockGetProductCartParams contains parameters of the Repository.GetProductCart
 type RepositoryMockGetProductCartParams struct {
+	ctx context.Context
 	pp1 *model.Product
 	i1  int64
 }
 
 // RepositoryMockGetProductCartParamPtrs contains pointers to parameters of the Repository.GetProductCart
 type RepositoryMockGetProductCartParamPtrs struct {
+	ctx *context.Context
 	pp1 **model.Product
 	i1  *int64
 }
@@ -731,7 +790,7 @@ func (mmGetProductCart *mRepositoryMockGetProductCart) Optional() *mRepositoryMo
 }
 
 // Expect sets up expected params for Repository.GetProductCart
-func (mmGetProductCart *mRepositoryMockGetProductCart) Expect(pp1 *model.Product, i1 int64) *mRepositoryMockGetProductCart {
+func (mmGetProductCart *mRepositoryMockGetProductCart) Expect(ctx context.Context, pp1 *model.Product, i1 int64) *mRepositoryMockGetProductCart {
 	if mmGetProductCart.mock.funcGetProductCart != nil {
 		mmGetProductCart.mock.t.Fatalf("RepositoryMock.GetProductCart mock is already set by Set")
 	}
@@ -744,7 +803,7 @@ func (mmGetProductCart *mRepositoryMockGetProductCart) Expect(pp1 *model.Product
 		mmGetProductCart.mock.t.Fatalf("RepositoryMock.GetProductCart mock is already set by ExpectParams functions")
 	}
 
-	mmGetProductCart.defaultExpectation.params = &RepositoryMockGetProductCartParams{pp1, i1}
+	mmGetProductCart.defaultExpectation.params = &RepositoryMockGetProductCartParams{ctx, pp1, i1}
 	for _, e := range mmGetProductCart.expectations {
 		if minimock.Equal(e.params, mmGetProductCart.defaultExpectation.params) {
 			mmGetProductCart.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetProductCart.defaultExpectation.params)
@@ -754,8 +813,30 @@ func (mmGetProductCart *mRepositoryMockGetProductCart) Expect(pp1 *model.Product
 	return mmGetProductCart
 }
 
-// ExpectPp1Param1 sets up expected param pp1 for Repository.GetProductCart
-func (mmGetProductCart *mRepositoryMockGetProductCart) ExpectPp1Param1(pp1 *model.Product) *mRepositoryMockGetProductCart {
+// ExpectCtxParam1 sets up expected param ctx for Repository.GetProductCart
+func (mmGetProductCart *mRepositoryMockGetProductCart) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetProductCart {
+	if mmGetProductCart.mock.funcGetProductCart != nil {
+		mmGetProductCart.mock.t.Fatalf("RepositoryMock.GetProductCart mock is already set by Set")
+	}
+
+	if mmGetProductCart.defaultExpectation == nil {
+		mmGetProductCart.defaultExpectation = &RepositoryMockGetProductCartExpectation{}
+	}
+
+	if mmGetProductCart.defaultExpectation.params != nil {
+		mmGetProductCart.mock.t.Fatalf("RepositoryMock.GetProductCart mock is already set by Expect")
+	}
+
+	if mmGetProductCart.defaultExpectation.paramPtrs == nil {
+		mmGetProductCart.defaultExpectation.paramPtrs = &RepositoryMockGetProductCartParamPtrs{}
+	}
+	mmGetProductCart.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmGetProductCart
+}
+
+// ExpectPp1Param2 sets up expected param pp1 for Repository.GetProductCart
+func (mmGetProductCart *mRepositoryMockGetProductCart) ExpectPp1Param2(pp1 *model.Product) *mRepositoryMockGetProductCart {
 	if mmGetProductCart.mock.funcGetProductCart != nil {
 		mmGetProductCart.mock.t.Fatalf("RepositoryMock.GetProductCart mock is already set by Set")
 	}
@@ -776,8 +857,8 @@ func (mmGetProductCart *mRepositoryMockGetProductCart) ExpectPp1Param1(pp1 *mode
 	return mmGetProductCart
 }
 
-// ExpectI1Param2 sets up expected param i1 for Repository.GetProductCart
-func (mmGetProductCart *mRepositoryMockGetProductCart) ExpectI1Param2(i1 int64) *mRepositoryMockGetProductCart {
+// ExpectI1Param3 sets up expected param i1 for Repository.GetProductCart
+func (mmGetProductCart *mRepositoryMockGetProductCart) ExpectI1Param3(i1 int64) *mRepositoryMockGetProductCart {
 	if mmGetProductCart.mock.funcGetProductCart != nil {
 		mmGetProductCart.mock.t.Fatalf("RepositoryMock.GetProductCart mock is already set by Set")
 	}
@@ -799,7 +880,7 @@ func (mmGetProductCart *mRepositoryMockGetProductCart) ExpectI1Param2(i1 int64) 
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.GetProductCart
-func (mmGetProductCart *mRepositoryMockGetProductCart) Inspect(f func(pp1 *model.Product, i1 int64)) *mRepositoryMockGetProductCart {
+func (mmGetProductCart *mRepositoryMockGetProductCart) Inspect(f func(ctx context.Context, pp1 *model.Product, i1 int64)) *mRepositoryMockGetProductCart {
 	if mmGetProductCart.mock.inspectFuncGetProductCart != nil {
 		mmGetProductCart.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetProductCart")
 	}
@@ -823,7 +904,7 @@ func (mmGetProductCart *mRepositoryMockGetProductCart) Return(pp2 *model.Product
 }
 
 // Set uses given function f to mock the Repository.GetProductCart method
-func (mmGetProductCart *mRepositoryMockGetProductCart) Set(f func(pp1 *model.Product, i1 int64) (pp2 *model.Product, err error)) *RepositoryMock {
+func (mmGetProductCart *mRepositoryMockGetProductCart) Set(f func(ctx context.Context, pp1 *model.Product, i1 int64) (pp2 *model.Product, err error)) *RepositoryMock {
 	if mmGetProductCart.defaultExpectation != nil {
 		mmGetProductCart.mock.t.Fatalf("Default expectation is already set for the Repository.GetProductCart method")
 	}
@@ -838,14 +919,14 @@ func (mmGetProductCart *mRepositoryMockGetProductCart) Set(f func(pp1 *model.Pro
 
 // When sets expectation for the Repository.GetProductCart which will trigger the result defined by the following
 // Then helper
-func (mmGetProductCart *mRepositoryMockGetProductCart) When(pp1 *model.Product, i1 int64) *RepositoryMockGetProductCartExpectation {
+func (mmGetProductCart *mRepositoryMockGetProductCart) When(ctx context.Context, pp1 *model.Product, i1 int64) *RepositoryMockGetProductCartExpectation {
 	if mmGetProductCart.mock.funcGetProductCart != nil {
 		mmGetProductCart.mock.t.Fatalf("RepositoryMock.GetProductCart mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockGetProductCartExpectation{
 		mock:   mmGetProductCart.mock,
-		params: &RepositoryMockGetProductCartParams{pp1, i1},
+		params: &RepositoryMockGetProductCartParams{ctx, pp1, i1},
 	}
 	mmGetProductCart.expectations = append(mmGetProductCart.expectations, expectation)
 	return expectation
@@ -878,15 +959,15 @@ func (mmGetProductCart *mRepositoryMockGetProductCart) invocationsDone() bool {
 }
 
 // GetProductCart implements add_product.Repository
-func (mmGetProductCart *RepositoryMock) GetProductCart(pp1 *model.Product, i1 int64) (pp2 *model.Product, err error) {
+func (mmGetProductCart *RepositoryMock) GetProductCart(ctx context.Context, pp1 *model.Product, i1 int64) (pp2 *model.Product, err error) {
 	mm_atomic.AddUint64(&mmGetProductCart.beforeGetProductCartCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetProductCart.afterGetProductCartCounter, 1)
 
 	if mmGetProductCart.inspectFuncGetProductCart != nil {
-		mmGetProductCart.inspectFuncGetProductCart(pp1, i1)
+		mmGetProductCart.inspectFuncGetProductCart(ctx, pp1, i1)
 	}
 
-	mm_params := RepositoryMockGetProductCartParams{pp1, i1}
+	mm_params := RepositoryMockGetProductCartParams{ctx, pp1, i1}
 
 	// Record call args
 	mmGetProductCart.GetProductCartMock.mutex.Lock()
@@ -905,9 +986,13 @@ func (mmGetProductCart *RepositoryMock) GetProductCart(pp1 *model.Product, i1 in
 		mm_want := mmGetProductCart.GetProductCartMock.defaultExpectation.params
 		mm_want_ptrs := mmGetProductCart.GetProductCartMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockGetProductCartParams{pp1, i1}
+		mm_got := RepositoryMockGetProductCartParams{ctx, pp1, i1}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetProductCart.t.Errorf("RepositoryMock.GetProductCart got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.pp1 != nil && !minimock.Equal(*mm_want_ptrs.pp1, mm_got.pp1) {
 				mmGetProductCart.t.Errorf("RepositoryMock.GetProductCart got unexpected parameter pp1, want: %#v, got: %#v%s\n", *mm_want_ptrs.pp1, mm_got.pp1, minimock.Diff(*mm_want_ptrs.pp1, mm_got.pp1))
@@ -928,9 +1013,9 @@ func (mmGetProductCart *RepositoryMock) GetProductCart(pp1 *model.Product, i1 in
 		return (*mm_results).pp2, (*mm_results).err
 	}
 	if mmGetProductCart.funcGetProductCart != nil {
-		return mmGetProductCart.funcGetProductCart(pp1, i1)
+		return mmGetProductCart.funcGetProductCart(ctx, pp1, i1)
 	}
-	mmGetProductCart.t.Fatalf("Unexpected call to RepositoryMock.GetProductCart. %v %v", pp1, i1)
+	mmGetProductCart.t.Fatalf("Unexpected call to RepositoryMock.GetProductCart. %v %v %v", ctx, pp1, i1)
 	return
 }
 
@@ -1025,17 +1110,19 @@ type RepositoryMockStockInfoExpectation struct {
 
 // RepositoryMockStockInfoParams contains parameters of the Repository.StockInfo
 type RepositoryMockStockInfoParams struct {
-	sku int64
+	ctx context.Context
+	i1  int64
 }
 
 // RepositoryMockStockInfoParamPtrs contains pointers to parameters of the Repository.StockInfo
 type RepositoryMockStockInfoParamPtrs struct {
-	sku *int64
+	ctx *context.Context
+	i1  *int64
 }
 
 // RepositoryMockStockInfoResults contains results of the Repository.StockInfo
 type RepositoryMockStockInfoResults struct {
-	i1  int64
+	i2  int64
 	err error
 }
 
@@ -1050,7 +1137,7 @@ func (mmStockInfo *mRepositoryMockStockInfo) Optional() *mRepositoryMockStockInf
 }
 
 // Expect sets up expected params for Repository.StockInfo
-func (mmStockInfo *mRepositoryMockStockInfo) Expect(sku int64) *mRepositoryMockStockInfo {
+func (mmStockInfo *mRepositoryMockStockInfo) Expect(ctx context.Context, i1 int64) *mRepositoryMockStockInfo {
 	if mmStockInfo.mock.funcStockInfo != nil {
 		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
 	}
@@ -1063,7 +1150,7 @@ func (mmStockInfo *mRepositoryMockStockInfo) Expect(sku int64) *mRepositoryMockS
 		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by ExpectParams functions")
 	}
 
-	mmStockInfo.defaultExpectation.params = &RepositoryMockStockInfoParams{sku}
+	mmStockInfo.defaultExpectation.params = &RepositoryMockStockInfoParams{ctx, i1}
 	for _, e := range mmStockInfo.expectations {
 		if minimock.Equal(e.params, mmStockInfo.defaultExpectation.params) {
 			mmStockInfo.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmStockInfo.defaultExpectation.params)
@@ -1073,8 +1160,8 @@ func (mmStockInfo *mRepositoryMockStockInfo) Expect(sku int64) *mRepositoryMockS
 	return mmStockInfo
 }
 
-// ExpectSkuParam1 sets up expected param sku for Repository.StockInfo
-func (mmStockInfo *mRepositoryMockStockInfo) ExpectSkuParam1(sku int64) *mRepositoryMockStockInfo {
+// ExpectCtxParam1 sets up expected param ctx for Repository.StockInfo
+func (mmStockInfo *mRepositoryMockStockInfo) ExpectCtxParam1(ctx context.Context) *mRepositoryMockStockInfo {
 	if mmStockInfo.mock.funcStockInfo != nil {
 		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
 	}
@@ -1090,13 +1177,35 @@ func (mmStockInfo *mRepositoryMockStockInfo) ExpectSkuParam1(sku int64) *mReposi
 	if mmStockInfo.defaultExpectation.paramPtrs == nil {
 		mmStockInfo.defaultExpectation.paramPtrs = &RepositoryMockStockInfoParamPtrs{}
 	}
-	mmStockInfo.defaultExpectation.paramPtrs.sku = &sku
+	mmStockInfo.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmStockInfo
+}
+
+// ExpectI1Param2 sets up expected param i1 for Repository.StockInfo
+func (mmStockInfo *mRepositoryMockStockInfo) ExpectI1Param2(i1 int64) *mRepositoryMockStockInfo {
+	if mmStockInfo.mock.funcStockInfo != nil {
+		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
+	}
+
+	if mmStockInfo.defaultExpectation == nil {
+		mmStockInfo.defaultExpectation = &RepositoryMockStockInfoExpectation{}
+	}
+
+	if mmStockInfo.defaultExpectation.params != nil {
+		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Expect")
+	}
+
+	if mmStockInfo.defaultExpectation.paramPtrs == nil {
+		mmStockInfo.defaultExpectation.paramPtrs = &RepositoryMockStockInfoParamPtrs{}
+	}
+	mmStockInfo.defaultExpectation.paramPtrs.i1 = &i1
 
 	return mmStockInfo
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.StockInfo
-func (mmStockInfo *mRepositoryMockStockInfo) Inspect(f func(sku int64)) *mRepositoryMockStockInfo {
+func (mmStockInfo *mRepositoryMockStockInfo) Inspect(f func(ctx context.Context, i1 int64)) *mRepositoryMockStockInfo {
 	if mmStockInfo.mock.inspectFuncStockInfo != nil {
 		mmStockInfo.mock.t.Fatalf("Inspect function is already set for RepositoryMock.StockInfo")
 	}
@@ -1107,7 +1216,7 @@ func (mmStockInfo *mRepositoryMockStockInfo) Inspect(f func(sku int64)) *mReposi
 }
 
 // Return sets up results that will be returned by Repository.StockInfo
-func (mmStockInfo *mRepositoryMockStockInfo) Return(i1 int64, err error) *RepositoryMock {
+func (mmStockInfo *mRepositoryMockStockInfo) Return(i2 int64, err error) *RepositoryMock {
 	if mmStockInfo.mock.funcStockInfo != nil {
 		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
 	}
@@ -1115,12 +1224,12 @@ func (mmStockInfo *mRepositoryMockStockInfo) Return(i1 int64, err error) *Reposi
 	if mmStockInfo.defaultExpectation == nil {
 		mmStockInfo.defaultExpectation = &RepositoryMockStockInfoExpectation{mock: mmStockInfo.mock}
 	}
-	mmStockInfo.defaultExpectation.results = &RepositoryMockStockInfoResults{i1, err}
+	mmStockInfo.defaultExpectation.results = &RepositoryMockStockInfoResults{i2, err}
 	return mmStockInfo.mock
 }
 
 // Set uses given function f to mock the Repository.StockInfo method
-func (mmStockInfo *mRepositoryMockStockInfo) Set(f func(sku int64) (i1 int64, err error)) *RepositoryMock {
+func (mmStockInfo *mRepositoryMockStockInfo) Set(f func(ctx context.Context, i1 int64) (i2 int64, err error)) *RepositoryMock {
 	if mmStockInfo.defaultExpectation != nil {
 		mmStockInfo.mock.t.Fatalf("Default expectation is already set for the Repository.StockInfo method")
 	}
@@ -1135,22 +1244,22 @@ func (mmStockInfo *mRepositoryMockStockInfo) Set(f func(sku int64) (i1 int64, er
 
 // When sets expectation for the Repository.StockInfo which will trigger the result defined by the following
 // Then helper
-func (mmStockInfo *mRepositoryMockStockInfo) When(sku int64) *RepositoryMockStockInfoExpectation {
+func (mmStockInfo *mRepositoryMockStockInfo) When(ctx context.Context, i1 int64) *RepositoryMockStockInfoExpectation {
 	if mmStockInfo.mock.funcStockInfo != nil {
 		mmStockInfo.mock.t.Fatalf("RepositoryMock.StockInfo mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockStockInfoExpectation{
 		mock:   mmStockInfo.mock,
-		params: &RepositoryMockStockInfoParams{sku},
+		params: &RepositoryMockStockInfoParams{ctx, i1},
 	}
 	mmStockInfo.expectations = append(mmStockInfo.expectations, expectation)
 	return expectation
 }
 
 // Then sets up Repository.StockInfo return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockStockInfoExpectation) Then(i1 int64, err error) *RepositoryMock {
-	e.results = &RepositoryMockStockInfoResults{i1, err}
+func (e *RepositoryMockStockInfoExpectation) Then(i2 int64, err error) *RepositoryMock {
+	e.results = &RepositoryMockStockInfoResults{i2, err}
 	return e.mock
 }
 
@@ -1175,15 +1284,15 @@ func (mmStockInfo *mRepositoryMockStockInfo) invocationsDone() bool {
 }
 
 // StockInfo implements add_product.Repository
-func (mmStockInfo *RepositoryMock) StockInfo(sku int64) (i1 int64, err error) {
+func (mmStockInfo *RepositoryMock) StockInfo(ctx context.Context, i1 int64) (i2 int64, err error) {
 	mm_atomic.AddUint64(&mmStockInfo.beforeStockInfoCounter, 1)
 	defer mm_atomic.AddUint64(&mmStockInfo.afterStockInfoCounter, 1)
 
 	if mmStockInfo.inspectFuncStockInfo != nil {
-		mmStockInfo.inspectFuncStockInfo(sku)
+		mmStockInfo.inspectFuncStockInfo(ctx, i1)
 	}
 
-	mm_params := RepositoryMockStockInfoParams{sku}
+	mm_params := RepositoryMockStockInfoParams{ctx, i1}
 
 	// Record call args
 	mmStockInfo.StockInfoMock.mutex.Lock()
@@ -1193,7 +1302,7 @@ func (mmStockInfo *RepositoryMock) StockInfo(sku int64) (i1 int64, err error) {
 	for _, e := range mmStockInfo.StockInfoMock.expectations {
 		if minimock.Equal(*e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.i1, e.results.err
+			return e.results.i2, e.results.err
 		}
 	}
 
@@ -1202,12 +1311,16 @@ func (mmStockInfo *RepositoryMock) StockInfo(sku int64) (i1 int64, err error) {
 		mm_want := mmStockInfo.StockInfoMock.defaultExpectation.params
 		mm_want_ptrs := mmStockInfo.StockInfoMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockStockInfoParams{sku}
+		mm_got := RepositoryMockStockInfoParams{ctx, i1}
 
 		if mm_want_ptrs != nil {
 
-			if mm_want_ptrs.sku != nil && !minimock.Equal(*mm_want_ptrs.sku, mm_got.sku) {
-				mmStockInfo.t.Errorf("RepositoryMock.StockInfo got unexpected parameter sku, want: %#v, got: %#v%s\n", *mm_want_ptrs.sku, mm_got.sku, minimock.Diff(*mm_want_ptrs.sku, mm_got.sku))
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmStockInfo.t.Errorf("RepositoryMock.StockInfo got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.i1 != nil && !minimock.Equal(*mm_want_ptrs.i1, mm_got.i1) {
+				mmStockInfo.t.Errorf("RepositoryMock.StockInfo got unexpected parameter i1, want: %#v, got: %#v%s\n", *mm_want_ptrs.i1, mm_got.i1, minimock.Diff(*mm_want_ptrs.i1, mm_got.i1))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -1218,12 +1331,12 @@ func (mmStockInfo *RepositoryMock) StockInfo(sku int64) (i1 int64, err error) {
 		if mm_results == nil {
 			mmStockInfo.t.Fatal("No results are set for the RepositoryMock.StockInfo")
 		}
-		return (*mm_results).i1, (*mm_results).err
+		return (*mm_results).i2, (*mm_results).err
 	}
 	if mmStockInfo.funcStockInfo != nil {
-		return mmStockInfo.funcStockInfo(sku)
+		return mmStockInfo.funcStockInfo(ctx, i1)
 	}
-	mmStockInfo.t.Fatalf("Unexpected call to RepositoryMock.StockInfo. %v", sku)
+	mmStockInfo.t.Fatalf("Unexpected call to RepositoryMock.StockInfo. %v %v", ctx, i1)
 	return
 }
 

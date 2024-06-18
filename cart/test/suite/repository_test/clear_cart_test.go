@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,10 +26,10 @@ func (s *SuiteRepo) TestClearCart() {
 
 	for _, tt := range tests {
 		s.T().Run(tt.Name, func(t *testing.T) {
-			err := s.Repo.ClearCart(tt.CartIdDel)
+			err := s.Repo.ClearCart(context.Background(), tt.CartIdDel)
 			assert.Equal(t, err, tt.WantErr)
 
-			items, err := s.Repo.GetCart(tt.CartIdCheck)
+			items, err := s.Repo.GetCart(context.Background(), tt.CartIdCheck)
 			if err != nil {
 				t.Error("Ошибка s.Repo.GetCart внутри TestClearCart")
 			}

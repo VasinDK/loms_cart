@@ -11,9 +11,9 @@ import (
 )
 
 // OrderInfo - инфа об ордере
-func (h *Handlers) OrderInfo(ctx context.Context, OrderId *loms.OrderId) (*loms.OrderInfoResponse, error) {
+func (h *Handlers) OrderInfo(ctx context.Context, OrderId *loms.OrderInfoRequest) (*loms.OrderInfoResponse, error) {
 	const op = "OrderInfo"
-	order, err := h.service.OrderInfo(model.OrderId(OrderId.GetOrderId()))
+	order, err := h.service.OrderInfo(ctx, model.OrderId(OrderId.GetOrderId()))
 	if err != nil {
 		slog.Error(op, "h.service.OrderInfo", err.Error())
 		return nil, status.Error(codes.NotFound, "sorry nigga")

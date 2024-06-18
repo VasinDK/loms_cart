@@ -1,6 +1,7 @@
 package delete_item
 
 import (
+	"context"
 	"route256/cart/internal/service/item/delete_item/mock"
 	"testing"
 
@@ -47,10 +48,10 @@ func TestDeleteProductCart(t *testing.T) {
 			t.Parallel()
 			ctrl := minimock.NewController(t)
 			repositoryMock := mock.NewRepositoryMock(ctrl)
-			repositoryMock.DeleteProductCartMock.Expect(tt.cartId, tt.sku).Return(tt.WantError)
+			repositoryMock.DeleteProductCartMock.Expect(context.Background(), tt.cartId, tt.sku).Return(tt.WantError)
 
 			NewHandler := New(repositoryMock)
-			err := NewHandler.DeleteProductCart(tt.cartId, tt.sku)
+			err := NewHandler.DeleteProductCart(context.Background(), tt.cartId, tt.sku)
 			assert.Equal(t, tt.WantError, err)
 		})
 	}

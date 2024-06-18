@@ -1,6 +1,7 @@
 package http_handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -26,7 +27,7 @@ func (s *Server) GetItemsByUserID(h *get_cart.Handler) http.HandlerFunc {
 			return
 		}
 
-		items, err := h.GetCart(userId)
+		items, err := h.GetCart(context.Background(), userId)
 		if err != nil || items.TotalPrice == 0 {
 			if err != nil {
 				slog.Error(op, err)

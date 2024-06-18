@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"route256/loms/internal/model"
 	"route256/loms/internal/service/mocks"
 	"testing"
@@ -59,9 +60,9 @@ func TestCreate(t *testing.T) {
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
 
-			OrderMock.AddMock.Expect(tt.Order).Return(tt.OrderId, tt.WantAddError)
+			OrderMock.AddMock.Expect(context.Background(), tt.Order).Return(tt.OrderId, tt.WantAddError)
 			OrderMock.SetStatusMock.Optional().Return(nil)
-			StockMock.ReserveMock.Optional().Set(func(op1 *model.OrderItem) error {
+			StockMock.ReserveMock.Optional().Set(func(ctx context.Context, op1 *model.OrderItem) error {
 				switch op1 {
 				case orderItem1:
 					return nil
@@ -73,7 +74,7 @@ func TestCreate(t *testing.T) {
 			})
 
 			NewService := New(OrderMock, StockMock)
-			orderId, err := NewService.Create(tt.Order)
+			orderId, err := NewService.Create(context.Background(), tt.Order)
 			assert.Equal(t, err, tt.WantError)
 			assert.Equal(t, orderId, tt.OrderId)
 		})

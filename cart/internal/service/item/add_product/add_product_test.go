@@ -1,6 +1,7 @@
 package add_product
 
 import (
+	"context"
 	"fmt"
 	"route256/cart/internal/model"
 	"route256/cart/internal/service/item/add_product/mock"
@@ -96,13 +97,13 @@ func TestAddProduct(t *testing.T) {
 			t.Parallel()
 			ctrl := minimock.NewController(t)
 			repoMock := mock.NewRepositoryMock(ctrl)
-			repoMock.CheckSKUMock.Optional().Expect(tt.CheckSKUReq).Return(tt.CheckSKURespParam1, tt.CheckSKURespParam2)
-			repoMock.GetProductCartMock.Optional().Expect(tt.GetProdReq, tt.UserId).Return(tt.GetProdRespParam1, tt.GetProdRespParam2)
-			repoMock.AddProductCartMock.Optional().Expect(tt.AddProdReq, tt.UserId).Return(tt.AddProdResp)
-			repoMock.StockInfoMock.Optional().Expect(tt.CheckSKUReq).Return(1000, nil)
+			repoMock.CheckSKUMock.Optional().Expect(context.Background(), tt.CheckSKUReq).Return(tt.CheckSKURespParam1, tt.CheckSKURespParam2)
+			repoMock.GetProductCartMock.Optional().Expect(context.Background(), tt.GetProdReq, tt.UserId).Return(tt.GetProdRespParam1, tt.GetProdRespParam2)
+			repoMock.AddProductCartMock.Optional().Expect(context.Background(), tt.AddProdReq, tt.UserId).Return(tt.AddProdResp)
+			repoMock.StockInfoMock.Optional().Expect(context.Background(), tt.CheckSKUReq).Return(1000, nil)
 
 			NewRepo := New(repoMock)
-			err := NewRepo.AddProduct(tt.AddProdReq, tt.UserId)
+			err := NewRepo.AddProduct(context.Background(), tt.AddProdReq, tt.UserId)
 			assert.Equal(t, tt.WantError, err)
 		})
 	}

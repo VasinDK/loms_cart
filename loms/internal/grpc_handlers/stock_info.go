@@ -12,10 +12,10 @@ import (
 )
 
 // StocksInfo - информация о стоке
-func (h *Handlers) StocksInfo(ctx context.Context, sku *loms.Sku) (*loms.Count, error) {
+func (h *Handlers) StocksInfo(ctx context.Context, sku *loms.StocksInfoRequest) (*loms.StocksInfoResponse, error) {
 	const op = "StocksInfo"
 
-	count, err := h.service.StocksInfo(sku.GetSku())
+	count, err := h.service.StocksInfo(ctx, sku.GetSku())
 	if errors.Is(err, model.ErrSkuNoSuch) {
 		slog.Error(op, "h.service.OrderPay", err.Error())
 		return nil, model.ErrSkuNoSuch
@@ -26,7 +26,7 @@ func (h *Handlers) StocksInfo(ctx context.Context, sku *loms.Sku) (*loms.Count, 
 		return nil, status.Error(codes.Internal, "Stock babah")
 	}
 
-	var cnt loms.Count
+	var cnt loms.StocksInfoResponse
 	cnt.Count = count
 
 	return &cnt, nil

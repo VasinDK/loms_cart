@@ -36,12 +36,3 @@ func (h *Handlers) RepackOrderToProto(order *model.Order) (*loms.OrderInfoRespon
 
 	return orderProto, nil
 }
-
-// RepackOrderIdToProto - репак из model.OrderId в loms.OrderId
-func (h *Handlers) RepackOrderIdToProto(orderIdModel model.OrderId) *loms.OrderId {
-	orderId := &loms.OrderId{
-		OrderId: int64(orderIdModel),
-	}
-
-	return orderId
-}

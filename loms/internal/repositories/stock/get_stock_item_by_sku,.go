@@ -1,9 +1,12 @@
 package stock
 
-import "route256/loms/internal/model"
+import (
+	"context"
+	"route256/loms/internal/model"
+)
 
 // GetStockItemBySku - получает стоки по sku
-func (s *StockRepository) GetStockItemBySku(sku uint32) (*model.StockItem, error) {
+func (s *StockRepository) GetStockItemBySku(ctx context.Context, sku uint32) (*model.StockItem, error) {
 	item, ok := s.Repo[sku]
 	if !ok {
 		return nil, model.ErrSkuNoSuch

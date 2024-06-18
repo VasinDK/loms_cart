@@ -5,6 +5,7 @@ package mock
 //go:generate minimock -i route256/cart/internal/service/list/clear_cart.Repository -o repository_mock.go -n RepositoryMock -p mock
 
 import (
+	"context"
 	"sync"
 	mm_atomic "sync/atomic"
 	mm_time "time"
@@ -17,8 +18,8 @@ type RepositoryMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
-	funcClearCart          func(i1 int64) (err error)
-	inspectFuncClearCart   func(i1 int64)
+	funcClearCart          func(ctx context.Context, i1 int64) (err error)
+	inspectFuncClearCart   func(ctx context.Context, i1 int64)
 	afterClearCartCounter  uint64
 	beforeClearCartCounter uint64
 	ClearCartMock          mRepositoryMockClearCart
@@ -63,12 +64,14 @@ type RepositoryMockClearCartExpectation struct {
 
 // RepositoryMockClearCartParams contains parameters of the Repository.ClearCart
 type RepositoryMockClearCartParams struct {
-	i1 int64
+	ctx context.Context
+	i1  int64
 }
 
 // RepositoryMockClearCartParamPtrs contains pointers to parameters of the Repository.ClearCart
 type RepositoryMockClearCartParamPtrs struct {
-	i1 *int64
+	ctx *context.Context
+	i1  *int64
 }
 
 // RepositoryMockClearCartResults contains results of the Repository.ClearCart
@@ -87,7 +90,7 @@ func (mmClearCart *mRepositoryMockClearCart) Optional() *mRepositoryMockClearCar
 }
 
 // Expect sets up expected params for Repository.ClearCart
-func (mmClearCart *mRepositoryMockClearCart) Expect(i1 int64) *mRepositoryMockClearCart {
+func (mmClearCart *mRepositoryMockClearCart) Expect(ctx context.Context, i1 int64) *mRepositoryMockClearCart {
 	if mmClearCart.mock.funcClearCart != nil {
 		mmClearCart.mock.t.Fatalf("RepositoryMock.ClearCart mock is already set by Set")
 	}
@@ -100,7 +103,7 @@ func (mmClearCart *mRepositoryMockClearCart) Expect(i1 int64) *mRepositoryMockCl
 		mmClearCart.mock.t.Fatalf("RepositoryMock.ClearCart mock is already set by ExpectParams functions")
 	}
 
-	mmClearCart.defaultExpectation.params = &RepositoryMockClearCartParams{i1}
+	mmClearCart.defaultExpectation.params = &RepositoryMockClearCartParams{ctx, i1}
 	for _, e := range mmClearCart.expectations {
 		if minimock.Equal(e.params, mmClearCart.defaultExpectation.params) {
 			mmClearCart.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmClearCart.defaultExpectation.params)
@@ -110,8 +113,30 @@ func (mmClearCart *mRepositoryMockClearCart) Expect(i1 int64) *mRepositoryMockCl
 	return mmClearCart
 }
 
-// ExpectI1Param1 sets up expected param i1 for Repository.ClearCart
-func (mmClearCart *mRepositoryMockClearCart) ExpectI1Param1(i1 int64) *mRepositoryMockClearCart {
+// ExpectCtxParam1 sets up expected param ctx for Repository.ClearCart
+func (mmClearCart *mRepositoryMockClearCart) ExpectCtxParam1(ctx context.Context) *mRepositoryMockClearCart {
+	if mmClearCart.mock.funcClearCart != nil {
+		mmClearCart.mock.t.Fatalf("RepositoryMock.ClearCart mock is already set by Set")
+	}
+
+	if mmClearCart.defaultExpectation == nil {
+		mmClearCart.defaultExpectation = &RepositoryMockClearCartExpectation{}
+	}
+
+	if mmClearCart.defaultExpectation.params != nil {
+		mmClearCart.mock.t.Fatalf("RepositoryMock.ClearCart mock is already set by Expect")
+	}
+
+	if mmClearCart.defaultExpectation.paramPtrs == nil {
+		mmClearCart.defaultExpectation.paramPtrs = &RepositoryMockClearCartParamPtrs{}
+	}
+	mmClearCart.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmClearCart
+}
+
+// ExpectI1Param2 sets up expected param i1 for Repository.ClearCart
+func (mmClearCart *mRepositoryMockClearCart) ExpectI1Param2(i1 int64) *mRepositoryMockClearCart {
 	if mmClearCart.mock.funcClearCart != nil {
 		mmClearCart.mock.t.Fatalf("RepositoryMock.ClearCart mock is already set by Set")
 	}
@@ -133,7 +158,7 @@ func (mmClearCart *mRepositoryMockClearCart) ExpectI1Param1(i1 int64) *mReposito
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.ClearCart
-func (mmClearCart *mRepositoryMockClearCart) Inspect(f func(i1 int64)) *mRepositoryMockClearCart {
+func (mmClearCart *mRepositoryMockClearCart) Inspect(f func(ctx context.Context, i1 int64)) *mRepositoryMockClearCart {
 	if mmClearCart.mock.inspectFuncClearCart != nil {
 		mmClearCart.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ClearCart")
 	}
@@ -157,7 +182,7 @@ func (mmClearCart *mRepositoryMockClearCart) Return(err error) *RepositoryMock {
 }
 
 // Set uses given function f to mock the Repository.ClearCart method
-func (mmClearCart *mRepositoryMockClearCart) Set(f func(i1 int64) (err error)) *RepositoryMock {
+func (mmClearCart *mRepositoryMockClearCart) Set(f func(ctx context.Context, i1 int64) (err error)) *RepositoryMock {
 	if mmClearCart.defaultExpectation != nil {
 		mmClearCart.mock.t.Fatalf("Default expectation is already set for the Repository.ClearCart method")
 	}
@@ -172,14 +197,14 @@ func (mmClearCart *mRepositoryMockClearCart) Set(f func(i1 int64) (err error)) *
 
 // When sets expectation for the Repository.ClearCart which will trigger the result defined by the following
 // Then helper
-func (mmClearCart *mRepositoryMockClearCart) When(i1 int64) *RepositoryMockClearCartExpectation {
+func (mmClearCart *mRepositoryMockClearCart) When(ctx context.Context, i1 int64) *RepositoryMockClearCartExpectation {
 	if mmClearCart.mock.funcClearCart != nil {
 		mmClearCart.mock.t.Fatalf("RepositoryMock.ClearCart mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockClearCartExpectation{
 		mock:   mmClearCart.mock,
-		params: &RepositoryMockClearCartParams{i1},
+		params: &RepositoryMockClearCartParams{ctx, i1},
 	}
 	mmClearCart.expectations = append(mmClearCart.expectations, expectation)
 	return expectation
@@ -212,15 +237,15 @@ func (mmClearCart *mRepositoryMockClearCart) invocationsDone() bool {
 }
 
 // ClearCart implements clear_cart.Repository
-func (mmClearCart *RepositoryMock) ClearCart(i1 int64) (err error) {
+func (mmClearCart *RepositoryMock) ClearCart(ctx context.Context, i1 int64) (err error) {
 	mm_atomic.AddUint64(&mmClearCart.beforeClearCartCounter, 1)
 	defer mm_atomic.AddUint64(&mmClearCart.afterClearCartCounter, 1)
 
 	if mmClearCart.inspectFuncClearCart != nil {
-		mmClearCart.inspectFuncClearCart(i1)
+		mmClearCart.inspectFuncClearCart(ctx, i1)
 	}
 
-	mm_params := RepositoryMockClearCartParams{i1}
+	mm_params := RepositoryMockClearCartParams{ctx, i1}
 
 	// Record call args
 	mmClearCart.ClearCartMock.mutex.Lock()
@@ -239,9 +264,13 @@ func (mmClearCart *RepositoryMock) ClearCart(i1 int64) (err error) {
 		mm_want := mmClearCart.ClearCartMock.defaultExpectation.params
 		mm_want_ptrs := mmClearCart.ClearCartMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockClearCartParams{i1}
+		mm_got := RepositoryMockClearCartParams{ctx, i1}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmClearCart.t.Errorf("RepositoryMock.ClearCart got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.i1 != nil && !minimock.Equal(*mm_want_ptrs.i1, mm_got.i1) {
 				mmClearCart.t.Errorf("RepositoryMock.ClearCart got unexpected parameter i1, want: %#v, got: %#v%s\n", *mm_want_ptrs.i1, mm_got.i1, minimock.Diff(*mm_want_ptrs.i1, mm_got.i1))
@@ -258,9 +287,9 @@ func (mmClearCart *RepositoryMock) ClearCart(i1 int64) (err error) {
 		return (*mm_results).err
 	}
 	if mmClearCart.funcClearCart != nil {
-		return mmClearCart.funcClearCart(i1)
+		return mmClearCart.funcClearCart(ctx, i1)
 	}
-	mmClearCart.t.Fatalf("Unexpected call to RepositoryMock.ClearCart. %v", i1)
+	mmClearCart.t.Fatalf("Unexpected call to RepositoryMock.ClearCart. %v %v", ctx, i1)
 	return
 }
 

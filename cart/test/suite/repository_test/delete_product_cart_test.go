@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"route256/cart/internal/model"
 	"testing"
 
@@ -40,13 +41,13 @@ func (s *SuiteRepo) TestDeleteProductCart() {
 
 	for _, tt := range tests {
 		s.T().Run(tt.Name, func(t *testing.T) {
-			err := s.Repo.DeleteProductCart(tt.CartId, tt.SKU)
+			err := s.Repo.DeleteProductCart(context.Background(), tt.CartId, tt.SKU)
 			assert.Equal(t, err, tt.WantErr)
 
 			getProd := &model.Product{
 				SKU: tt.SKU,
 			}
-			item, err := s.Repo.GetProductCart(getProd, tt.CartId)
+			item, err := s.Repo.GetProductCart(context.Background(), getProd, tt.CartId)
 			if err != nil {
 				t.Error("Ошибка s.Repo.GetProductCart внутри TestDeleteProductCart")
 			}

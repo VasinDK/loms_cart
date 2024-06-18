@@ -1,6 +1,7 @@
 package http_handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -31,7 +32,7 @@ func (s *Server) Checkout(h *checkout.Handler) http.HandlerFunc {
 			return
 		}
 
-		orderId, err := h.Checkout(user.User)
+		orderId, err := h.Checkout(context.Background(), user.User)
 		if err != nil {
 			slog.Error(op, "h.Checkout", err)
 			w.WriteHeader(http.StatusBadRequest)

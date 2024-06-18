@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,11 +22,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LomsClient interface {
-	OrderCreate(ctx context.Context, in *OrderCreateRequest, opts ...grpc.CallOption) (*OrderId, error)
-	OrderInfo(ctx context.Context, in *OrderId, opts ...grpc.CallOption) (*OrderInfoResponse, error)
-	OrderPay(ctx context.Context, in *OrderId, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	OrderCancel(ctx context.Context, in *OrderId, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	StocksInfo(ctx context.Context, in *Sku, opts ...grpc.CallOption) (*Count, error)
+	OrderCreate(ctx context.Context, in *OrderCreateRequest, opts ...grpc.CallOption) (*OrderCreateResponse, error)
+	OrderInfo(ctx context.Context, in *OrderInfoRequest, opts ...grpc.CallOption) (*OrderInfoResponse, error)
+	OrderPay(ctx context.Context, in *OrderPayRequest, opts ...grpc.CallOption) (*OrderPayResponse, error)
+	OrderCancel(ctx context.Context, in *OrderCancelRequest, opts ...grpc.CallOption) (*OrderCancelResponse, error)
+	StocksInfo(ctx context.Context, in *StocksInfoRequest, opts ...grpc.CallOption) (*StocksInfoResponse, error)
 }
 
 type lomsClient struct {
@@ -38,8 +37,8 @@ func NewLomsClient(cc grpc.ClientConnInterface) LomsClient {
 	return &lomsClient{cc}
 }
 
-func (c *lomsClient) OrderCreate(ctx context.Context, in *OrderCreateRequest, opts ...grpc.CallOption) (*OrderId, error) {
-	out := new(OrderId)
+func (c *lomsClient) OrderCreate(ctx context.Context, in *OrderCreateRequest, opts ...grpc.CallOption) (*OrderCreateResponse, error) {
+	out := new(OrderCreateResponse)
 	err := c.cc.Invoke(ctx, "/loms_grpc.Loms/OrderCreate", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -47,7 +46,7 @@ func (c *lomsClient) OrderCreate(ctx context.Context, in *OrderCreateRequest, op
 	return out, nil
 }
 
-func (c *lomsClient) OrderInfo(ctx context.Context, in *OrderId, opts ...grpc.CallOption) (*OrderInfoResponse, error) {
+func (c *lomsClient) OrderInfo(ctx context.Context, in *OrderInfoRequest, opts ...grpc.CallOption) (*OrderInfoResponse, error) {
 	out := new(OrderInfoResponse)
 	err := c.cc.Invoke(ctx, "/loms_grpc.Loms/OrderInfo", in, out, opts...)
 	if err != nil {
@@ -56,8 +55,8 @@ func (c *lomsClient) OrderInfo(ctx context.Context, in *OrderId, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *lomsClient) OrderPay(ctx context.Context, in *OrderId, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *lomsClient) OrderPay(ctx context.Context, in *OrderPayRequest, opts ...grpc.CallOption) (*OrderPayResponse, error) {
+	out := new(OrderPayResponse)
 	err := c.cc.Invoke(ctx, "/loms_grpc.Loms/OrderPay", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -65,8 +64,8 @@ func (c *lomsClient) OrderPay(ctx context.Context, in *OrderId, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *lomsClient) OrderCancel(ctx context.Context, in *OrderId, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *lomsClient) OrderCancel(ctx context.Context, in *OrderCancelRequest, opts ...grpc.CallOption) (*OrderCancelResponse, error) {
+	out := new(OrderCancelResponse)
 	err := c.cc.Invoke(ctx, "/loms_grpc.Loms/OrderCancel", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -74,8 +73,8 @@ func (c *lomsClient) OrderCancel(ctx context.Context, in *OrderId, opts ...grpc.
 	return out, nil
 }
 
-func (c *lomsClient) StocksInfo(ctx context.Context, in *Sku, opts ...grpc.CallOption) (*Count, error) {
-	out := new(Count)
+func (c *lomsClient) StocksInfo(ctx context.Context, in *StocksInfoRequest, opts ...grpc.CallOption) (*StocksInfoResponse, error) {
+	out := new(StocksInfoResponse)
 	err := c.cc.Invoke(ctx, "/loms_grpc.Loms/StocksInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -87,11 +86,11 @@ func (c *lomsClient) StocksInfo(ctx context.Context, in *Sku, opts ...grpc.CallO
 // All implementations must embed UnimplementedLomsServer
 // for forward compatibility
 type LomsServer interface {
-	OrderCreate(context.Context, *OrderCreateRequest) (*OrderId, error)
-	OrderInfo(context.Context, *OrderId) (*OrderInfoResponse, error)
-	OrderPay(context.Context, *OrderId) (*emptypb.Empty, error)
-	OrderCancel(context.Context, *OrderId) (*emptypb.Empty, error)
-	StocksInfo(context.Context, *Sku) (*Count, error)
+	OrderCreate(context.Context, *OrderCreateRequest) (*OrderCreateResponse, error)
+	OrderInfo(context.Context, *OrderInfoRequest) (*OrderInfoResponse, error)
+	OrderPay(context.Context, *OrderPayRequest) (*OrderPayResponse, error)
+	OrderCancel(context.Context, *OrderCancelRequest) (*OrderCancelResponse, error)
+	StocksInfo(context.Context, *StocksInfoRequest) (*StocksInfoResponse, error)
 	mustEmbedUnimplementedLomsServer()
 }
 
@@ -99,19 +98,19 @@ type LomsServer interface {
 type UnimplementedLomsServer struct {
 }
 
-func (UnimplementedLomsServer) OrderCreate(context.Context, *OrderCreateRequest) (*OrderId, error) {
+func (UnimplementedLomsServer) OrderCreate(context.Context, *OrderCreateRequest) (*OrderCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OrderCreate not implemented")
 }
-func (UnimplementedLomsServer) OrderInfo(context.Context, *OrderId) (*OrderInfoResponse, error) {
+func (UnimplementedLomsServer) OrderInfo(context.Context, *OrderInfoRequest) (*OrderInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OrderInfo not implemented")
 }
-func (UnimplementedLomsServer) OrderPay(context.Context, *OrderId) (*emptypb.Empty, error) {
+func (UnimplementedLomsServer) OrderPay(context.Context, *OrderPayRequest) (*OrderPayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OrderPay not implemented")
 }
-func (UnimplementedLomsServer) OrderCancel(context.Context, *OrderId) (*emptypb.Empty, error) {
+func (UnimplementedLomsServer) OrderCancel(context.Context, *OrderCancelRequest) (*OrderCancelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OrderCancel not implemented")
 }
-func (UnimplementedLomsServer) StocksInfo(context.Context, *Sku) (*Count, error) {
+func (UnimplementedLomsServer) StocksInfo(context.Context, *StocksInfoRequest) (*StocksInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StocksInfo not implemented")
 }
 func (UnimplementedLomsServer) mustEmbedUnimplementedLomsServer() {}
@@ -146,7 +145,7 @@ func _Loms_OrderCreate_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Loms_OrderInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OrderId)
+	in := new(OrderInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -158,13 +157,13 @@ func _Loms_OrderInfo_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: "/loms_grpc.Loms/OrderInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsServer).OrderInfo(ctx, req.(*OrderId))
+		return srv.(LomsServer).OrderInfo(ctx, req.(*OrderInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Loms_OrderPay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OrderId)
+	in := new(OrderPayRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -176,13 +175,13 @@ func _Loms_OrderPay_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/loms_grpc.Loms/OrderPay",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsServer).OrderPay(ctx, req.(*OrderId))
+		return srv.(LomsServer).OrderPay(ctx, req.(*OrderPayRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Loms_OrderCancel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OrderId)
+	in := new(OrderCancelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -194,13 +193,13 @@ func _Loms_OrderCancel_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/loms_grpc.Loms/OrderCancel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsServer).OrderCancel(ctx, req.(*OrderId))
+		return srv.(LomsServer).OrderCancel(ctx, req.(*OrderCancelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Loms_StocksInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Sku)
+	in := new(StocksInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -212,7 +211,7 @@ func _Loms_StocksInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/loms_grpc.Loms/StocksInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsServer).StocksInfo(ctx, req.(*Sku))
+		return srv.(LomsServer).StocksInfo(ctx, req.(*StocksInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

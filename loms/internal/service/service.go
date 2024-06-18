@@ -1,6 +1,9 @@
 package service
 
-import "route256/loms/internal/model"
+import (
+	"context"
+	"route256/loms/internal/model"
+)
 
 // var _ loms.LomsServer = (*Service)(nil)
 
@@ -10,16 +13,16 @@ type Service struct {
 }
 
 type OrderRepo interface {
-	Add(*model.Order) (model.OrderId, error)
-	SetStatus(model.OrderId, model.OrderStatus) error
-	GetById(model.OrderId) (*model.Order, error)
+	Add(context.Context, *model.Order) (model.OrderId, error)
+	SetStatus(context.Context, model.OrderId, model.OrderStatus) error
+	GetById(context.Context, model.OrderId) (*model.Order, error)
 }
 
 type StockRepo interface {
-	Reserve(*model.OrderItem) error
-	ReserveRemove(*model.OrderItem) error
-	StockRemoveItem(*model.OrderItem) error
-	GetStockItemBySku(uint32) (*model.StockItem, error)
+	Reserve(context.Context, *model.OrderItem) error
+	ReserveRemove(context.Context, *model.OrderItem) error
+	StockRemoveItem(context.Context, *model.OrderItem) error
+	GetStockItemBySku(context.Context, uint32) (*model.StockItem, error)
 }
 
 func New(OrderRepository OrderRepo, StockRepository StockRepo) *Service {

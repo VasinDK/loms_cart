@@ -58,7 +58,7 @@ func local_request_Loms_OrderCreate_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func request_Loms_OrderInfo_0(ctx context.Context, marshaler runtime.Marshaler, client LomsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq OrderId
+	var protoReq OrderInfoRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -84,7 +84,7 @@ func request_Loms_OrderInfo_0(ctx context.Context, marshaler runtime.Marshaler, 
 }
 
 func local_request_Loms_OrderInfo_0(ctx context.Context, marshaler runtime.Marshaler, server LomsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq OrderId
+	var protoReq OrderInfoRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -110,7 +110,7 @@ func local_request_Loms_OrderInfo_0(ctx context.Context, marshaler runtime.Marsh
 }
 
 func request_Loms_OrderPay_0(ctx context.Context, marshaler runtime.Marshaler, client LomsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq OrderId
+	var protoReq OrderPayRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.OrderId); err != nil && err != io.EOF {
@@ -123,7 +123,7 @@ func request_Loms_OrderPay_0(ctx context.Context, marshaler runtime.Marshaler, c
 }
 
 func local_request_Loms_OrderPay_0(ctx context.Context, marshaler runtime.Marshaler, server LomsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq OrderId
+	var protoReq OrderPayRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.OrderId); err != nil && err != io.EOF {
@@ -136,7 +136,7 @@ func local_request_Loms_OrderPay_0(ctx context.Context, marshaler runtime.Marsha
 }
 
 func request_Loms_OrderCancel_0(ctx context.Context, marshaler runtime.Marshaler, client LomsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq OrderId
+	var protoReq OrderCancelRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -162,7 +162,7 @@ func request_Loms_OrderCancel_0(ctx context.Context, marshaler runtime.Marshaler
 }
 
 func local_request_Loms_OrderCancel_0(ctx context.Context, marshaler runtime.Marshaler, server LomsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq OrderId
+	var protoReq OrderCancelRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -188,7 +188,7 @@ func local_request_Loms_OrderCancel_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func request_Loms_StocksInfo_0(ctx context.Context, marshaler runtime.Marshaler, client LomsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Sku
+	var protoReq StocksInfoRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -214,7 +214,7 @@ func request_Loms_StocksInfo_0(ctx context.Context, marshaler runtime.Marshaler,
 }
 
 func local_request_Loms_StocksInfo_0(ctx context.Context, marshaler runtime.Marshaler, server LomsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Sku
+	var protoReq StocksInfoRequest
 	var metadata runtime.ServerMetadata
 
 	var (

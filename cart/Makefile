@@ -73,6 +73,7 @@ vendor-proto/protoc-gen-openapiv2/options:
 .PHONY: .protoc-generate
 .protoc-generate: .bin-deps .vendor-proto
 	mkdir -p api/openapiv2
+	mkdir -p pkg/api/loms/v1
 	protoc \
 	-I ${LOMS_PROTO_PATH} \
 	-I vendor-proto \

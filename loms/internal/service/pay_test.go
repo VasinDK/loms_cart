@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"route256/loms/internal/model"
 	"route256/loms/internal/service/mocks"
@@ -69,13 +70,13 @@ func TestOrderPay(t *testing.T) {
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
 
-			OrderMock.GetByIdMock.Expect(tt.OrderId).Return(tt.Order, tt.WantGetByIdError)
+			OrderMock.GetByIdMock.Expect(context.Background(), tt.OrderId).Return(tt.Order, tt.WantGetByIdError)
 			OrderMock.SetStatusMock.Optional().Return(nil)
 			StockMock.ReserveRemoveMock.Optional().Return(nil)
 			StockMock.StockRemoveItemMock.Optional().Return(nil)
 
 			NewService := New(OrderMock, StockMock)
-			err := NewService.OrderPay(tt.OrderId)
+			err := NewService.OrderPay(context.Background(), tt.OrderId)
 			assert.Equal(t, err, tt.WantError)
 		})
 	}

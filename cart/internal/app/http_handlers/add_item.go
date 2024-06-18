@@ -1,6 +1,7 @@
 package http_handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -59,7 +60,7 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		product.SKU = sku
 		product.Count = productRequest.Count
 
-		err = h.AddProduct(&product, userId)
+		err = h.AddProduct(context.Background(), &product, userId)
 
 		if errors.Is(err, model.ErrNoProductInStock) {
 			w.WriteHeader(http.StatusPreconditionFailed)

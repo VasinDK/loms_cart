@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func (s *SuiteRepo) TestGetCart() {
 
 	for _, tt := range tests {
 		s.T().Run(tt.Name, func(t *testing.T) {
-			items, err := s.Repo.GetCart(tt.CartId)
+			items, err := s.Repo.GetCart(context.Background(), tt.CartId)
 			assert.Equal(t, err, tt.WantErr)
 
 			assert.Greater(t, len(items), tt.WantCount)

@@ -1,6 +1,7 @@
 package grpc_handlers
 
 import (
+	"context"
 	"route256/loms/internal/model"
 	"route256/loms/pkg/api/loms/v1"
 )
@@ -11,11 +12,11 @@ type Handlers struct {
 }
 
 type Service interface {
-	Create(*model.Order) (model.OrderId, error)
-	OrderInfo(model.OrderId) (*model.Order, error)
-	OrderPay(model.OrderId) error
-	OrderCancel(model.OrderId) error
-	StocksInfo(uint32) (uint64, error)
+	Create(context.Context, *model.Order) (model.OrderId, error)
+	OrderInfo(context.Context, model.OrderId) (*model.Order, error)
+	OrderPay(context.Context, model.OrderId) error
+	OrderCancel(context.Context, model.OrderId) error
+	StocksInfo(context.Context, uint32) (uint64, error)
 }
 
 func New(service Service) *Handlers {
