@@ -15,7 +15,7 @@ import (
 	"route256/cart/internal/service/list/clear_cart"
 	"route256/cart/internal/service/list/get_cart"
 
-	"route256/loms/pkg/api/loms/v1"
+	"route256/cart/pkg/api/loms/v1"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -23,7 +23,7 @@ import (
 
 // Run - запускает сервер
 func Run(config *config.Config) {
-	conn, err := grpc.Dial(":"+config.GetPortLoms(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial("loms:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		slog.Error("Loms start", err)
 		os.Exit(1)

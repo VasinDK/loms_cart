@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"route256/cart/internal/model"
-	"route256/loms/pkg/api/loms/v1"
+	"route256/cart/pkg/api/loms/v1"
 )
 
 type Config interface {
