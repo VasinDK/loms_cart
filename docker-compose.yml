@@ -22,20 +22,20 @@ services:
       PGADMIN_DEFAULT_EMAIL: user@domain.com
       PGADMIN_DEFAULT_PASSWORD: SuperSecret
   
-  # loms:
-  #   container_name: loms
-  #   restart: unless-stopped
-  #   environment:
-  #     ADDRESS_STORE_LOMS: loms
-  #     DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
-  #   build:
-  #     context: ./loms
-  #     dockerfile: ./build/Dockerfile
-  #   ports:
-  #     - "50051:50051" # grpc
-  #     - "8085:8085"   # http
-  #   depends_on:
-  #     - postgres
+  loms:
+    container_name: loms
+    restart: unless-stopped
+    environment:
+      ADDRESS_STORE_LOMS: loms
+      DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
+    build:
+      context: ./loms
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "50051:50051" # grpc
+      - "8085:8085"   # http
+    depends_on:
+      - postgres
 
   cart:
     container_name: cart
@@ -45,5 +45,5 @@ services:
       dockerfile: ./build/Dockerfile
     ports:
       - "8082:8082" # http
-    # depends_on:
-    #   - loms
+    depends_on:
+      - loms
