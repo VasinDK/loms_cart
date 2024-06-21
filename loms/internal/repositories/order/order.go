@@ -1,14 +1,16 @@
 package order
 
-import "route256/loms/internal/model"
+import (
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 type OrderRepository struct {
-	Repo map[model.OrderId]*model.Order
+	Conn *pgxpool.Pool
 }
 
 // New - создает OrderRepository
-func New() *OrderRepository {
+func New(conn *pgxpool.Pool) *OrderRepository {
 	return &OrderRepository{
-		Repo: make(map[model.OrderId]*model.Order),
+		Conn: conn,
 	}
 }

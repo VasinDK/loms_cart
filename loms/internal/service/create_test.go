@@ -60,14 +60,10 @@ func TestCreate(t *testing.T) {
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
 
-			OrderMock.AddMock.Expect(context.Background(), tt.Order).Return(tt.OrderId, tt.WantAddError)
+			OrderMock.AddOrderMock.Expect(context.Background(), tt.Order).Return(tt.OrderId, tt.WantAddError)
 			OrderMock.SetStatusMock.Optional().Return(nil)
-			StockMock.ReserveMock.Optional().Set(func(ctx context.Context, op1 *model.OrderItem) error {
+			StockMock.ReserveMock.Optional().Set(func(ctx context.Context, op1 *[]model.StockItem) error {
 				switch op1 {
-				case orderItem1:
-					return nil
-				case orderItem2:
-					return model.ErrSkuNoSuch
 				default:
 					return nil
 				}

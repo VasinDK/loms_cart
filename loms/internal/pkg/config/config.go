@@ -3,16 +3,18 @@ package config
 import "os"
 
 var (
-	Port     = "50051"
-	HttpPort = "8085"
-	Host     = "localhost"
+	Port      = "50051"
+	HttpPort  = "8085"
+	Host      = "localhost"
+	DBConnect = "postgres://admin_loms:password@localhost:5432/loms" // в docker postgres вместо localhost
 )
 
 // Config - конфигурация приложения
 type Config struct {
-	Port     string // Port - порт приложения
-	HttpPort string // Http port - http порт приложения
-	Host     string
+	port      string // grpc порт приложения
+	httpPort  string // Http порт приложения
+	host      string // Хост
+	dbConnect string // Строка подключения
 }
 
 // New - создает экземпляр конфига
@@ -29,24 +31,34 @@ func New() *Config {
 		HttpPort = os.Getenv("HTTP_PORT")
 	}
 
+	if len(os.Getenv("DB_CONNECTION")) > 0 {
+		DBConnect = os.Getenv("DB_CONNECTION")
+	}
+
 	return &Config{
-		Port:     Port,
-		HttpPort: HttpPort,
-		Host:     Host,
+		port:      Port,
+		httpPort:  HttpPort,
+		host:      Host,
+		dbConnect: DBConnect,
 	}
 }
 
-// GetPort - получает порт
+// GetPort - получает grpc порт
 func (c *Config) GetPort() string {
-	return c.Port
+	return c.port
 }
 
-// GetHttpPort - получает порт
+// GetHttpPort - получает http порт
 func (c *Config) GetHttpPort() string {
-	return c.HttpPort
+	return c.httpPort
 }
 
-// GetHost - получает порт
+// GetHost - получает хост
 func (c *Config) GetHost() string {
-	return c.Host
+	return c.host
+}
+
+// GetDBConnect - получает строку подключения к бд
+func (c *Config) GetDBConnect() string {
+	return c.dbConnect
 }

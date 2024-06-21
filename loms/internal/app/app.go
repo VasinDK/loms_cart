@@ -10,6 +10,7 @@ import (
 	"route256/loms/internal/grpc_handlers"
 	"route256/loms/internal/middleware"
 	"route256/loms/internal/pkg/config"
+	"route256/loms/internal/pkg/db"
 	"route256/loms/internal/repositories/order"
 	"route256/loms/internal/repositories/stock"
 	"route256/loms/internal/service"
@@ -22,8 +23,14 @@ import (
 
 // Run - запускает grpc сервер
 func Run(config *config.Config) {
-	order := order.New()
-	stock := stock.New()
+	connDB, err := db.NewConn(config)
+	if err != nil {
+		panic("db.NewConn " + err.Error())
+	}
+	defer connDB.Close()
+
+	order := order.New(connDB)
+	stock := stock.New(connDB)
 
 	grpcService := service.New(
 		order,

@@ -2,24 +2,39 @@ package stock
 
 import (
 	"context"
+	"fmt"
 	"route256/loms/internal/model"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // Reserve - резервирует sku
-func (s *StockRepository) Reserve(ctx context.Context, item *model.OrderItem) error {
-	if _, ok := s.Repo[item.Sku]; !ok {
-		return model.ErrSkuNoSuch
+func (s *StockRepository) Reserve(ctx context.Context, stockItems *[]model.StockItem) error {
+	query := `
+		UPDATE stocks
+		SET reserved = @reserved
+		WHERE sku = @sku;
+	`
+	batch := &pgx.Batch{}
+	
+	for i := range *stockItems {
+		args := pgx.NamedArgs{
+			"reserved": (*stockItems)[i].Reserved,
+			"sku":      (*stockItems)[i].Sku,
+		}
+
+		batch.Queue(query, args)
 	}
 
-	free := s.Repo[item.Sku].TotalCount - s.Repo[item.Sku].Reserved
-	if (int64(free) - int64(item.Count)) < 0 {
+	res := s.Conn.SendBatch(ctx, batch)
+	defer res.Close()
 
-		return model.ErrSkuNotEnough
+	for _, v := range *stockItems {
+		_, err := res.Exec()
+		if err != nil {
+			return fmt.Errorf("in %v error: %w", v, err)
+		}
 	}
-
-	stockItem := s.Repo[item.Sku]
-	stockItem.Reserved += uint64(item.Count)
-	s.Repo[item.Sku] = stockItem
 
 	return nil
 }

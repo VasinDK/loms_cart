@@ -17,3 +17,6 @@ run-cover:
 run-loms:
 	cd ./cart && make .protoc-generate && cd .. && \
 	cd ./loms && make .protoc-generate
+
+run-migrations:
+	goose -dir ./loms/migrations postgres "postgresql://admin_loms:password@localhost:5432/loms?sslmode=disable" up

@@ -7,11 +7,15 @@ import (
 
 // SetStatus - устанавливает статус ордера
 func (o *OrderRepository) SetStatus(ctx context.Context, orderId model.OrderId, status model.OrderStatus) error {
-	if _, ok := o.Repo[orderId]; !ok {
-		return model.ErrOrderNoSuch
+	const query = `
+		UPDATE orders
+		SET status = $2
+		WHERE id = $1
+	`
+	_, err := o.Conn.Exec(ctx, query, orderId, status)
+	if err != nil {
+		return err
 	}
-
-	o.Repo[orderId].Status = status
 
 	return nil
 }

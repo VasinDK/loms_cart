@@ -19,17 +19,29 @@ type OrderRepoMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
-	funcAdd          func(ctx context.Context, op1 *model.Order) (o1 model.OrderId, err error)
-	inspectFuncAdd   func(ctx context.Context, op1 *model.Order)
-	afterAddCounter  uint64
-	beforeAddCounter uint64
-	AddMock          mOrderRepoMockAdd
+	funcAddItem          func(ctx context.Context, op1 *model.Order, o1 model.OrderId) (err error)
+	inspectFuncAddItem   func(ctx context.Context, op1 *model.Order, o1 model.OrderId)
+	afterAddItemCounter  uint64
+	beforeAddItemCounter uint64
+	AddItemMock          mOrderRepoMockAddItem
+
+	funcAddOrder          func(ctx context.Context, op1 *model.Order) (o1 model.OrderId, err error)
+	inspectFuncAddOrder   func(ctx context.Context, op1 *model.Order)
+	afterAddOrderCounter  uint64
+	beforeAddOrderCounter uint64
+	AddOrderMock          mOrderRepoMockAddOrder
 
 	funcGetById          func(ctx context.Context, o1 model.OrderId) (op1 *model.Order, err error)
 	inspectFuncGetById   func(ctx context.Context, o1 model.OrderId)
 	afterGetByIdCounter  uint64
 	beforeGetByIdCounter uint64
 	GetByIdMock          mOrderRepoMockGetById
+
+	funcOrderPay          func(ctx context.Context, o1 model.OrderId, op1 *model.Order) (err error)
+	inspectFuncOrderPay   func(ctx context.Context, o1 model.OrderId, op1 *model.Order)
+	afterOrderPayCounter  uint64
+	beforeOrderPayCounter uint64
+	OrderPayMock          mOrderRepoMockOrderPay
 
 	funcSetStatus          func(ctx context.Context, o1 model.OrderId, o2 model.OrderStatus) (err error)
 	inspectFuncSetStatus   func(ctx context.Context, o1 model.OrderId, o2 model.OrderStatus)
@@ -46,11 +58,17 @@ func NewOrderRepoMock(t minimock.Tester) *OrderRepoMock {
 		controller.RegisterMocker(m)
 	}
 
-	m.AddMock = mOrderRepoMockAdd{mock: m}
-	m.AddMock.callArgs = []*OrderRepoMockAddParams{}
+	m.AddItemMock = mOrderRepoMockAddItem{mock: m}
+	m.AddItemMock.callArgs = []*OrderRepoMockAddItemParams{}
+
+	m.AddOrderMock = mOrderRepoMockAddOrder{mock: m}
+	m.AddOrderMock.callArgs = []*OrderRepoMockAddOrderParams{}
 
 	m.GetByIdMock = mOrderRepoMockGetById{mock: m}
 	m.GetByIdMock.callArgs = []*OrderRepoMockGetByIdParams{}
+
+	m.OrderPayMock = mOrderRepoMockOrderPay{mock: m}
+	m.OrderPayMock.callArgs = []*OrderRepoMockOrderPayParams{}
 
 	m.SetStatusMock = mOrderRepoMockSetStatus{mock: m}
 	m.SetStatusMock.callArgs = []*OrderRepoMockSetStatusParams{}
@@ -60,41 +78,389 @@ func NewOrderRepoMock(t minimock.Tester) *OrderRepoMock {
 	return m
 }
 
-type mOrderRepoMockAdd struct {
+type mOrderRepoMockAddItem struct {
 	optional           bool
 	mock               *OrderRepoMock
-	defaultExpectation *OrderRepoMockAddExpectation
-	expectations       []*OrderRepoMockAddExpectation
+	defaultExpectation *OrderRepoMockAddItemExpectation
+	expectations       []*OrderRepoMockAddItemExpectation
 
-	callArgs []*OrderRepoMockAddParams
+	callArgs []*OrderRepoMockAddItemParams
 	mutex    sync.RWMutex
 
 	expectedInvocations uint64
 }
 
-// OrderRepoMockAddExpectation specifies expectation struct of the OrderRepo.Add
-type OrderRepoMockAddExpectation struct {
+// OrderRepoMockAddItemExpectation specifies expectation struct of the OrderRepo.AddItem
+type OrderRepoMockAddItemExpectation struct {
 	mock      *OrderRepoMock
-	params    *OrderRepoMockAddParams
-	paramPtrs *OrderRepoMockAddParamPtrs
-	results   *OrderRepoMockAddResults
+	params    *OrderRepoMockAddItemParams
+	paramPtrs *OrderRepoMockAddItemParamPtrs
+	results   *OrderRepoMockAddItemResults
 	Counter   uint64
 }
 
-// OrderRepoMockAddParams contains parameters of the OrderRepo.Add
-type OrderRepoMockAddParams struct {
+// OrderRepoMockAddItemParams contains parameters of the OrderRepo.AddItem
+type OrderRepoMockAddItemParams struct {
+	ctx context.Context
+	op1 *model.Order
+	o1  model.OrderId
+}
+
+// OrderRepoMockAddItemParamPtrs contains pointers to parameters of the OrderRepo.AddItem
+type OrderRepoMockAddItemParamPtrs struct {
+	ctx *context.Context
+	op1 **model.Order
+	o1  *model.OrderId
+}
+
+// OrderRepoMockAddItemResults contains results of the OrderRepo.AddItem
+type OrderRepoMockAddItemResults struct {
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option by default unless you really need it, as it helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmAddItem *mOrderRepoMockAddItem) Optional() *mOrderRepoMockAddItem {
+	mmAddItem.optional = true
+	return mmAddItem
+}
+
+// Expect sets up expected params for OrderRepo.AddItem
+func (mmAddItem *mOrderRepoMockAddItem) Expect(ctx context.Context, op1 *model.Order, o1 model.OrderId) *mOrderRepoMockAddItem {
+	if mmAddItem.mock.funcAddItem != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Set")
+	}
+
+	if mmAddItem.defaultExpectation == nil {
+		mmAddItem.defaultExpectation = &OrderRepoMockAddItemExpectation{}
+	}
+
+	if mmAddItem.defaultExpectation.paramPtrs != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by ExpectParams functions")
+	}
+
+	mmAddItem.defaultExpectation.params = &OrderRepoMockAddItemParams{ctx, op1, o1}
+	for _, e := range mmAddItem.expectations {
+		if minimock.Equal(e.params, mmAddItem.defaultExpectation.params) {
+			mmAddItem.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmAddItem.defaultExpectation.params)
+		}
+	}
+
+	return mmAddItem
+}
+
+// ExpectCtxParam1 sets up expected param ctx for OrderRepo.AddItem
+func (mmAddItem *mOrderRepoMockAddItem) ExpectCtxParam1(ctx context.Context) *mOrderRepoMockAddItem {
+	if mmAddItem.mock.funcAddItem != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Set")
+	}
+
+	if mmAddItem.defaultExpectation == nil {
+		mmAddItem.defaultExpectation = &OrderRepoMockAddItemExpectation{}
+	}
+
+	if mmAddItem.defaultExpectation.params != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Expect")
+	}
+
+	if mmAddItem.defaultExpectation.paramPtrs == nil {
+		mmAddItem.defaultExpectation.paramPtrs = &OrderRepoMockAddItemParamPtrs{}
+	}
+	mmAddItem.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmAddItem
+}
+
+// ExpectOp1Param2 sets up expected param op1 for OrderRepo.AddItem
+func (mmAddItem *mOrderRepoMockAddItem) ExpectOp1Param2(op1 *model.Order) *mOrderRepoMockAddItem {
+	if mmAddItem.mock.funcAddItem != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Set")
+	}
+
+	if mmAddItem.defaultExpectation == nil {
+		mmAddItem.defaultExpectation = &OrderRepoMockAddItemExpectation{}
+	}
+
+	if mmAddItem.defaultExpectation.params != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Expect")
+	}
+
+	if mmAddItem.defaultExpectation.paramPtrs == nil {
+		mmAddItem.defaultExpectation.paramPtrs = &OrderRepoMockAddItemParamPtrs{}
+	}
+	mmAddItem.defaultExpectation.paramPtrs.op1 = &op1
+
+	return mmAddItem
+}
+
+// ExpectO1Param3 sets up expected param o1 for OrderRepo.AddItem
+func (mmAddItem *mOrderRepoMockAddItem) ExpectO1Param3(o1 model.OrderId) *mOrderRepoMockAddItem {
+	if mmAddItem.mock.funcAddItem != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Set")
+	}
+
+	if mmAddItem.defaultExpectation == nil {
+		mmAddItem.defaultExpectation = &OrderRepoMockAddItemExpectation{}
+	}
+
+	if mmAddItem.defaultExpectation.params != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Expect")
+	}
+
+	if mmAddItem.defaultExpectation.paramPtrs == nil {
+		mmAddItem.defaultExpectation.paramPtrs = &OrderRepoMockAddItemParamPtrs{}
+	}
+	mmAddItem.defaultExpectation.paramPtrs.o1 = &o1
+
+	return mmAddItem
+}
+
+// Inspect accepts an inspector function that has same arguments as the OrderRepo.AddItem
+func (mmAddItem *mOrderRepoMockAddItem) Inspect(f func(ctx context.Context, op1 *model.Order, o1 model.OrderId)) *mOrderRepoMockAddItem {
+	if mmAddItem.mock.inspectFuncAddItem != nil {
+		mmAddItem.mock.t.Fatalf("Inspect function is already set for OrderRepoMock.AddItem")
+	}
+
+	mmAddItem.mock.inspectFuncAddItem = f
+
+	return mmAddItem
+}
+
+// Return sets up results that will be returned by OrderRepo.AddItem
+func (mmAddItem *mOrderRepoMockAddItem) Return(err error) *OrderRepoMock {
+	if mmAddItem.mock.funcAddItem != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Set")
+	}
+
+	if mmAddItem.defaultExpectation == nil {
+		mmAddItem.defaultExpectation = &OrderRepoMockAddItemExpectation{mock: mmAddItem.mock}
+	}
+	mmAddItem.defaultExpectation.results = &OrderRepoMockAddItemResults{err}
+	return mmAddItem.mock
+}
+
+// Set uses given function f to mock the OrderRepo.AddItem method
+func (mmAddItem *mOrderRepoMockAddItem) Set(f func(ctx context.Context, op1 *model.Order, o1 model.OrderId) (err error)) *OrderRepoMock {
+	if mmAddItem.defaultExpectation != nil {
+		mmAddItem.mock.t.Fatalf("Default expectation is already set for the OrderRepo.AddItem method")
+	}
+
+	if len(mmAddItem.expectations) > 0 {
+		mmAddItem.mock.t.Fatalf("Some expectations are already set for the OrderRepo.AddItem method")
+	}
+
+	mmAddItem.mock.funcAddItem = f
+	return mmAddItem.mock
+}
+
+// When sets expectation for the OrderRepo.AddItem which will trigger the result defined by the following
+// Then helper
+func (mmAddItem *mOrderRepoMockAddItem) When(ctx context.Context, op1 *model.Order, o1 model.OrderId) *OrderRepoMockAddItemExpectation {
+	if mmAddItem.mock.funcAddItem != nil {
+		mmAddItem.mock.t.Fatalf("OrderRepoMock.AddItem mock is already set by Set")
+	}
+
+	expectation := &OrderRepoMockAddItemExpectation{
+		mock:   mmAddItem.mock,
+		params: &OrderRepoMockAddItemParams{ctx, op1, o1},
+	}
+	mmAddItem.expectations = append(mmAddItem.expectations, expectation)
+	return expectation
+}
+
+// Then sets up OrderRepo.AddItem return parameters for the expectation previously defined by the When method
+func (e *OrderRepoMockAddItemExpectation) Then(err error) *OrderRepoMock {
+	e.results = &OrderRepoMockAddItemResults{err}
+	return e.mock
+}
+
+// Times sets number of times OrderRepo.AddItem should be invoked
+func (mmAddItem *mOrderRepoMockAddItem) Times(n uint64) *mOrderRepoMockAddItem {
+	if n == 0 {
+		mmAddItem.mock.t.Fatalf("Times of OrderRepoMock.AddItem mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmAddItem.expectedInvocations, n)
+	return mmAddItem
+}
+
+func (mmAddItem *mOrderRepoMockAddItem) invocationsDone() bool {
+	if len(mmAddItem.expectations) == 0 && mmAddItem.defaultExpectation == nil && mmAddItem.mock.funcAddItem == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmAddItem.mock.afterAddItemCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmAddItem.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// AddItem implements service.OrderRepo
+func (mmAddItem *OrderRepoMock) AddItem(ctx context.Context, op1 *model.Order, o1 model.OrderId) (err error) {
+	mm_atomic.AddUint64(&mmAddItem.beforeAddItemCounter, 1)
+	defer mm_atomic.AddUint64(&mmAddItem.afterAddItemCounter, 1)
+
+	if mmAddItem.inspectFuncAddItem != nil {
+		mmAddItem.inspectFuncAddItem(ctx, op1, o1)
+	}
+
+	mm_params := OrderRepoMockAddItemParams{ctx, op1, o1}
+
+	// Record call args
+	mmAddItem.AddItemMock.mutex.Lock()
+	mmAddItem.AddItemMock.callArgs = append(mmAddItem.AddItemMock.callArgs, &mm_params)
+	mmAddItem.AddItemMock.mutex.Unlock()
+
+	for _, e := range mmAddItem.AddItemMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmAddItem.AddItemMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmAddItem.AddItemMock.defaultExpectation.Counter, 1)
+		mm_want := mmAddItem.AddItemMock.defaultExpectation.params
+		mm_want_ptrs := mmAddItem.AddItemMock.defaultExpectation.paramPtrs
+
+		mm_got := OrderRepoMockAddItemParams{ctx, op1, o1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmAddItem.t.Errorf("OrderRepoMock.AddItem got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.op1 != nil && !minimock.Equal(*mm_want_ptrs.op1, mm_got.op1) {
+				mmAddItem.t.Errorf("OrderRepoMock.AddItem got unexpected parameter op1, want: %#v, got: %#v%s\n", *mm_want_ptrs.op1, mm_got.op1, minimock.Diff(*mm_want_ptrs.op1, mm_got.op1))
+			}
+
+			if mm_want_ptrs.o1 != nil && !minimock.Equal(*mm_want_ptrs.o1, mm_got.o1) {
+				mmAddItem.t.Errorf("OrderRepoMock.AddItem got unexpected parameter o1, want: %#v, got: %#v%s\n", *mm_want_ptrs.o1, mm_got.o1, minimock.Diff(*mm_want_ptrs.o1, mm_got.o1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmAddItem.t.Errorf("OrderRepoMock.AddItem got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmAddItem.AddItemMock.defaultExpectation.results
+		if mm_results == nil {
+			mmAddItem.t.Fatal("No results are set for the OrderRepoMock.AddItem")
+		}
+		return (*mm_results).err
+	}
+	if mmAddItem.funcAddItem != nil {
+		return mmAddItem.funcAddItem(ctx, op1, o1)
+	}
+	mmAddItem.t.Fatalf("Unexpected call to OrderRepoMock.AddItem. %v %v %v", ctx, op1, o1)
+	return
+}
+
+// AddItemAfterCounter returns a count of finished OrderRepoMock.AddItem invocations
+func (mmAddItem *OrderRepoMock) AddItemAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmAddItem.afterAddItemCounter)
+}
+
+// AddItemBeforeCounter returns a count of OrderRepoMock.AddItem invocations
+func (mmAddItem *OrderRepoMock) AddItemBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmAddItem.beforeAddItemCounter)
+}
+
+// Calls returns a list of arguments used in each call to OrderRepoMock.AddItem.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmAddItem *mOrderRepoMockAddItem) Calls() []*OrderRepoMockAddItemParams {
+	mmAddItem.mutex.RLock()
+
+	argCopy := make([]*OrderRepoMockAddItemParams, len(mmAddItem.callArgs))
+	copy(argCopy, mmAddItem.callArgs)
+
+	mmAddItem.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockAddItemDone returns true if the count of the AddItem invocations corresponds
+// the number of defined expectations
+func (m *OrderRepoMock) MinimockAddItemDone() bool {
+	if m.AddItemMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.AddItemMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.AddItemMock.invocationsDone()
+}
+
+// MinimockAddItemInspect logs each unmet expectation
+func (m *OrderRepoMock) MinimockAddItemInspect() {
+	for _, e := range m.AddItemMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to OrderRepoMock.AddItem with params: %#v", *e.params)
+		}
+	}
+
+	afterAddItemCounter := mm_atomic.LoadUint64(&m.afterAddItemCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.AddItemMock.defaultExpectation != nil && afterAddItemCounter < 1 {
+		if m.AddItemMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to OrderRepoMock.AddItem")
+		} else {
+			m.t.Errorf("Expected call to OrderRepoMock.AddItem with params: %#v", *m.AddItemMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcAddItem != nil && afterAddItemCounter < 1 {
+		m.t.Error("Expected call to OrderRepoMock.AddItem")
+	}
+
+	if !m.AddItemMock.invocationsDone() && afterAddItemCounter > 0 {
+		m.t.Errorf("Expected %d calls to OrderRepoMock.AddItem but found %d calls",
+			mm_atomic.LoadUint64(&m.AddItemMock.expectedInvocations), afterAddItemCounter)
+	}
+}
+
+type mOrderRepoMockAddOrder struct {
+	optional           bool
+	mock               *OrderRepoMock
+	defaultExpectation *OrderRepoMockAddOrderExpectation
+	expectations       []*OrderRepoMockAddOrderExpectation
+
+	callArgs []*OrderRepoMockAddOrderParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// OrderRepoMockAddOrderExpectation specifies expectation struct of the OrderRepo.AddOrder
+type OrderRepoMockAddOrderExpectation struct {
+	mock      *OrderRepoMock
+	params    *OrderRepoMockAddOrderParams
+	paramPtrs *OrderRepoMockAddOrderParamPtrs
+	results   *OrderRepoMockAddOrderResults
+	Counter   uint64
+}
+
+// OrderRepoMockAddOrderParams contains parameters of the OrderRepo.AddOrder
+type OrderRepoMockAddOrderParams struct {
 	ctx context.Context
 	op1 *model.Order
 }
 
-// OrderRepoMockAddParamPtrs contains pointers to parameters of the OrderRepo.Add
-type OrderRepoMockAddParamPtrs struct {
+// OrderRepoMockAddOrderParamPtrs contains pointers to parameters of the OrderRepo.AddOrder
+type OrderRepoMockAddOrderParamPtrs struct {
 	ctx *context.Context
 	op1 **model.Order
 }
 
-// OrderRepoMockAddResults contains results of the OrderRepo.Add
-type OrderRepoMockAddResults struct {
+// OrderRepoMockAddOrderResults contains results of the OrderRepo.AddOrder
+type OrderRepoMockAddOrderResults struct {
 	o1  model.OrderId
 	err error
 }
@@ -104,280 +470,280 @@ type OrderRepoMockAddResults struct {
 // Optional() makes method check to work in '0 or more' mode.
 // It is NOT RECOMMENDED to use this option by default unless you really need it, as it helps to
 // catch the problems when the expected method call is totally skipped during test run.
-func (mmAdd *mOrderRepoMockAdd) Optional() *mOrderRepoMockAdd {
-	mmAdd.optional = true
-	return mmAdd
+func (mmAddOrder *mOrderRepoMockAddOrder) Optional() *mOrderRepoMockAddOrder {
+	mmAddOrder.optional = true
+	return mmAddOrder
 }
 
-// Expect sets up expected params for OrderRepo.Add
-func (mmAdd *mOrderRepoMockAdd) Expect(ctx context.Context, op1 *model.Order) *mOrderRepoMockAdd {
-	if mmAdd.mock.funcAdd != nil {
-		mmAdd.mock.t.Fatalf("OrderRepoMock.Add mock is already set by Set")
+// Expect sets up expected params for OrderRepo.AddOrder
+func (mmAddOrder *mOrderRepoMockAddOrder) Expect(ctx context.Context, op1 *model.Order) *mOrderRepoMockAddOrder {
+	if mmAddOrder.mock.funcAddOrder != nil {
+		mmAddOrder.mock.t.Fatalf("OrderRepoMock.AddOrder mock is already set by Set")
 	}
 
-	if mmAdd.defaultExpectation == nil {
-		mmAdd.defaultExpectation = &OrderRepoMockAddExpectation{}
+	if mmAddOrder.defaultExpectation == nil {
+		mmAddOrder.defaultExpectation = &OrderRepoMockAddOrderExpectation{}
 	}
 
-	if mmAdd.defaultExpectation.paramPtrs != nil {
-		mmAdd.mock.t.Fatalf("OrderRepoMock.Add mock is already set by ExpectParams functions")
+	if mmAddOrder.defaultExpectation.paramPtrs != nil {
+		mmAddOrder.mock.t.Fatalf("OrderRepoMock.AddOrder mock is already set by ExpectParams functions")
 	}
 
-	mmAdd.defaultExpectation.params = &OrderRepoMockAddParams{ctx, op1}
-	for _, e := range mmAdd.expectations {
-		if minimock.Equal(e.params, mmAdd.defaultExpectation.params) {
-			mmAdd.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmAdd.defaultExpectation.params)
+	mmAddOrder.defaultExpectation.params = &OrderRepoMockAddOrderParams{ctx, op1}
+	for _, e := range mmAddOrder.expectations {
+		if minimock.Equal(e.params, mmAddOrder.defaultExpectation.params) {
+			mmAddOrder.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmAddOrder.defaultExpectation.params)
 		}
 	}
 
-	return mmAdd
+	return mmAddOrder
 }
 
-// ExpectCtxParam1 sets up expected param ctx for OrderRepo.Add
-func (mmAdd *mOrderRepoMockAdd) ExpectCtxParam1(ctx context.Context) *mOrderRepoMockAdd {
-	if mmAdd.mock.funcAdd != nil {
-		mmAdd.mock.t.Fatalf("OrderRepoMock.Add mock is already set by Set")
+// ExpectCtxParam1 sets up expected param ctx for OrderRepo.AddOrder
+func (mmAddOrder *mOrderRepoMockAddOrder) ExpectCtxParam1(ctx context.Context) *mOrderRepoMockAddOrder {
+	if mmAddOrder.mock.funcAddOrder != nil {
+		mmAddOrder.mock.t.Fatalf("OrderRepoMock.AddOrder mock is already set by Set")
 	}
 
-	if mmAdd.defaultExpectation == nil {
-		mmAdd.defaultExpectation = &OrderRepoMockAddExpectation{}
+	if mmAddOrder.defaultExpectation == nil {
+		mmAddOrder.defaultExpectation = &OrderRepoMockAddOrderExpectation{}
 	}
 
-	if mmAdd.defaultExpectation.params != nil {
-		mmAdd.mock.t.Fatalf("OrderRepoMock.Add mock is already set by Expect")
+	if mmAddOrder.defaultExpectation.params != nil {
+		mmAddOrder.mock.t.Fatalf("OrderRepoMock.AddOrder mock is already set by Expect")
 	}
 
-	if mmAdd.defaultExpectation.paramPtrs == nil {
-		mmAdd.defaultExpectation.paramPtrs = &OrderRepoMockAddParamPtrs{}
+	if mmAddOrder.defaultExpectation.paramPtrs == nil {
+		mmAddOrder.defaultExpectation.paramPtrs = &OrderRepoMockAddOrderParamPtrs{}
 	}
-	mmAdd.defaultExpectation.paramPtrs.ctx = &ctx
+	mmAddOrder.defaultExpectation.paramPtrs.ctx = &ctx
 
-	return mmAdd
+	return mmAddOrder
 }
 
-// ExpectOp1Param2 sets up expected param op1 for OrderRepo.Add
-func (mmAdd *mOrderRepoMockAdd) ExpectOp1Param2(op1 *model.Order) *mOrderRepoMockAdd {
-	if mmAdd.mock.funcAdd != nil {
-		mmAdd.mock.t.Fatalf("OrderRepoMock.Add mock is already set by Set")
+// ExpectOp1Param2 sets up expected param op1 for OrderRepo.AddOrder
+func (mmAddOrder *mOrderRepoMockAddOrder) ExpectOp1Param2(op1 *model.Order) *mOrderRepoMockAddOrder {
+	if mmAddOrder.mock.funcAddOrder != nil {
+		mmAddOrder.mock.t.Fatalf("OrderRepoMock.AddOrder mock is already set by Set")
 	}
 
-	if mmAdd.defaultExpectation == nil {
-		mmAdd.defaultExpectation = &OrderRepoMockAddExpectation{}
+	if mmAddOrder.defaultExpectation == nil {
+		mmAddOrder.defaultExpectation = &OrderRepoMockAddOrderExpectation{}
 	}
 
-	if mmAdd.defaultExpectation.params != nil {
-		mmAdd.mock.t.Fatalf("OrderRepoMock.Add mock is already set by Expect")
+	if mmAddOrder.defaultExpectation.params != nil {
+		mmAddOrder.mock.t.Fatalf("OrderRepoMock.AddOrder mock is already set by Expect")
 	}
 
-	if mmAdd.defaultExpectation.paramPtrs == nil {
-		mmAdd.defaultExpectation.paramPtrs = &OrderRepoMockAddParamPtrs{}
+	if mmAddOrder.defaultExpectation.paramPtrs == nil {
+		mmAddOrder.defaultExpectation.paramPtrs = &OrderRepoMockAddOrderParamPtrs{}
 	}
-	mmAdd.defaultExpectation.paramPtrs.op1 = &op1
+	mmAddOrder.defaultExpectation.paramPtrs.op1 = &op1
 
-	return mmAdd
+	return mmAddOrder
 }
 
-// Inspect accepts an inspector function that has same arguments as the OrderRepo.Add
-func (mmAdd *mOrderRepoMockAdd) Inspect(f func(ctx context.Context, op1 *model.Order)) *mOrderRepoMockAdd {
-	if mmAdd.mock.inspectFuncAdd != nil {
-		mmAdd.mock.t.Fatalf("Inspect function is already set for OrderRepoMock.Add")
+// Inspect accepts an inspector function that has same arguments as the OrderRepo.AddOrder
+func (mmAddOrder *mOrderRepoMockAddOrder) Inspect(f func(ctx context.Context, op1 *model.Order)) *mOrderRepoMockAddOrder {
+	if mmAddOrder.mock.inspectFuncAddOrder != nil {
+		mmAddOrder.mock.t.Fatalf("Inspect function is already set for OrderRepoMock.AddOrder")
 	}
 
-	mmAdd.mock.inspectFuncAdd = f
+	mmAddOrder.mock.inspectFuncAddOrder = f
 
-	return mmAdd
+	return mmAddOrder
 }
 
-// Return sets up results that will be returned by OrderRepo.Add
-func (mmAdd *mOrderRepoMockAdd) Return(o1 model.OrderId, err error) *OrderRepoMock {
-	if mmAdd.mock.funcAdd != nil {
-		mmAdd.mock.t.Fatalf("OrderRepoMock.Add mock is already set by Set")
+// Return sets up results that will be returned by OrderRepo.AddOrder
+func (mmAddOrder *mOrderRepoMockAddOrder) Return(o1 model.OrderId, err error) *OrderRepoMock {
+	if mmAddOrder.mock.funcAddOrder != nil {
+		mmAddOrder.mock.t.Fatalf("OrderRepoMock.AddOrder mock is already set by Set")
 	}
 
-	if mmAdd.defaultExpectation == nil {
-		mmAdd.defaultExpectation = &OrderRepoMockAddExpectation{mock: mmAdd.mock}
+	if mmAddOrder.defaultExpectation == nil {
+		mmAddOrder.defaultExpectation = &OrderRepoMockAddOrderExpectation{mock: mmAddOrder.mock}
 	}
-	mmAdd.defaultExpectation.results = &OrderRepoMockAddResults{o1, err}
-	return mmAdd.mock
+	mmAddOrder.defaultExpectation.results = &OrderRepoMockAddOrderResults{o1, err}
+	return mmAddOrder.mock
 }
 
-// Set uses given function f to mock the OrderRepo.Add method
-func (mmAdd *mOrderRepoMockAdd) Set(f func(ctx context.Context, op1 *model.Order) (o1 model.OrderId, err error)) *OrderRepoMock {
-	if mmAdd.defaultExpectation != nil {
-		mmAdd.mock.t.Fatalf("Default expectation is already set for the OrderRepo.Add method")
+// Set uses given function f to mock the OrderRepo.AddOrder method
+func (mmAddOrder *mOrderRepoMockAddOrder) Set(f func(ctx context.Context, op1 *model.Order) (o1 model.OrderId, err error)) *OrderRepoMock {
+	if mmAddOrder.defaultExpectation != nil {
+		mmAddOrder.mock.t.Fatalf("Default expectation is already set for the OrderRepo.AddOrder method")
 	}
 
-	if len(mmAdd.expectations) > 0 {
-		mmAdd.mock.t.Fatalf("Some expectations are already set for the OrderRepo.Add method")
+	if len(mmAddOrder.expectations) > 0 {
+		mmAddOrder.mock.t.Fatalf("Some expectations are already set for the OrderRepo.AddOrder method")
 	}
 
-	mmAdd.mock.funcAdd = f
-	return mmAdd.mock
+	mmAddOrder.mock.funcAddOrder = f
+	return mmAddOrder.mock
 }
 
-// When sets expectation for the OrderRepo.Add which will trigger the result defined by the following
+// When sets expectation for the OrderRepo.AddOrder which will trigger the result defined by the following
 // Then helper
-func (mmAdd *mOrderRepoMockAdd) When(ctx context.Context, op1 *model.Order) *OrderRepoMockAddExpectation {
-	if mmAdd.mock.funcAdd != nil {
-		mmAdd.mock.t.Fatalf("OrderRepoMock.Add mock is already set by Set")
+func (mmAddOrder *mOrderRepoMockAddOrder) When(ctx context.Context, op1 *model.Order) *OrderRepoMockAddOrderExpectation {
+	if mmAddOrder.mock.funcAddOrder != nil {
+		mmAddOrder.mock.t.Fatalf("OrderRepoMock.AddOrder mock is already set by Set")
 	}
 
-	expectation := &OrderRepoMockAddExpectation{
-		mock:   mmAdd.mock,
-		params: &OrderRepoMockAddParams{ctx, op1},
+	expectation := &OrderRepoMockAddOrderExpectation{
+		mock:   mmAddOrder.mock,
+		params: &OrderRepoMockAddOrderParams{ctx, op1},
 	}
-	mmAdd.expectations = append(mmAdd.expectations, expectation)
+	mmAddOrder.expectations = append(mmAddOrder.expectations, expectation)
 	return expectation
 }
 
-// Then sets up OrderRepo.Add return parameters for the expectation previously defined by the When method
-func (e *OrderRepoMockAddExpectation) Then(o1 model.OrderId, err error) *OrderRepoMock {
-	e.results = &OrderRepoMockAddResults{o1, err}
+// Then sets up OrderRepo.AddOrder return parameters for the expectation previously defined by the When method
+func (e *OrderRepoMockAddOrderExpectation) Then(o1 model.OrderId, err error) *OrderRepoMock {
+	e.results = &OrderRepoMockAddOrderResults{o1, err}
 	return e.mock
 }
 
-// Times sets number of times OrderRepo.Add should be invoked
-func (mmAdd *mOrderRepoMockAdd) Times(n uint64) *mOrderRepoMockAdd {
+// Times sets number of times OrderRepo.AddOrder should be invoked
+func (mmAddOrder *mOrderRepoMockAddOrder) Times(n uint64) *mOrderRepoMockAddOrder {
 	if n == 0 {
-		mmAdd.mock.t.Fatalf("Times of OrderRepoMock.Add mock can not be zero")
+		mmAddOrder.mock.t.Fatalf("Times of OrderRepoMock.AddOrder mock can not be zero")
 	}
-	mm_atomic.StoreUint64(&mmAdd.expectedInvocations, n)
-	return mmAdd
+	mm_atomic.StoreUint64(&mmAddOrder.expectedInvocations, n)
+	return mmAddOrder
 }
 
-func (mmAdd *mOrderRepoMockAdd) invocationsDone() bool {
-	if len(mmAdd.expectations) == 0 && mmAdd.defaultExpectation == nil && mmAdd.mock.funcAdd == nil {
+func (mmAddOrder *mOrderRepoMockAddOrder) invocationsDone() bool {
+	if len(mmAddOrder.expectations) == 0 && mmAddOrder.defaultExpectation == nil && mmAddOrder.mock.funcAddOrder == nil {
 		return true
 	}
 
-	totalInvocations := mm_atomic.LoadUint64(&mmAdd.mock.afterAddCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmAdd.expectedInvocations)
+	totalInvocations := mm_atomic.LoadUint64(&mmAddOrder.mock.afterAddOrderCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmAddOrder.expectedInvocations)
 
 	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
 }
 
-// Add implements service.OrderRepo
-func (mmAdd *OrderRepoMock) Add(ctx context.Context, op1 *model.Order) (o1 model.OrderId, err error) {
-	mm_atomic.AddUint64(&mmAdd.beforeAddCounter, 1)
-	defer mm_atomic.AddUint64(&mmAdd.afterAddCounter, 1)
+// AddOrder implements service.OrderRepo
+func (mmAddOrder *OrderRepoMock) AddOrder(ctx context.Context, op1 *model.Order) (o1 model.OrderId, err error) {
+	mm_atomic.AddUint64(&mmAddOrder.beforeAddOrderCounter, 1)
+	defer mm_atomic.AddUint64(&mmAddOrder.afterAddOrderCounter, 1)
 
-	if mmAdd.inspectFuncAdd != nil {
-		mmAdd.inspectFuncAdd(ctx, op1)
+	if mmAddOrder.inspectFuncAddOrder != nil {
+		mmAddOrder.inspectFuncAddOrder(ctx, op1)
 	}
 
-	mm_params := OrderRepoMockAddParams{ctx, op1}
+	mm_params := OrderRepoMockAddOrderParams{ctx, op1}
 
 	// Record call args
-	mmAdd.AddMock.mutex.Lock()
-	mmAdd.AddMock.callArgs = append(mmAdd.AddMock.callArgs, &mm_params)
-	mmAdd.AddMock.mutex.Unlock()
+	mmAddOrder.AddOrderMock.mutex.Lock()
+	mmAddOrder.AddOrderMock.callArgs = append(mmAddOrder.AddOrderMock.callArgs, &mm_params)
+	mmAddOrder.AddOrderMock.mutex.Unlock()
 
-	for _, e := range mmAdd.AddMock.expectations {
+	for _, e := range mmAddOrder.AddOrderMock.expectations {
 		if minimock.Equal(*e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
 			return e.results.o1, e.results.err
 		}
 	}
 
-	if mmAdd.AddMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmAdd.AddMock.defaultExpectation.Counter, 1)
-		mm_want := mmAdd.AddMock.defaultExpectation.params
-		mm_want_ptrs := mmAdd.AddMock.defaultExpectation.paramPtrs
+	if mmAddOrder.AddOrderMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmAddOrder.AddOrderMock.defaultExpectation.Counter, 1)
+		mm_want := mmAddOrder.AddOrderMock.defaultExpectation.params
+		mm_want_ptrs := mmAddOrder.AddOrderMock.defaultExpectation.paramPtrs
 
-		mm_got := OrderRepoMockAddParams{ctx, op1}
+		mm_got := OrderRepoMockAddOrderParams{ctx, op1}
 
 		if mm_want_ptrs != nil {
 
 			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmAdd.t.Errorf("OrderRepoMock.Add got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+				mmAddOrder.t.Errorf("OrderRepoMock.AddOrder got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
 			if mm_want_ptrs.op1 != nil && !minimock.Equal(*mm_want_ptrs.op1, mm_got.op1) {
-				mmAdd.t.Errorf("OrderRepoMock.Add got unexpected parameter op1, want: %#v, got: %#v%s\n", *mm_want_ptrs.op1, mm_got.op1, minimock.Diff(*mm_want_ptrs.op1, mm_got.op1))
+				mmAddOrder.t.Errorf("OrderRepoMock.AddOrder got unexpected parameter op1, want: %#v, got: %#v%s\n", *mm_want_ptrs.op1, mm_got.op1, minimock.Diff(*mm_want_ptrs.op1, mm_got.op1))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmAdd.t.Errorf("OrderRepoMock.Add got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+			mmAddOrder.t.Errorf("OrderRepoMock.AddOrder got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
 
-		mm_results := mmAdd.AddMock.defaultExpectation.results
+		mm_results := mmAddOrder.AddOrderMock.defaultExpectation.results
 		if mm_results == nil {
-			mmAdd.t.Fatal("No results are set for the OrderRepoMock.Add")
+			mmAddOrder.t.Fatal("No results are set for the OrderRepoMock.AddOrder")
 		}
 		return (*mm_results).o1, (*mm_results).err
 	}
-	if mmAdd.funcAdd != nil {
-		return mmAdd.funcAdd(ctx, op1)
+	if mmAddOrder.funcAddOrder != nil {
+		return mmAddOrder.funcAddOrder(ctx, op1)
 	}
-	mmAdd.t.Fatalf("Unexpected call to OrderRepoMock.Add. %v %v", ctx, op1)
+	mmAddOrder.t.Fatalf("Unexpected call to OrderRepoMock.AddOrder. %v %v", ctx, op1)
 	return
 }
 
-// AddAfterCounter returns a count of finished OrderRepoMock.Add invocations
-func (mmAdd *OrderRepoMock) AddAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmAdd.afterAddCounter)
+// AddOrderAfterCounter returns a count of finished OrderRepoMock.AddOrder invocations
+func (mmAddOrder *OrderRepoMock) AddOrderAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmAddOrder.afterAddOrderCounter)
 }
 
-// AddBeforeCounter returns a count of OrderRepoMock.Add invocations
-func (mmAdd *OrderRepoMock) AddBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmAdd.beforeAddCounter)
+// AddOrderBeforeCounter returns a count of OrderRepoMock.AddOrder invocations
+func (mmAddOrder *OrderRepoMock) AddOrderBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmAddOrder.beforeAddOrderCounter)
 }
 
-// Calls returns a list of arguments used in each call to OrderRepoMock.Add.
+// Calls returns a list of arguments used in each call to OrderRepoMock.AddOrder.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmAdd *mOrderRepoMockAdd) Calls() []*OrderRepoMockAddParams {
-	mmAdd.mutex.RLock()
+func (mmAddOrder *mOrderRepoMockAddOrder) Calls() []*OrderRepoMockAddOrderParams {
+	mmAddOrder.mutex.RLock()
 
-	argCopy := make([]*OrderRepoMockAddParams, len(mmAdd.callArgs))
-	copy(argCopy, mmAdd.callArgs)
+	argCopy := make([]*OrderRepoMockAddOrderParams, len(mmAddOrder.callArgs))
+	copy(argCopy, mmAddOrder.callArgs)
 
-	mmAdd.mutex.RUnlock()
+	mmAddOrder.mutex.RUnlock()
 
 	return argCopy
 }
 
-// MinimockAddDone returns true if the count of the Add invocations corresponds
+// MinimockAddOrderDone returns true if the count of the AddOrder invocations corresponds
 // the number of defined expectations
-func (m *OrderRepoMock) MinimockAddDone() bool {
-	if m.AddMock.optional {
+func (m *OrderRepoMock) MinimockAddOrderDone() bool {
+	if m.AddOrderMock.optional {
 		// Optional methods provide '0 or more' call count restriction.
 		return true
 	}
 
-	for _, e := range m.AddMock.expectations {
+	for _, e := range m.AddOrderMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
 			return false
 		}
 	}
 
-	return m.AddMock.invocationsDone()
+	return m.AddOrderMock.invocationsDone()
 }
 
-// MinimockAddInspect logs each unmet expectation
-func (m *OrderRepoMock) MinimockAddInspect() {
-	for _, e := range m.AddMock.expectations {
+// MinimockAddOrderInspect logs each unmet expectation
+func (m *OrderRepoMock) MinimockAddOrderInspect() {
+	for _, e := range m.AddOrderMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to OrderRepoMock.Add with params: %#v", *e.params)
+			m.t.Errorf("Expected call to OrderRepoMock.AddOrder with params: %#v", *e.params)
 		}
 	}
 
-	afterAddCounter := mm_atomic.LoadUint64(&m.afterAddCounter)
+	afterAddOrderCounter := mm_atomic.LoadUint64(&m.afterAddOrderCounter)
 	// if default expectation was set then invocations count should be greater than zero
-	if m.AddMock.defaultExpectation != nil && afterAddCounter < 1 {
-		if m.AddMock.defaultExpectation.params == nil {
-			m.t.Error("Expected call to OrderRepoMock.Add")
+	if m.AddOrderMock.defaultExpectation != nil && afterAddOrderCounter < 1 {
+		if m.AddOrderMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to OrderRepoMock.AddOrder")
 		} else {
-			m.t.Errorf("Expected call to OrderRepoMock.Add with params: %#v", *m.AddMock.defaultExpectation.params)
+			m.t.Errorf("Expected call to OrderRepoMock.AddOrder with params: %#v", *m.AddOrderMock.defaultExpectation.params)
 		}
 	}
 	// if func was set then invocations count should be greater than zero
-	if m.funcAdd != nil && afterAddCounter < 1 {
-		m.t.Error("Expected call to OrderRepoMock.Add")
+	if m.funcAddOrder != nil && afterAddOrderCounter < 1 {
+		m.t.Error("Expected call to OrderRepoMock.AddOrder")
 	}
 
-	if !m.AddMock.invocationsDone() && afterAddCounter > 0 {
-		m.t.Errorf("Expected %d calls to OrderRepoMock.Add but found %d calls",
-			mm_atomic.LoadUint64(&m.AddMock.expectedInvocations), afterAddCounter)
+	if !m.AddOrderMock.invocationsDone() && afterAddOrderCounter > 0 {
+		m.t.Errorf("Expected %d calls to OrderRepoMock.AddOrder but found %d calls",
+			mm_atomic.LoadUint64(&m.AddOrderMock.expectedInvocations), afterAddOrderCounter)
 	}
 }
 
@@ -699,6 +1065,354 @@ func (m *OrderRepoMock) MinimockGetByIdInspect() {
 	if !m.GetByIdMock.invocationsDone() && afterGetByIdCounter > 0 {
 		m.t.Errorf("Expected %d calls to OrderRepoMock.GetById but found %d calls",
 			mm_atomic.LoadUint64(&m.GetByIdMock.expectedInvocations), afterGetByIdCounter)
+	}
+}
+
+type mOrderRepoMockOrderPay struct {
+	optional           bool
+	mock               *OrderRepoMock
+	defaultExpectation *OrderRepoMockOrderPayExpectation
+	expectations       []*OrderRepoMockOrderPayExpectation
+
+	callArgs []*OrderRepoMockOrderPayParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// OrderRepoMockOrderPayExpectation specifies expectation struct of the OrderRepo.OrderPay
+type OrderRepoMockOrderPayExpectation struct {
+	mock      *OrderRepoMock
+	params    *OrderRepoMockOrderPayParams
+	paramPtrs *OrderRepoMockOrderPayParamPtrs
+	results   *OrderRepoMockOrderPayResults
+	Counter   uint64
+}
+
+// OrderRepoMockOrderPayParams contains parameters of the OrderRepo.OrderPay
+type OrderRepoMockOrderPayParams struct {
+	ctx context.Context
+	o1  model.OrderId
+	op1 *model.Order
+}
+
+// OrderRepoMockOrderPayParamPtrs contains pointers to parameters of the OrderRepo.OrderPay
+type OrderRepoMockOrderPayParamPtrs struct {
+	ctx *context.Context
+	o1  *model.OrderId
+	op1 **model.Order
+}
+
+// OrderRepoMockOrderPayResults contains results of the OrderRepo.OrderPay
+type OrderRepoMockOrderPayResults struct {
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option by default unless you really need it, as it helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmOrderPay *mOrderRepoMockOrderPay) Optional() *mOrderRepoMockOrderPay {
+	mmOrderPay.optional = true
+	return mmOrderPay
+}
+
+// Expect sets up expected params for OrderRepo.OrderPay
+func (mmOrderPay *mOrderRepoMockOrderPay) Expect(ctx context.Context, o1 model.OrderId, op1 *model.Order) *mOrderRepoMockOrderPay {
+	if mmOrderPay.mock.funcOrderPay != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Set")
+	}
+
+	if mmOrderPay.defaultExpectation == nil {
+		mmOrderPay.defaultExpectation = &OrderRepoMockOrderPayExpectation{}
+	}
+
+	if mmOrderPay.defaultExpectation.paramPtrs != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by ExpectParams functions")
+	}
+
+	mmOrderPay.defaultExpectation.params = &OrderRepoMockOrderPayParams{ctx, o1, op1}
+	for _, e := range mmOrderPay.expectations {
+		if minimock.Equal(e.params, mmOrderPay.defaultExpectation.params) {
+			mmOrderPay.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmOrderPay.defaultExpectation.params)
+		}
+	}
+
+	return mmOrderPay
+}
+
+// ExpectCtxParam1 sets up expected param ctx for OrderRepo.OrderPay
+func (mmOrderPay *mOrderRepoMockOrderPay) ExpectCtxParam1(ctx context.Context) *mOrderRepoMockOrderPay {
+	if mmOrderPay.mock.funcOrderPay != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Set")
+	}
+
+	if mmOrderPay.defaultExpectation == nil {
+		mmOrderPay.defaultExpectation = &OrderRepoMockOrderPayExpectation{}
+	}
+
+	if mmOrderPay.defaultExpectation.params != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Expect")
+	}
+
+	if mmOrderPay.defaultExpectation.paramPtrs == nil {
+		mmOrderPay.defaultExpectation.paramPtrs = &OrderRepoMockOrderPayParamPtrs{}
+	}
+	mmOrderPay.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmOrderPay
+}
+
+// ExpectO1Param2 sets up expected param o1 for OrderRepo.OrderPay
+func (mmOrderPay *mOrderRepoMockOrderPay) ExpectO1Param2(o1 model.OrderId) *mOrderRepoMockOrderPay {
+	if mmOrderPay.mock.funcOrderPay != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Set")
+	}
+
+	if mmOrderPay.defaultExpectation == nil {
+		mmOrderPay.defaultExpectation = &OrderRepoMockOrderPayExpectation{}
+	}
+
+	if mmOrderPay.defaultExpectation.params != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Expect")
+	}
+
+	if mmOrderPay.defaultExpectation.paramPtrs == nil {
+		mmOrderPay.defaultExpectation.paramPtrs = &OrderRepoMockOrderPayParamPtrs{}
+	}
+	mmOrderPay.defaultExpectation.paramPtrs.o1 = &o1
+
+	return mmOrderPay
+}
+
+// ExpectOp1Param3 sets up expected param op1 for OrderRepo.OrderPay
+func (mmOrderPay *mOrderRepoMockOrderPay) ExpectOp1Param3(op1 *model.Order) *mOrderRepoMockOrderPay {
+	if mmOrderPay.mock.funcOrderPay != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Set")
+	}
+
+	if mmOrderPay.defaultExpectation == nil {
+		mmOrderPay.defaultExpectation = &OrderRepoMockOrderPayExpectation{}
+	}
+
+	if mmOrderPay.defaultExpectation.params != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Expect")
+	}
+
+	if mmOrderPay.defaultExpectation.paramPtrs == nil {
+		mmOrderPay.defaultExpectation.paramPtrs = &OrderRepoMockOrderPayParamPtrs{}
+	}
+	mmOrderPay.defaultExpectation.paramPtrs.op1 = &op1
+
+	return mmOrderPay
+}
+
+// Inspect accepts an inspector function that has same arguments as the OrderRepo.OrderPay
+func (mmOrderPay *mOrderRepoMockOrderPay) Inspect(f func(ctx context.Context, o1 model.OrderId, op1 *model.Order)) *mOrderRepoMockOrderPay {
+	if mmOrderPay.mock.inspectFuncOrderPay != nil {
+		mmOrderPay.mock.t.Fatalf("Inspect function is already set for OrderRepoMock.OrderPay")
+	}
+
+	mmOrderPay.mock.inspectFuncOrderPay = f
+
+	return mmOrderPay
+}
+
+// Return sets up results that will be returned by OrderRepo.OrderPay
+func (mmOrderPay *mOrderRepoMockOrderPay) Return(err error) *OrderRepoMock {
+	if mmOrderPay.mock.funcOrderPay != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Set")
+	}
+
+	if mmOrderPay.defaultExpectation == nil {
+		mmOrderPay.defaultExpectation = &OrderRepoMockOrderPayExpectation{mock: mmOrderPay.mock}
+	}
+	mmOrderPay.defaultExpectation.results = &OrderRepoMockOrderPayResults{err}
+	return mmOrderPay.mock
+}
+
+// Set uses given function f to mock the OrderRepo.OrderPay method
+func (mmOrderPay *mOrderRepoMockOrderPay) Set(f func(ctx context.Context, o1 model.OrderId, op1 *model.Order) (err error)) *OrderRepoMock {
+	if mmOrderPay.defaultExpectation != nil {
+		mmOrderPay.mock.t.Fatalf("Default expectation is already set for the OrderRepo.OrderPay method")
+	}
+
+	if len(mmOrderPay.expectations) > 0 {
+		mmOrderPay.mock.t.Fatalf("Some expectations are already set for the OrderRepo.OrderPay method")
+	}
+
+	mmOrderPay.mock.funcOrderPay = f
+	return mmOrderPay.mock
+}
+
+// When sets expectation for the OrderRepo.OrderPay which will trigger the result defined by the following
+// Then helper
+func (mmOrderPay *mOrderRepoMockOrderPay) When(ctx context.Context, o1 model.OrderId, op1 *model.Order) *OrderRepoMockOrderPayExpectation {
+	if mmOrderPay.mock.funcOrderPay != nil {
+		mmOrderPay.mock.t.Fatalf("OrderRepoMock.OrderPay mock is already set by Set")
+	}
+
+	expectation := &OrderRepoMockOrderPayExpectation{
+		mock:   mmOrderPay.mock,
+		params: &OrderRepoMockOrderPayParams{ctx, o1, op1},
+	}
+	mmOrderPay.expectations = append(mmOrderPay.expectations, expectation)
+	return expectation
+}
+
+// Then sets up OrderRepo.OrderPay return parameters for the expectation previously defined by the When method
+func (e *OrderRepoMockOrderPayExpectation) Then(err error) *OrderRepoMock {
+	e.results = &OrderRepoMockOrderPayResults{err}
+	return e.mock
+}
+
+// Times sets number of times OrderRepo.OrderPay should be invoked
+func (mmOrderPay *mOrderRepoMockOrderPay) Times(n uint64) *mOrderRepoMockOrderPay {
+	if n == 0 {
+		mmOrderPay.mock.t.Fatalf("Times of OrderRepoMock.OrderPay mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmOrderPay.expectedInvocations, n)
+	return mmOrderPay
+}
+
+func (mmOrderPay *mOrderRepoMockOrderPay) invocationsDone() bool {
+	if len(mmOrderPay.expectations) == 0 && mmOrderPay.defaultExpectation == nil && mmOrderPay.mock.funcOrderPay == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmOrderPay.mock.afterOrderPayCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmOrderPay.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// OrderPay implements service.OrderRepo
+func (mmOrderPay *OrderRepoMock) OrderPay(ctx context.Context, o1 model.OrderId, op1 *model.Order) (err error) {
+	mm_atomic.AddUint64(&mmOrderPay.beforeOrderPayCounter, 1)
+	defer mm_atomic.AddUint64(&mmOrderPay.afterOrderPayCounter, 1)
+
+	if mmOrderPay.inspectFuncOrderPay != nil {
+		mmOrderPay.inspectFuncOrderPay(ctx, o1, op1)
+	}
+
+	mm_params := OrderRepoMockOrderPayParams{ctx, o1, op1}
+
+	// Record call args
+	mmOrderPay.OrderPayMock.mutex.Lock()
+	mmOrderPay.OrderPayMock.callArgs = append(mmOrderPay.OrderPayMock.callArgs, &mm_params)
+	mmOrderPay.OrderPayMock.mutex.Unlock()
+
+	for _, e := range mmOrderPay.OrderPayMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmOrderPay.OrderPayMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmOrderPay.OrderPayMock.defaultExpectation.Counter, 1)
+		mm_want := mmOrderPay.OrderPayMock.defaultExpectation.params
+		mm_want_ptrs := mmOrderPay.OrderPayMock.defaultExpectation.paramPtrs
+
+		mm_got := OrderRepoMockOrderPayParams{ctx, o1, op1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmOrderPay.t.Errorf("OrderRepoMock.OrderPay got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.o1 != nil && !minimock.Equal(*mm_want_ptrs.o1, mm_got.o1) {
+				mmOrderPay.t.Errorf("OrderRepoMock.OrderPay got unexpected parameter o1, want: %#v, got: %#v%s\n", *mm_want_ptrs.o1, mm_got.o1, minimock.Diff(*mm_want_ptrs.o1, mm_got.o1))
+			}
+
+			if mm_want_ptrs.op1 != nil && !minimock.Equal(*mm_want_ptrs.op1, mm_got.op1) {
+				mmOrderPay.t.Errorf("OrderRepoMock.OrderPay got unexpected parameter op1, want: %#v, got: %#v%s\n", *mm_want_ptrs.op1, mm_got.op1, minimock.Diff(*mm_want_ptrs.op1, mm_got.op1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmOrderPay.t.Errorf("OrderRepoMock.OrderPay got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmOrderPay.OrderPayMock.defaultExpectation.results
+		if mm_results == nil {
+			mmOrderPay.t.Fatal("No results are set for the OrderRepoMock.OrderPay")
+		}
+		return (*mm_results).err
+	}
+	if mmOrderPay.funcOrderPay != nil {
+		return mmOrderPay.funcOrderPay(ctx, o1, op1)
+	}
+	mmOrderPay.t.Fatalf("Unexpected call to OrderRepoMock.OrderPay. %v %v %v", ctx, o1, op1)
+	return
+}
+
+// OrderPayAfterCounter returns a count of finished OrderRepoMock.OrderPay invocations
+func (mmOrderPay *OrderRepoMock) OrderPayAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmOrderPay.afterOrderPayCounter)
+}
+
+// OrderPayBeforeCounter returns a count of OrderRepoMock.OrderPay invocations
+func (mmOrderPay *OrderRepoMock) OrderPayBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmOrderPay.beforeOrderPayCounter)
+}
+
+// Calls returns a list of arguments used in each call to OrderRepoMock.OrderPay.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmOrderPay *mOrderRepoMockOrderPay) Calls() []*OrderRepoMockOrderPayParams {
+	mmOrderPay.mutex.RLock()
+
+	argCopy := make([]*OrderRepoMockOrderPayParams, len(mmOrderPay.callArgs))
+	copy(argCopy, mmOrderPay.callArgs)
+
+	mmOrderPay.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockOrderPayDone returns true if the count of the OrderPay invocations corresponds
+// the number of defined expectations
+func (m *OrderRepoMock) MinimockOrderPayDone() bool {
+	if m.OrderPayMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.OrderPayMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.OrderPayMock.invocationsDone()
+}
+
+// MinimockOrderPayInspect logs each unmet expectation
+func (m *OrderRepoMock) MinimockOrderPayInspect() {
+	for _, e := range m.OrderPayMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to OrderRepoMock.OrderPay with params: %#v", *e.params)
+		}
+	}
+
+	afterOrderPayCounter := mm_atomic.LoadUint64(&m.afterOrderPayCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.OrderPayMock.defaultExpectation != nil && afterOrderPayCounter < 1 {
+		if m.OrderPayMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to OrderRepoMock.OrderPay")
+		} else {
+			m.t.Errorf("Expected call to OrderRepoMock.OrderPay with params: %#v", *m.OrderPayMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcOrderPay != nil && afterOrderPayCounter < 1 {
+		m.t.Error("Expected call to OrderRepoMock.OrderPay")
+	}
+
+	if !m.OrderPayMock.invocationsDone() && afterOrderPayCounter > 0 {
+		m.t.Errorf("Expected %d calls to OrderRepoMock.OrderPay but found %d calls",
+			mm_atomic.LoadUint64(&m.OrderPayMock.expectedInvocations), afterOrderPayCounter)
 	}
 }
 
@@ -1054,9 +1768,13 @@ func (m *OrderRepoMock) MinimockSetStatusInspect() {
 func (m *OrderRepoMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
 		if !m.minimockDone() {
-			m.MinimockAddInspect()
+			m.MinimockAddItemInspect()
+
+			m.MinimockAddOrderInspect()
 
 			m.MinimockGetByIdInspect()
+
+			m.MinimockOrderPayInspect()
 
 			m.MinimockSetStatusInspect()
 			m.t.FailNow()
@@ -1083,7 +1801,9 @@ func (m *OrderRepoMock) MinimockWait(timeout mm_time.Duration) {
 func (m *OrderRepoMock) minimockDone() bool {
 	done := true
 	return done &&
-		m.MinimockAddDone() &&
+		m.MinimockAddItemDone() &&
+		m.MinimockAddOrderDone() &&
 		m.MinimockGetByIdDone() &&
+		m.MinimockOrderPayDone() &&
 		m.MinimockSetStatusDone()
 }

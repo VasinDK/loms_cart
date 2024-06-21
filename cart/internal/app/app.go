@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -23,7 +24,10 @@ import (
 
 // Run - запускает сервер
 func Run(config *config.Config) {
-	conn, err := grpc.Dial("loms:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(
+		fmt.Sprintf("%v:%v", config.GetAddressStoreLoms(), config.GetPort()), 
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		slog.Error("Loms start", err)
 		os.Exit(1)

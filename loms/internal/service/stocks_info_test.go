@@ -16,7 +16,7 @@ func TestStocksInfo(t *testing.T) {
 	tests := []struct {
 		Name            string
 		Sku             uint32
-		Item            *model.StockItem
+		Item            *[]model.StockItem
 		WantGetStockErr error
 		WantError       error
 		Remains         uint64
@@ -24,10 +24,10 @@ func TestStocksInfo(t *testing.T) {
 		{
 			Name: "Тест без ошибок",
 			Sku:  121,
-			Item: &model.StockItem{
+			Item: &[]model.StockItem{{
 				TotalCount: 100,
 				Reserved:   60,
-			},
+			}},
 			WantGetStockErr: nil,
 			WantError:       nil,
 			Remains:         40,
@@ -35,10 +35,10 @@ func TestStocksInfo(t *testing.T) {
 		{
 			Name: "Тест c ошибкой",
 			Sku:  12,
-			Item: &model.StockItem{
+			Item: &[]model.StockItem{{
 				TotalCount: 100,
 				Reserved:   30,
-			},
+			}},
 			WantGetStockErr: model.ErrSkuNoSuch,
 			WantError:       fmt.Errorf("s.StockRepository.GetStockItemBySku %w", model.ErrSkuNoSuch),
 			Remains:         0,
@@ -52,7 +52,7 @@ func TestStocksInfo(t *testing.T) {
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
 
-			StockMock.GetStockItemBySkuMock.Expect(context.Background(), tt.Sku).Return(tt.Item, tt.WantGetStockErr)
+			StockMock.GetItemsBySkuMock.Expect(context.Background(), &[]uint32{tt.Sku}).Return(tt.Item, tt.WantGetStockErr)
 
 			NewService := New(OrderMock, StockMock)
 			remains, err := NewService.StocksInfo(context.Background(), tt.Sku)
