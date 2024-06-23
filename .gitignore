@@ -11,7 +11,7 @@
 /cover.svg
 /cart/vendor.protogen/
 /loms/pgdata
-/loms/vendor-prono
+/loms/vendor-proto
 /cart/vendor-proto
 /cart/pkg/api/loms
 /loms/pkg/api/loms

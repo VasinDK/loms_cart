@@ -26,11 +26,16 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		item := model.StockItem{}
 		rows.Scan(&item.Sku, &item.TotalCount, &item.Reserved)
 		currentItems[item.Sku] = item
+	}
+
+	if err = rows.Err(); err != nil {
+		return err
 	}
 
 	// Делаем транзакцию на покупку
@@ -75,10 +80,10 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 		remainsTotalCount := currentItems[itm.Sku].TotalCount - uint64(itm.Count)
 
 		const queryTotalCountRemove = `
-		UPDATE stocks
-		SET total_count = @total_count
-		WHERE sku = @sku
-	`
+			UPDATE stocks
+			SET total_count = @total_count
+			WHERE sku = @sku
+		`
 		argsTotalCount := pgx.NamedArgs{
 			"total_count": remainsTotalCount,
 			"sku":         itm.Sku,

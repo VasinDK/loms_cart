@@ -17,6 +17,7 @@ func (o *OrderRepository) GetById(ctx context.Context, orderId model.OrderId) (*
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	order := model.Order{}
 	var user int64
@@ -26,6 +27,10 @@ func (o *OrderRepository) GetById(ctx context.Context, orderId model.OrderId) (*
 		item := model.OrderItem{}
 		rows.Scan(&user, &status, &item.Sku, &item.Count)
 		order.Items = append(order.Items, &item)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	order.User = user
