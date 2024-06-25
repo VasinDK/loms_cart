@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"route256/cart/internal/model"
+	"route256/cart/pkg/errgroup_my"
 )
 
 type Repository interface {
 	GetProductCart(context.Context, *model.Product, int64) (*model.Product, error)
 	AddProductCart(context.Context, *model.Product, int64) error
-	CheckSKU(context.Context, int64) (*model.Product, error)
+	CheckSKU(context.Context, chan<- *model.Product, int64) error
 	StockInfo(context.Context, int64) (int64, error)
 }
 
@@ -29,13 +30,23 @@ func New(repository Repository) *Handler {
 // Затем получаем, если есть, количество товара добавленного ранее в корзину.
 // Добавляет к нему новый объем и сохраняет в корзину
 func (h *Handler) AddProduct(ctx context.Context, productRequest *model.Product, userId int64) error {
-	checkSKU, err := h.Repository.CheckSKU(ctx, productRequest.SKU)
+	ch1 := make(chan *model.Product)
+
+	eg, ctx := errgroup_my.WithContext(ctx)
+	eg.Go(func() error {
+		return h.Repository.CheckSKU(ctx, ch1, productRequest.SKU)
+	})
+
+	checkSKU := <-ch1
+
+	err := eg.Wait()
 	if err != nil {
 		return fmt.Errorf("s.Repository.CheckSKU %w", err)
 	}
+	close(ch1)
 
 	if productRequest.Count < 1 {
-		return fmt.Errorf("AddProduct %w", fmt.Errorf("Количество меньше 1"))
+		return fmt.Errorf("AddProduct %w", fmt.Errorf("количество меньше 1"))
 	}
 
 	var countSKU int64
@@ -43,7 +54,7 @@ func (h *Handler) AddProduct(ctx context.Context, productRequest *model.Product,
 	if checkSKU.Price > 0 {
 		countSKU, err = h.Repository.StockInfo(ctx, productRequest.SKU)
 		if err != nil {
-			return fmt.Errorf("s.Repository.GetProductCart %w", err)
+			return fmt.Errorf("h.Repository.StockInfo %w", err)
 		}
 	}
 

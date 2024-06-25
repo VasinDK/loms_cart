@@ -36,7 +36,7 @@ func NewRepository(config Config, loms loms.LomsClient) *Repository {
 }
 
 // CheckSKU - проверяет наличие sku на удаленном сервере
-func (r *Repository) CheckSKU(ctx context.Context, sku int64) (*model.Product, error) {
+func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sku int64) error {
 	// CheckSkuRequest - структура для отправки запроса SKU
 	type CheckSkuRequest struct {
 		Token string `json:"token"`
@@ -56,26 +56,27 @@ func (r *Repository) CheckSKU(ctx context.Context, sku int64) (*model.Product, e
 		Sku:   sku,
 	}
 
-	responseSKU := &model.Product{}
+	response := &model.Product{}
 
 	jsonBodyCheckSKU, err := json.Marshal(bodyCheckSKU)
 	if err != nil {
-		return responseSKU, err
+		return err
 	}
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		r.Config.GetAddressStore(),
 		bytes.NewReader(jsonBodyCheckSKU),
 	)
 	if err != nil {
-		return responseSKU, err
+		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return responseSKU, err
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -84,12 +85,15 @@ func (r *Repository) CheckSKU(ctx context.Context, sku int64) (*model.Product, e
 
 	// Если в ответе есть цена SKU считаем что товар доступен
 	if SkuResponseCheck.Price > 0 {
-		responseSKU.Name = SkuResponseCheck.Name
-		responseSKU.Price = SkuResponseCheck.Price
-		return responseSKU, nil
+		response.Name = SkuResponseCheck.Name
+		response.Price = SkuResponseCheck.Price
+		response.SKU = sku
+		ch1 <- response
+
+		return nil
 	}
 
-	return responseSKU, model.ErrNoProductInStock
+	return model.ErrNoProductInStock
 }
 
 // GetProductCart - получает конкретный товар из корзины пользователя
@@ -163,6 +167,7 @@ func (r *Repository) Checkout(ctx context.Context, userId int64, cart []*model.P
 // StockInfo - инфа по остаткам
 func (r *Repository) StockInfo(ctx context.Context, sku int64) (int64, error) {
 	countloms, err := r.ClientLoms.StocksInfo(ctx, &loms.StocksInfoRequest{Sku: uint32(sku)})
+
 	if err != nil {
 		return 0, err
 	}

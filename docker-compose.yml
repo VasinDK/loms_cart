@@ -37,13 +37,13 @@ services:
     depends_on:
       - postgres
 
-  cart:
-    container_name: cart
-    restart: unless-stopped
-    build:
-      context: ./cart
-      dockerfile: ./build/Dockerfile
-    ports:
-      - "8082:8082" # http
-    depends_on:
-      - loms
+  # cart:
+  #   container_name: cart
+  #   restart: unless-stopped
+  #   build:
+  #     context: ./cart
+  #     dockerfile: ./build/Dockerfile
+  #   ports:
+  #     - "8082:8082" # http
+  #   depends_on:
+  #     - loms

@@ -13,6 +13,8 @@ func (s *Server) GetItemsByUserID(h *get_cart.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "GetItemsByUserID"
 
+		ctx := context.Background()
+
 		w.Header().Set("Content-Type", "application/json")
 
 		userId, err := getPathValueInt(w, r, "user_id")
@@ -27,7 +29,7 @@ func (s *Server) GetItemsByUserID(h *get_cart.Handler) http.HandlerFunc {
 			return
 		}
 
-		items, err := h.GetCart(context.Background(), userId)
+		items, err := h.GetCart(ctx, userId)
 		if err != nil || items.TotalPrice == 0 {
 			if err != nil {
 				slog.Error(op, err)

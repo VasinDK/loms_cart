@@ -1,10 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"route256/cart/internal/app/http_handlers"
 	"route256/cart/internal/middleware"
 	"route256/cart/internal/pkg/config"
@@ -15,6 +17,7 @@ import (
 	"route256/cart/internal/service/list/checkout"
 	"route256/cart/internal/service/list/clear_cart"
 	"route256/cart/internal/service/list/get_cart"
+	"syscall"
 
 	"route256/cart/pkg/api/loms/v1"
 
@@ -25,7 +28,7 @@ import (
 // Run - запускает сервер
 func Run(config *config.Config) {
 	conn, err := grpc.Dial(
-		fmt.Sprintf("%v:%v", config.GetAddressStoreLoms(), config.GetPort()), 
+		fmt.Sprintf("%v:%v", config.GetAddressStoreLoms(), config.GetPort()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -49,5 +52,15 @@ func Run(config *config.Config) {
 	handle := middleware.Logging(mux)
 	handle = middleware.PanicRecovery(handle)
 
-	httpserver.Run(handle, config)
+	server := httpserver.New(handle, config)
+	go server.Run()
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	<-ctx.Done()
+
+	server.GraceShutdown(ctx)
+
+	slog.Info("the server is beautifully stopped")
 }

@@ -1,22 +1,27 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strconv"
+)
 
 var (
-	Port             = "8082"
-	TokenStore       = "testtoken"
-	AddressStore     = "http://route256.pavl.uk:8080/get_product"
-	AddressStoreLoms = "localhost"
-	PostLoms         = "50051"
+	Port              = "8082"
+	TokenStore        = "testtoken"
+	AddressStore      = "http://route256.pavl.uk:8080/get_product"
+	AddressStoreLoms  = "localhost" // localhost // loms
+	PostLoms          = "50051"
+	TimeGraceShutdown = 5
 )
 
 // Config - конфигурация приложения
 type Config struct {
-	Port             string // Port - порт приложения
-	TokenStore       string // TokenStore - токен для стороннего хранилища
-	AddressStore     string // AddressStore - адрес стороннего хранилища
-	AddressStoreLoms string // AddressStoreLoms - адрес Loms хранилища
-	PostLoms         string // Port grpc loms
+	Port              string // Port - порт приложения
+	TokenStore        string // TokenStore - токен для стороннего хранилища
+	AddressStore      string // AddressStore - адрес стороннего хранилища
+	AddressStoreLoms  string // AddressStoreLoms - адрес Loms хранилища
+	PostLoms          string // Port grpc loms
+	TimeGraceShutdown int    // Время для плавного завершения работы сервера
 }
 
 // New - создает экземпляр конфига
@@ -41,12 +46,17 @@ func New() *Config {
 		PostLoms = os.Getenv("PORT_LOMS")
 	}
 
+	if len(os.Getenv("TIME_GRACE_SHUTDOWN")) > 0 {
+		TimeGraceShutdown, _ = strconv.Atoi(os.Getenv("TIME_GRACE_SHUTDOWN"))
+	}
+
 	return &Config{
-		Port:             Port,
-		TokenStore:       TokenStore,
-		AddressStore:     AddressStore,
-		AddressStoreLoms: AddressStoreLoms,
-		PostLoms:         PostLoms,
+		Port:              Port,
+		TokenStore:        TokenStore,
+		AddressStore:      AddressStore,
+		AddressStoreLoms:  AddressStoreLoms,
+		PostLoms:          PostLoms,
+		TimeGraceShutdown: TimeGraceShutdown,
 	}
 }
 
@@ -73,4 +83,9 @@ func (c *Config) GetAddressStore() string {
 // GetAddressStoreLoms - получает адрес хранилища
 func (c *Config) GetAddressStoreLoms() string {
 	return c.AddressStoreLoms
+}
+
+// GetTimeGraceShutdown - получает адрес хранилища
+func (c *Config) GetTimeGraceShutdown() int {
+	return c.TimeGraceShutdown
 }
