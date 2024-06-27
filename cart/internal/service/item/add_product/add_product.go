@@ -38,7 +38,6 @@ func (h *Handler) AddProduct(ctx context.Context, productRequest *model.Product,
 	})
 
 	checkSKU := <-ch1
-
 	err := eg.Wait()
 	if err != nil {
 		return fmt.Errorf("s.Repository.CheckSKU %w", err)
@@ -50,7 +49,7 @@ func (h *Handler) AddProduct(ctx context.Context, productRequest *model.Product,
 	}
 
 	var countSKU int64
-
+	ctx = context.Background()
 	if checkSKU.Price > 0 {
 		countSKU, err = h.Repository.StockInfo(ctx, productRequest.SKU)
 		if err != nil {

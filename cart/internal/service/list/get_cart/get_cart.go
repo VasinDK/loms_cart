@@ -55,11 +55,13 @@ func (h *Handler) GetCart(ctx context.Context, cartId int64) (*model.Cart, error
 	wg.Add(1)
 	go func() {
 		for j := range ch1 {
-			item := j
-			item.Count = productsList[j.SKU].Count
-			products = append(products, item)
+			if _, ok := productsList[j.SKU]; ok {
+				item := j
+				item.Count = productsList[j.SKU].Count
+				products = append(products, item)
 
-			totalPrice += item.Price * uint32(productsList[j.SKU].Count)
+				totalPrice += item.Price * uint32(productsList[j.SKU].Count)
+			}
 		}
 		wg.Done()
 	}()

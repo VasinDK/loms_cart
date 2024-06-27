@@ -3,6 +3,7 @@ package repository_test
 import (
 	"context"
 	"route256/cart/internal/model"
+	"route256/cart/pkg/errgroup_my"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,6 +22,7 @@ func (s *SuiteRepo) TestCheckSKU() {
 			WantRes: &model.Product{
 				Name:  "Кроссовки Nike JORDAN",
 				Price: 2202,
+				SKU:   773297411,
 			},
 			WantErr: nil,
 		},
@@ -34,9 +36,20 @@ func (s *SuiteRepo) TestCheckSKU() {
 
 	for _, tt := range tests {
 		s.T().Run(tt.Name, func(t *testing.T) {
-			res, err := s.Repo.CheckSKU(context.Background(), tt.SKU)
-			assert.Equal(t, err, tt.WantErr)
+			ch1 := make(chan *model.Product)
+
+			eg, ctx := errgroup_my.WithContext(context.Background())
+			eg.Go(func() error {
+				return s.Repo.CheckSKU(ctx, ch1, tt.SKU)
+			})
+
+			res := <-ch1
+			err := eg.Wait()
+
+			close(ch1)
+
 			assert.Equal(t, res, tt.WantRes)
+			assert.Equal(t, err, tt.WantErr)
 		})
 	}
 }

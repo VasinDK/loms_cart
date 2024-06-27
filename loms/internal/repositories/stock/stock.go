@@ -11,7 +11,6 @@ type StockItem struct {
 }
 
 type StockRepository struct {
-	Repo map[uint32]StockItem
 	Conn *pgxpool.Pool
 }
 

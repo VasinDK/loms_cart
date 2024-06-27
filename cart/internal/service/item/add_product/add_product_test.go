@@ -88,16 +88,21 @@ func TestAddProduct(t *testing.T) {
 			GetProdRespParam2:  nil,
 			AddProdReq:         productCount0,
 			AddProdResp:        nil,
-			WantError:          fmt.Errorf("AddProduct %w", fmt.Errorf("Количество меньше 1")),
+			WantError:          fmt.Errorf("AddProduct %w", fmt.Errorf("количество меньше 1")),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
 			t.Parallel()
+
 			ctrl := minimock.NewController(t)
 			repoMock := mock.NewRepositoryMock(ctrl)
-			repoMock.CheckSKUMock.Optional().Expect(context.Background(), tt.CheckSKUReq).Return(tt.CheckSKURespParam1, tt.CheckSKURespParam2)
+			repoMock.CheckSKUMock.Optional().Set(func(ctx context.Context, ch1 chan<- *model.Product, userId int64) error {
+				ch1 <- tt.CheckSKURespParam1
+				return tt.CheckSKURespParam2
+			})
+
 			repoMock.GetProductCartMock.Optional().Expect(context.Background(), tt.GetProdReq, tt.UserId).Return(tt.GetProdRespParam1, tt.GetProdRespParam2)
 			repoMock.AddProductCartMock.Optional().Expect(context.Background(), tt.AddProdReq, tt.UserId).Return(tt.AddProdResp)
 			repoMock.StockInfoMock.Optional().Expect(context.Background(), tt.CheckSKUReq).Return(1000, nil)

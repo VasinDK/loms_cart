@@ -28,7 +28,7 @@ import (
 // Run - запускает сервер
 func Run(config *config.Config) {
 	conn, err := grpc.Dial(
-		fmt.Sprintf("%v:%v", config.GetAddressStoreLoms(), config.GetPort()),
+		fmt.Sprintf("%v:%v", config.GetAddressStoreLoms(), config.GetPortLoms()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

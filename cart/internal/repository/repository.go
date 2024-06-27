@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"route256/cart/internal/model"
 	"route256/cart/pkg/api/loms/v1"
+	"sync"
 )
 
 type Config interface {
@@ -24,6 +25,7 @@ type Repository struct {
 	Carts      Carts
 	ClientLoms loms.LomsClient
 	Config     Config
+	mu         sync.RWMutex
 }
 
 // NewRepository - инициализирует репозиторий
@@ -60,6 +62,7 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 
 	jsonBodyCheckSKU, err := json.Marshal(bodyCheckSKU)
 	if err != nil {
+		ch1 <- response
 		return err
 	}
 
@@ -70,12 +73,13 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 		bytes.NewReader(jsonBodyCheckSKU),
 	)
 	if err != nil {
+		ch1 <- response
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		ch1 <- response
 		return err
 	}
 	defer resp.Body.Close()
@@ -85,13 +89,16 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 
 	// Если в ответе есть цена SKU считаем что товар доступен
 	if SkuResponseCheck.Price > 0 {
+
 		response.Name = SkuResponseCheck.Name
 		response.Price = SkuResponseCheck.Price
 		response.SKU = sku
-		ch1 <- response
 
+		ch1 <- response
 		return nil
 	}
+
+	ch1 <- response
 
 	return model.ErrNoProductInStock
 }
@@ -100,11 +107,13 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 func (r *Repository) GetProductCart(ctx context.Context, productRequest *model.Product, cartId int64) (*model.Product, error) {
 	item := &model.Product{}
 
-	if _, ok := r.Carts[cartId]; ok {
-		if v, ok := r.Carts[cartId][productRequest.SKU]; ok {
-			item.Count = v.Count
-			item.SKU = productRequest.SKU
-		}
+	r.mu.RLock()
+	v, ok := r.Carts[cartId][productRequest.SKU]
+	r.mu.RUnlock()
+
+	if ok {
+		item.Count = v.Count
+		item.SKU = productRequest.SKU
 	}
 
 	return item, nil
@@ -112,32 +121,51 @@ func (r *Repository) GetProductCart(ctx context.Context, productRequest *model.P
 
 // AddProductCart - добавляет товар в корзину
 func (r *Repository) AddProductCart(ctx context.Context, productRequest *model.Product, cartId int64) error {
-	if _, ok := r.Carts[cartId]; !ok {
+
+	r.mu.RLock()
+	_, ok := r.Carts[cartId]
+	r.mu.RUnlock()
+
+	if !ok {
+		r.mu.Lock()
 		r.Carts[cartId] = make(map[int64]*model.Product)
+		r.mu.Unlock()
 	}
 
+	r.mu.Lock()
 	r.Carts[cartId][productRequest.SKU] = &model.Product{
 		Count: productRequest.Count,
 	}
+	r.mu.Unlock()
 
 	return nil
 }
 
 // DeleteProductCart - удаляет товар из корзины
 func (r *Repository) DeleteProductCart(ctx context.Context, cartId, sku int64) error {
+	r.mu.Lock()
 	delete(r.Carts[cartId], sku)
+	r.mu.Unlock()
+
 	return nil
 }
 
 // ClearCart - чистит корзину
 func (r *Repository) ClearCart(ctx context.Context, cartId int64) error {
+	r.mu.Lock()
 	delete(r.Carts, cartId)
+	r.mu.Unlock()
+
 	return nil
 }
 
 // GetCart - получает содержимое корзины
 func (r *Repository) GetCart(ctx context.Context, cartId int64) (map[int64]*model.Product, error) {
-	return r.Carts[cartId], nil
+	r.mu.RLock()
+	cart := r.Carts[cartId]
+	r.mu.RUnlock()
+
+	return cart, nil
 }
 
 // Checkout - создаент ордера на уделенном сервере

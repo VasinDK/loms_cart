@@ -12,6 +12,8 @@ services:
       - "5432:5432"
     volumes:
       - ./loms/migrations:/docker-entrypoint-initdb.d	
+    networks:
+        - app-network
 
   pgadmin:
     image: dpage/pgadmin4
@@ -21,12 +23,13 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: user@domain.com
       PGADMIN_DEFAULT_PASSWORD: SuperSecret
+    networks:
+        - app-network
   
   loms:
     container_name: loms
     restart: unless-stopped
     environment:
-      ADDRESS_STORE_LOMS: loms
       DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
     build:
       context: ./loms
@@ -36,14 +39,24 @@ services:
       - "8085:8085"   # http
     depends_on:
       - postgres
+    networks:
+        - app-network
 
-  # cart:
-  #   container_name: cart
-  #   restart: unless-stopped
-  #   build:
-  #     context: ./cart
-  #     dockerfile: ./build/Dockerfile
-  #   ports:
-  #     - "8082:8082" # http
-  #   depends_on:
-  #     - loms
+  cart:
+    container_name: cart
+    restart: unless-stopped
+    environment:
+      ADDRESS_STORE_LOMS: loms
+    build:
+      context: ./cart
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "8082:8082" # http
+    depends_on:
+      - loms
+    networks:
+        - app-network
+        
+networks:
+  app-network:
+    driver: bridge        
