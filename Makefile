@@ -14,7 +14,7 @@ run-all:
 	docker-compose build --no-cache && docker-compose up --force-recreate -d
 
 stop-docker: 
-	docker-compose down -v
+	docker-compose down
 
 run-cover:
 	go test -cover $(PACKAGES) | grep -v cart/internal/repository
