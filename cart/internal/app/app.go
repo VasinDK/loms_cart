@@ -60,7 +60,7 @@ func Run(config *config.Config) {
 
 	<-ctx.Done()
 
-	server.GraceShutdown(ctx)
+	server.GraceShutdown()
 
 	slog.Info("the server is beautifully stopped")
 }

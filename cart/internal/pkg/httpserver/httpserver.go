@@ -34,18 +34,18 @@ func New(mux http.Handler, config Config) *Server {
 func (s *Server) Run() {
 	err := s.HttpServer.ListenAndServe()
 	if err != nil {
-		slog.Error("s.HttpServer.ListenAndServe", err)
+		slog.Error("s.HttpServer.ListenAndServe", "err", err)
 		os.Exit(1)
 	}
 }
 
 // GraceShutdown - плавно завершает сервер
-func (s *Server) GraceShutdown(ctx context.Context) {
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(s.TimeGraceShutdown)*time.Second)
+func (s *Server) GraceShutdown() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(s.TimeGraceShutdown)*time.Second)
 	defer cancel()
 
 	err := s.HttpServer.Shutdown(ctx)
 	if err != nil {
-		slog.Info("s.HttpServer.Shutdown", err)
+		slog.Info("s.HttpServer.Shutdown", "err", err)
 	}
 }
