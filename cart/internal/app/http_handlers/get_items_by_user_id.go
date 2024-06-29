@@ -1,7 +1,6 @@
 package http_handlers
 
 import (
-	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -13,7 +12,7 @@ func (s *Server) GetItemsByUserID(h *get_cart.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "GetItemsByUserID"
 
-		ctx := context.Background()
+		ctx := r.Context()
 
 		w.Header().Set("Content-Type", "application/json")
 

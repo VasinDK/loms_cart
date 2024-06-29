@@ -1,7 +1,6 @@
 package http_handlers
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -14,6 +13,7 @@ import (
 func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "AddItem"
+		ctx := r.Context()
 
 		userId, err := getPathValueInt(w, r, "user_id")
 		if err != nil {
@@ -60,7 +60,7 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		product.SKU = sku
 		product.Count = productRequest.Count
 
-		err = h.AddProduct(context.Background(), &product, userId)
+		err = h.AddProduct(ctx, &product, userId)
 
 		if errors.Is(err, model.ErrNoProductInStock) {
 			w.WriteHeader(http.StatusPreconditionFailed)

@@ -1,7 +1,6 @@
 package http_handlers
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"route256/cart/internal/service/list/clear_cart"
@@ -11,6 +10,8 @@ import (
 func (s *Server) DeleteItemsByUserID(h *clear_cart.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "DeleteItemsByUserID"
+
+		ctx := r.Context()
 
 		userId, err := getPathValueInt(w, r, "user_id")
 		if err != nil {
@@ -24,7 +25,7 @@ func (s *Server) DeleteItemsByUserID(h *clear_cart.Handler) http.HandlerFunc {
 			return
 		}
 
-		err = h.ClearCart(context.Background(), userId)
+		err = h.ClearCart(ctx, userId)
 		if err != nil {
 			slog.Error(op, err)
 			w.WriteHeader(http.StatusInternalServerError)
