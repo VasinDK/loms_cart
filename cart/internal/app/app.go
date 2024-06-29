@@ -53,12 +53,17 @@ func Run(config *config.Config) {
 	handle = middleware.PanicRecovery(handle)
 
 	server := httpserver.New(handle, config)
-	go server.Run()
+	errRun := server.Run()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	<-ctx.Done()
+	select {
+	case err := <-errRun:
+		slog.Error("server.Run", "err", err)
+	case <-ctx.Done():
+		slog.Info("signal.NotifyContext stop")
+	}
 
 	server.GraceShutdown()
 

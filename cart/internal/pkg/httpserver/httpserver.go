@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -31,12 +30,17 @@ func New(mux http.Handler, config Config) *Server {
 }
 
 // Run - запускает http сервер
-func (s *Server) Run() {
-	err := s.HttpServer.ListenAndServe()
-	if err != nil {
-		slog.Error("s.HttpServer.ListenAndServe", "err", err)
-		os.Exit(1)
-	}
+func (s *Server) Run() <-chan error {
+	chLis := make(chan error)
+
+	go func() {
+		err := s.HttpServer.ListenAndServe()
+		if err != nil {
+			chLis <- err
+		}
+	}()
+
+	return chLis
 }
 
 // GraceShutdown - плавно завершает сервер
