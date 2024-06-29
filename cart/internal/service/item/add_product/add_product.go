@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"route256/cart/internal/model"
-	"route256/cart/pkg/errgroup_my"
 )
 
 type Repository interface {
@@ -30,18 +29,13 @@ func New(repository Repository) *Handler {
 // Затем получаем, если есть, количество товара добавленного ранее в корзину.
 // Добавляет к нему новый объем и сохраняет в корзину
 func (h *Handler) AddProduct(ctx context.Context, productRequest *model.Product, userId int64) error {
-	ch1 := make(chan *model.Product)
+	ch1 := make(chan *model.Product, 1)
 
-	eg, ctx := errgroup_my.WithContext(ctx)
-	eg.Go(func() error {
-		return h.Repository.CheckSKU(ctx, ch1, productRequest.SKU)
-	})
-
-	checkSKU := <-ch1
-	err := eg.Wait()
+	err := h.Repository.CheckSKU(ctx, ch1, productRequest.SKU)
 	if err != nil {
-		return fmt.Errorf("s.Repository.CheckSKU %w", err)
+		return fmt.Errorf("h.Repository.CheckSKU %w", err)
 	}
+	checkSKU := <-ch1
 	close(ch1)
 
 	if productRequest.Count < 1 {

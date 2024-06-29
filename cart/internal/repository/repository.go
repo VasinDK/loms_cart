@@ -72,6 +72,7 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 		r.Config.GetAddressStore(),
 		bytes.NewReader(jsonBodyCheckSKU),
 	)
+
 	if err != nil {
 		ch1 <- response
 		return err
@@ -89,12 +90,12 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 
 	// Если в ответе есть цена SKU считаем что товар доступен
 	if SkuResponseCheck.Price > 0 {
-
 		response.Name = SkuResponseCheck.Name
 		response.Price = SkuResponseCheck.Price
 		response.SKU = sku
 
 		ch1 <- response
+
 		return nil
 	}
 
