@@ -39,6 +39,7 @@ func (s *Server) Run() {
 	}
 }
 
+// GraceShutdown - плавно завершает сервер
 func (s *Server) GraceShutdown(ctx context.Context) {
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(s.TimeGraceShutdown)*time.Second)
 	defer cancel()

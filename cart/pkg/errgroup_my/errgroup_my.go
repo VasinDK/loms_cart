@@ -139,7 +139,7 @@ func (g *Group) addItemInPeriod() <-chan struct{} {
 		for {
 			currentTime := time.Now().Unix()
 
-			if g.countInPeriod.deadline < currentTime {
+			if g.countInPeriod.deadline <= currentTime {
 				g.countInPeriod.deadline = currentTime + int64(g.countInPeriod.secondsInPeriod)
 				g.countInPeriod.current = 1
 				ch1 <- struct{}{}

@@ -13,11 +13,11 @@ run-all:
 #	docker-compose up --force-recreate --build -d
 	docker-compose build --no-cache && docker-compose up --force-recreate -d
 
-stop-docker: 
-	docker-compose down
-
 run-cover:
 	go test -cover $(PACKAGES) | grep -v cart/internal/repository
+
+stop-docker: 
+	docker-compose down
 
 # run-migrations:
 #	goose -dir ./loms/migrations postgres "postgresql://admin_loms:password@localhost:5432/loms?sslmode=disable" up
