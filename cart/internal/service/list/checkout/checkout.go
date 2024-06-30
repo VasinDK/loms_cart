@@ -10,7 +10,7 @@ import (
 
 type Repository interface {
 	Checkout(context.Context, int64, []*model.Product) (int64, error)
-	CheckSKU(context.Context, chan<- *model.Product, int64) error
+	CheckSKU(context.Context, int64) (*model.Product, error)
 	GetCart(context.Context, int64) (map[int64]*model.Product, error)
 	ClearCart(context.Context, int64) error
 }
@@ -28,10 +28,13 @@ func New(repository Repository) *Handler {
 
 // Checkout - создает ордер в order storage
 func (h *Handler) Checkout(ctx context.Context, userId int64) (int64, error) {
-	cart, err := get_cart.New(h.Repository).GetCart(ctx, userId)
+	get_cart := get_cart.New(h.Repository)
+	cart, err := get_cart.GetCart(ctx, userId)
+
 	if err != nil {
 		return 0, fmt.Errorf("get_cart.New().GetCart() %w", err)
 	}
+
 	orderId, err := h.Repository.Checkout(ctx, userId, cart.Items)
 	if err != nil {
 		return 0, fmt.Errorf("h.Repository.Checkout %w", err)

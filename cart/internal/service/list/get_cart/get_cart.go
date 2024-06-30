@@ -10,7 +10,7 @@ import (
 )
 
 type Repository interface {
-	CheckSKU(context.Context, chan<- *model.Product, int64) error
+	CheckSKU(context.Context, int64) (*model.Product, error)
 	GetCart(context.Context, int64) (map[int64]*model.Product, error)
 }
 
@@ -31,49 +31,44 @@ func (h *Handler) GetCart(ctx context.Context, cartId int64) (*model.Cart, error
 	cart := &model.Cart{}
 
 	productsList, err := h.Repository.GetCart(ctx, cartId)
+
 	if err != nil {
 		return cart, fmt.Errorf("s.Repository.GetCart %w", err)
 	}
 
-	products := make([]*model.Product, 0, len(productsList))
+	mu := &sync.RWMutex{}
 
 	eg, ctx := errgroup_my.WithContext(ctx)
 	eg.SetLimitPeriod(10, 1)
 
-	ch1 := make(chan *model.Product)
-
 	for i := range productsList {
 		eg.Go(func() error {
-			err := h.Repository.CheckSKU(ctx, ch1, i)
+			prod, err := h.Repository.CheckSKU(ctx, i)
+			if err != nil {
+				return err
+			}
+
+			mu.Lock()
+			productsList[i].Price = prod.Price
+			productsList[i].Name = prod.Name
+			productsList[i].SKU = prod.SKU
+			mu.Unlock()
+
 			return err
 		})
 
 	}
 
-	wg := sync.WaitGroup{}
-
-	wg.Add(1)
-	go func() {
-		for j := range ch1 {
-			if _, ok := productsList[j.SKU]; ok {
-				item := j
-				item.Count = productsList[j.SKU].Count
-				products = append(products, item)
-
-				totalPrice += item.Price * uint32(productsList[j.SKU].Count)
-			}
-		}
-		wg.Done()
-	}()
-
-	err = eg.Wait()
-	if err != nil {
+	if err = eg.Wait(); err != nil {
 		return nil, fmt.Errorf("eg.Wait %w", err)
 	}
 
-	close(ch1)
+	products := make([]*model.Product, 0)
 
-	wg.Wait()
+	for _, v := range productsList {
+		products = append(products, v)
+		totalPrice += v.Price * uint32(v.Count)
+	}
 
 	sort.Slice(products, func(i, j int) bool {
 		return products[i].SKU < products[j].SKU

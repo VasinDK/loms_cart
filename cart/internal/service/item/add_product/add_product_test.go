@@ -49,7 +49,7 @@ func TestAddProduct(t *testing.T) {
 			GetProdRespParam2:  nil,
 			AddProdReq:         product,
 			AddProdResp:        nil,
-			WantError:          fmt.Errorf("s.Repository.CheckSKU %w", model.ErrNoProductInStock),
+			WantError:          fmt.Errorf("h.Repository.CheckSKU %w", model.ErrNoProductInStock),
 		},
 		{
 			Name:               "sku есть, ранее не добавлены в корзину",
@@ -98,9 +98,8 @@ func TestAddProduct(t *testing.T) {
 
 			ctrl := minimock.NewController(t)
 			repoMock := mock.NewRepositoryMock(ctrl)
-			repoMock.CheckSKUMock.Optional().Set(func(ctx context.Context, ch1 chan<- *model.Product, userId int64) error {
-				ch1 <- tt.CheckSKURespParam1
-				return tt.CheckSKURespParam2
+			repoMock.CheckSKUMock.Optional().Set(func(ctx context.Context, userId int64) (*model.Product, error) {
+				return tt.CheckSKURespParam1, tt.CheckSKURespParam2
 			})
 
 			repoMock.GetProductCartMock.Optional().Expect(context.Background(), tt.GetProdReq, tt.UserId).Return(tt.GetProdRespParam1, tt.GetProdRespParam2)

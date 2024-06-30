@@ -68,17 +68,14 @@ func TestGetCart(t *testing.T) {
 			ctrl := minimock.NewController(t)
 			repositoryMock := mock.NewRepositoryMock(ctrl)
 			repositoryMock.GetCartMock.Optional().Expect(context.Background(), tt.CartId).Return(tt.CartProd, nil)
-			repositoryMock.CheckSKUMock.Optional().Set(func(ctx context.Context, ch1 chan<- *model.Product, i int64) error {
+			repositoryMock.CheckSKUMock.Optional().Set(func(ctx context.Context, i int64) (*model.Product, error) {
 				switch i {
 				case 123:
-					ch1 <- CheckSKUResp1
-					return nil
+					return CheckSKUResp1, nil
 				case 124:
-					ch1 <- CheckSKUResp2
-					return nil
+					return CheckSKUResp2, nil
 				default:
-					ch1 <- CheckSKUResp0
-					return nil
+					return CheckSKUResp0, nil
 				}
 			})
 

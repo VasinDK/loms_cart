@@ -9,7 +9,7 @@ import (
 type Repository interface {
 	GetProductCart(context.Context, *model.Product, int64) (*model.Product, error)
 	AddProductCart(context.Context, *model.Product, int64) error
-	CheckSKU(context.Context, chan<- *model.Product, int64) error
+	CheckSKU(context.Context, int64) (*model.Product, error)
 	StockInfo(context.Context, int64) (int64, error)
 }
 
@@ -29,14 +29,10 @@ func New(repository Repository) *Handler {
 // Затем получаем, если есть, количество товара добавленного ранее в корзину.
 // Добавляет к нему новый объем и сохраняет в корзину
 func (h *Handler) AddProduct(ctx context.Context, productRequest *model.Product, userId int64) error {
-	ch1 := make(chan *model.Product, 1)
-
-	err := h.Repository.CheckSKU(ctx, ch1, productRequest.SKU)
+	checkSKU, err := h.Repository.CheckSKU(ctx, productRequest.SKU)
 	if err != nil {
 		return fmt.Errorf("h.Repository.CheckSKU %w", err)
 	}
-	checkSKU := <-ch1
-	close(ch1)
 
 	if productRequest.Count < 1 {
 		return fmt.Errorf("AddProduct %w", fmt.Errorf("количество меньше 1"))

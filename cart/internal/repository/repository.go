@@ -38,7 +38,7 @@ func NewRepository(config Config, loms loms.LomsClient) *Repository {
 }
 
 // CheckSKU - проверяет наличие sku на удаленном сервере
-func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sku int64) error {
+func (r *Repository) CheckSKU(ctx context.Context, sku int64) (*model.Product, error) {
 	// CheckSkuRequest - структура для отправки запроса SKU
 	type CheckSkuRequest struct {
 		Token string `json:"token"`
@@ -62,8 +62,7 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 
 	jsonBodyCheckSKU, err := json.Marshal(bodyCheckSKU)
 	if err != nil {
-		ch1 <- response
-		return err
+		return nil, err
 	}
 
 	req, err := http.NewRequestWithContext(
@@ -74,14 +73,12 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 	)
 
 	if err != nil {
-		ch1 <- response
-		return err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		ch1 <- response
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -94,14 +91,10 @@ func (r *Repository) CheckSKU(ctx context.Context, ch1 chan<- *model.Product, sk
 		response.Price = SkuResponseCheck.Price
 		response.SKU = sku
 
-		ch1 <- response
-
-		return nil
+		return response, nil
 	}
 
-	ch1 <- response
-
-	return model.ErrNoProductInStock
+	return nil, model.ErrNoProductInStock
 }
 
 // GetProductCart - получает конкретный товар из корзины пользователя
