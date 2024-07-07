@@ -3,6 +3,9 @@ package order
 import (
 	"context"
 	"route256/loms/internal/model"
+	"route256/loms/pkg/statuses"
+	"sync"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -22,7 +25,13 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 	`
 	currentItems := make(map[uint32]model.StockItem)
 
+	start := time.Now()
+
 	rows, err := o.Conn.Query(ctx, queryGetItem, skus)
+
+	RequestDBTotal.WithLabelValues("SELECT").Inc()
+	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "SELECT").Observe(float64(time.Since(start).Seconds()))
+
 	if err != nil {
 		return err
 	}
@@ -55,7 +64,14 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 		"status": model.StatusPayed,
 		"id":     int(orderId),
 	}
+
+	start = time.Now()
+
 	_, err = tx.Exec(ctx, queryStatus, argsStatus)
+
+	RequestDBTotal.WithLabelValues("UPDATE").Inc()
+	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "UPDATE").Observe(float64(time.Since(start).Seconds()))
+
 	if err != nil {
 		return err
 	}
@@ -92,14 +108,22 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 		batch.Queue(queryTotalCountRemove, argsTotalCount)
 	}
 
+	start = time.Now()
+	var errForLabel error
+	var once sync.Once
+
 	res := tx.SendBatch(ctx, batch)
 	for i := 0; i < batch.Len(); i++ {
 		_, err := res.Exec()
 		if err != nil {
+			once.Do(func() { errForLabel = err })
 			return err
 		}
 	}
 	res.Close() // если поставить defer, то появляется ошибка
+
+	RequestDBTotal.WithLabelValues("UPDATE").Inc()
+	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(errForLabel), "UPDATE").Observe(float64(time.Since(start).Seconds()))
 
 	err = tx.Commit(ctx)
 	if err != nil {

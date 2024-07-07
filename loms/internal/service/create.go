@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"route256/loms/internal/model"
+	"route256/loms/internal/pkg/logger"
 )
 
 // Create - создает ордер
@@ -85,6 +85,6 @@ func (s *Service) Create(ctx context.Context, order *model.Order) (model.OrderId
 func (s *Service) setStatus(ctx context.Context, op string, orderId model.OrderId, Status model.OrderStatus) {
 	errChangStatus := s.OrderRepository.SetStatus(ctx, orderId, Status)
 	if errChangStatus != nil {
-		slog.Error(op, "s.OrderRepository.SetStatus", errChangStatus)
+		logger.Errorw(ctx, op, "s.OrderRepository.SetStatus", "errChangStatus", errChangStatus)
 	}
 }

@@ -1,8 +1,9 @@
 package http_handlers
 
 import (
-	"log/slog"
+	"context"
 	"net/http"
+	"route256/cart/internal/pkg/logger"
 	"strconv"
 )
 
@@ -11,8 +12,10 @@ import (
 func getPathValueInt(w http.ResponseWriter, r *http.Request, param string) (int64, error) {
 	paramStr := r.PathValue(param)
 	paramNum, err := strconv.Atoi(paramStr)
+	ctx := context.Background()
+
 	if err != nil {
-		slog.Error("getPathValueInt", err)
+		logger.Errorw(ctx, "getPathValueInt", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("error"))
 		return 0, err

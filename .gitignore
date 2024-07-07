@@ -15,3 +15,4 @@
 /cart/vendor-proto
 /cart/pkg/api/loms
 /loms/pkg/api/loms
+/cart/internal/app/http_handlers/test.go

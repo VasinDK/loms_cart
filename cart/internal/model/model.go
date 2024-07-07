@@ -13,3 +13,5 @@ type Product struct {
 	Price uint32
 	Count uint16
 }
+
+const ServiceName = "Cart"

@@ -3,14 +3,16 @@ package app
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"route256/cart/internal/app/http_handlers"
 	"route256/cart/internal/middleware"
+	"route256/cart/internal/model"
 	"route256/cart/internal/pkg/config"
 	"route256/cart/internal/pkg/httpserver"
+	"route256/cart/internal/pkg/jaegertracing"
+	"route256/cart/internal/pkg/logger"
 	"route256/cart/internal/repository"
 	"route256/cart/internal/service/item/add_product"
 	"route256/cart/internal/service/item/delete_item"
@@ -21,19 +23,30 @@ import (
 
 	"route256/cart/pkg/api/loms/v1"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 // Run - запускает сервер
 func Run(config *config.Config) {
+	ctxStart := context.Background()
+	logger.New()
+
 	conn, err := grpc.Dial(
 		fmt.Sprintf("%v:%v", config.GetAddressStoreLoms(), config.GetPortLoms()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
 	)
 	if err != nil {
-		slog.Error("Loms start", err)
+		logger.Errorw(ctxStart, "grpc.Dial", "err", err)
 		os.Exit(1)
+	}
+
+	tp, err := jaegertracing.New(config, model.ServiceName)
+	if err != nil {
+		logger.Panicw(ctxStart, "err", err)
 	}
 
 	clientLoms := loms.NewLomsClient(conn)
@@ -43,13 +56,15 @@ func Run(config *config.Config) {
 
 	mux := http.NewServeMux()
 
+	mux.Handle("GET /metrics", promhttp.Handler())
 	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", httpHandlers.AddItem(add_product.New(cartRepository)))
 	mux.HandleFunc("DELETE /user/{user_id}/cart/{sku_id}", httpHandlers.DeleteItem(delete_item.New(cartRepository)))
 	mux.HandleFunc("DELETE /user/{user_id}/cart", httpHandlers.DeleteItemsByUserID(clear_cart.New(cartRepository)))
 	mux.HandleFunc("GET /user/{user_id}/cart/list", httpHandlers.GetItemsByUserID(get_cart.New(cartRepository)))
 	mux.HandleFunc("POST /user/cart/checkout", httpHandlers.Checkout(checkout.New(cartRepository)))
 
-	handle := middleware.Logging(mux)
+	handle := middleware.Tracing(mux)
+	handle = middleware.Logging(handle)
 	handle = middleware.PanicRecovery(handle)
 
 	server := httpserver.New(handle, config)
@@ -60,12 +75,13 @@ func Run(config *config.Config) {
 
 	select {
 	case err := <-errRun:
-		slog.Error("server.Run", "err", err)
+		logger.Errorw(ctxStart, "server.Run", "err", err)
 	case <-ctx.Done():
-		slog.Info("signal.NotifyContext stop")
+		logger.Infow(ctxStart, "signal.NotifyContext stop")
 	}
 
+	go tp.Shutdown(context.Background())
 	server.GraceShutdown()
 
-	slog.Info("the server is beautifully stopped")
+	logger.Infow(ctxStart, "the server is beautifully stopped")
 }

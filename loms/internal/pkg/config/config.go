@@ -3,18 +3,22 @@ package config
 import "os"
 
 var (
-	Port      = "50051"
-	HttpPort  = "8085"
-	Host      = "localhost"
-	DBConnect = "postgres://admin_loms:password@localhost:5432/loms" // в docker postgres вместо localhost
+	Port                  = "50051"
+	HttpPort              = "8085"
+	Host                  = "localhost"
+	DBConnect             = "postgres://admin_loms:password@localhost:5432/loms" // в docker postgres вместо localhost
+	TraceEndpointURL      = "http://jaeger:4318"
+	DeploymentEnvironment = "development"
 )
 
 // Config - конфигурация приложения
 type Config struct {
-	port      string // grpc порт приложения
-	httpPort  string // Http порт приложения
-	host      string // Хост
-	dbConnect string // Строка подключения
+	port                  string // grpc порт приложения
+	httpPort              string // Http порт приложения
+	host                  string // Хост
+	dbConnect             string // Строка подключения
+	TraceEndpointURL      string // Адрес куда отправляет данные трейс экспортер
+	DeploymentEnvironment string // Среда развертывания
 }
 
 // New - создает экземпляр конфига
@@ -35,11 +39,21 @@ func New() *Config {
 		DBConnect = os.Getenv("DB_CONNECTION")
 	}
 
+	if len(os.Getenv("TRACE_END_POINT_URL")) > 0 {
+		TraceEndpointURL = os.Getenv("TRACE_END_POINT_URL")
+	}
+
+	if len(os.Getenv("DEPLOYMENT_ENVIRONMENT")) > 0 {
+		DeploymentEnvironment = os.Getenv("DEPLOYMENT_ENVIRONMENT")
+	}
+
 	return &Config{
-		port:      Port,
-		httpPort:  HttpPort,
-		host:      Host,
-		dbConnect: DBConnect,
+		port:                  Port,
+		httpPort:              HttpPort,
+		host:                  Host,
+		dbConnect:             DBConnect,
+		TraceEndpointURL:      TraceEndpointURL,
+		DeploymentEnvironment: DeploymentEnvironment,
 	}
 }
 
@@ -61,4 +75,14 @@ func (c *Config) GetHost() string {
 // GetDBConnect - получает строку подключения к бд
 func (c *Config) GetDBConnect() string {
 	return c.dbConnect
+}
+
+// GetTraceEndpointURL - адрес куда отправляет данные трейс экспортер
+func (c *Config) GetTraceEndpointURL() string {
+	return c.TraceEndpointURL
+}
+
+// GetDeploymentEnvironment - среда развертывания
+func (c *Config) GetDeploymentEnvironment() string {
+	return c.DeploymentEnvironment
 }

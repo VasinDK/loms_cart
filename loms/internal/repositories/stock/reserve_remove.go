@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"route256/loms/internal/model"
+	"route256/loms/pkg/statuses"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -34,7 +36,13 @@ func (s *StockRepository) ReserveRemove(ctx context.Context, order *model.OrderI
 		"sku":      order.Sku,
 	}
 
+	start := time.Now()
+
 	_, err = s.Conn.Exec(ctx, query, args)
+
+	RequestDBTotal.WithLabelValues("UPDATE").Inc()
+	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "UPDATE").Observe(float64(time.Since(start).Seconds()))
+
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,8 @@ package stock
 import (
 	"context"
 	"route256/loms/internal/model"
+	"route256/loms/pkg/statuses"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -14,7 +16,13 @@ func (s *StockRepository) GetItemsBySku(ctx context.Context, sku *[]uint32) (*[]
 		FROM stocks
 		WHERE sku = ANY($1)
 	`
+	start := time.Now()
+
 	rows, err := s.Conn.Query(ctx, query, sku)
+
+	RequestDBTotal.WithLabelValues("SELECT").Inc()
+	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "SELECT").Observe(time.Since(start).Seconds())
+
 	if err != nil {
 		return nil, err
 	}

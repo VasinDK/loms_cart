@@ -3,6 +3,8 @@ package order
 import (
 	"context"
 	"route256/loms/internal/model"
+	"route256/loms/pkg/statuses"
+	"time"
 )
 
 // GetById - получает ордер по id
@@ -13,7 +15,13 @@ func (o *OrderRepository) GetById(ctx context.Context, orderId model.OrderId) (*
 		JOIN items_order ON orders.id = items_order.order_id
 		WHERE orders.id=$1
 	`
+	start := time.Now()
+
 	rows, err := o.Conn.Query(ctx, query, orderId)
+
+	RequestDBTotal.WithLabelValues("SELECT").Inc()
+	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "SELECT").Observe(float64(time.Since(start).Seconds()))
+
 	if err != nil {
 		return nil, err
 	}

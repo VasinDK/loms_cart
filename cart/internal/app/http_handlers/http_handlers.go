@@ -2,6 +2,8 @@ package http_handlers
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 // CartResponse - корзина, ответ
@@ -24,6 +26,25 @@ type ProductRequest struct {
 }
 
 type Server struct{}
+
+var (
+	requestTotal = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cart_req_total",
+			Help: "Total amount of request",
+		},
+		[]string{"url"},
+	)
+
+	requestTimeStatusUrl = promauto.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:       "cart_req_time_status_url",
+			Help:       "Cart summary request time durations second, status, url",
+			Objectives: map[float64]float64{.5: .05, .9: .01, .99: .001},
+		},
+		[]string{"status", "url"},
+	)
+)
 
 // New - инициализирует экземпляр транспорта
 func New() *Server {

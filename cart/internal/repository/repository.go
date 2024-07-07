@@ -7,7 +7,12 @@ import (
 	"net/http"
 	"route256/cart/internal/model"
 	"route256/cart/pkg/api/loms/v1"
+	"route256/cart/pkg/statuses"
 	"sync"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 type Config interface {
@@ -27,6 +32,25 @@ type Repository struct {
 	Config     Config
 	mu         sync.RWMutex
 }
+
+var (
+	requestOutTotal = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cart_out_req_total",
+			Help: "Total out amount of request ",
+		},
+		[]string{"url"},
+	)
+
+	requestOutTimeStatusUrl = promauto.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:       "cart_out_request_time_status_category",
+			Help:       "Cart out summary request time durations second, status, url",
+			Objectives: map[float64]float64{.5: .05, .9: .05, .99: .05},
+		},
+		[]string{"status", "url"},
+	)
+)
 
 // NewRepository - инициализирует репозиторий
 func NewRepository(config Config, loms loms.LomsClient) *Repository {
@@ -75,8 +99,15 @@ func (r *Repository) CheckSKU(ctx context.Context, sku int64) (*model.Product, e
 	if err != nil {
 		return nil, err
 	}
+
+	start := time.Now()
+
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
+
+	requestOutTotal.WithLabelValues(req.URL.Path).Inc()
+	requestOutTimeStatusUrl.WithLabelValues(statuses.GetCodeHTTP(err), req.URL.Path).Observe(time.Since(start).Seconds())
+
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +209,13 @@ func (r *Repository) Checkout(ctx context.Context, userId int64, cart []*model.P
 		Items: items,
 	}
 
+	start := time.Now()
+
 	orderIdloms, err := r.ClientLoms.OrderCreate(ctx, in)
+
+	requestOutTotal.WithLabelValues("ClientLoms.OrderCreate").Inc()
+	requestOutTimeStatusUrl.WithLabelValues(statuses.GetStatusCodeGRPC(err), "ClientLoms.OrderCreate").Observe(time.Since(start).Seconds())
+
 	if err != nil {
 		return 0, err
 	}
@@ -188,7 +225,12 @@ func (r *Repository) Checkout(ctx context.Context, userId int64, cart []*model.P
 
 // StockInfo - инфа по остаткам
 func (r *Repository) StockInfo(ctx context.Context, sku int64) (int64, error) {
+	start := time.Now()
+
 	countloms, err := r.ClientLoms.StocksInfo(ctx, &loms.StocksInfoRequest{Sku: uint32(sku)})
+
+	requestOutTotal.WithLabelValues("ClientLoms.StocksInfo").Inc()
+	requestOutTimeStatusUrl.WithLabelValues(statuses.GetStatusCodeGRPC(err), "ClientLoms.StocksInfo").Observe(time.Since(start).Seconds())
 
 	if err != nil {
 		return 0, err

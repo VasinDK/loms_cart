@@ -3,10 +3,13 @@ package grpc_handlers
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"route256/loms/internal/model"
+	"route256/loms/internal/pkg/logger"
 	"route256/loms/pkg/api/loms/v1"
+	"route256/loms/pkg/statuses"
+	"time"
 
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -14,20 +17,36 @@ import (
 // StocksInfo - информация о стоке
 func (h *Handlers) StocksInfo(ctx context.Context, sku *loms.StocksInfoRequest) (*loms.StocksInfoResponse, error) {
 	const op = "StocksInfo"
+	var errExit error
+
+	tracer := otel.Tracer(model.ServiceName)
+	ctx, span := tracer.Start(ctx, op)
+	defer span.End()
+
+	requestTotal.WithLabelValues(op).Inc()
+
+	defer func(start time.Time) {
+		requestTimeStatusUrl.WithLabelValues(
+			statuses.GetStatusGRPC(errExit),
+			op,
+		).Observe(time.Since(start).Seconds())
+	}(time.Now())
 
 	count, err := h.service.StocksInfo(ctx, sku.GetSku())
 	if errors.Is(err, model.ErrSkuNoSuch) {
-		slog.Error(op, "h.service.OrderPay", err.Error())
-		return nil, model.ErrSkuNoSuch
+		logger.Errorw(ctx, op, "h.service.OrderPay", "err", err)
+		errExit = status.Error(codes.InvalidArgument, model.ErrSkuNoSuch.Error())
+		return nil, errExit
 	}
 
 	if err != nil {
-		slog.Error(op, "h.service.OrderPay", err.Error())
-		return nil, status.Error(codes.Internal, "Stock babah")
+		logger.Errorw(ctx, op, "h.service.OrderPay", "err", err)
+		errExit = status.Error(codes.Internal, "Stock babah")
+		return nil, errExit
 	}
 
 	var cnt loms.StocksInfoResponse
 	cnt.Count = count
 
-	return &cnt, nil
+	return &cnt, errExit
 }

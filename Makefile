@@ -16,11 +16,19 @@ run-all:
 run-cover:
 	go test -cover $(PACKAGES) | grep -v cart/internal/repository
 
-stop-docker: 
-	docker-compose down
+# for development
 
-# run-migrations:
-#	goose -dir ./loms/migrations postgres "postgresql://admin_loms:password@localhost:5432/loms?sslmode=disable" up
-
-run-cart:
+run:
 	go run ./cart/cmd/server/server.go
+
+run-docker:
+	docker-compose up postgres -d && \
+	docker-compose build --no-cache && docker-compose up cart --force-recreate -d && \
+	docker-compose up pgadmin -d && \
+	docker-compose up prometheus -d && \
+	docker-compose up jaeger -d && \
+	docker-compose build --no-cache && docker-compose up loms --force-recreate -d	
+#	docker-compose up loms --force-recreate --build -d
+
+stop-docker: 
+	docker-compose down -v

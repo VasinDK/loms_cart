@@ -1,10 +1,11 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
+	"route256/cart/internal/pkg/logger"
 	"strings"
 	"time"
 )
@@ -12,6 +13,8 @@ import (
 // Logging - middleware логирующий запрос, время ответа
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
+
 		if r.Method == "PRI" && r.RequestURI == "*" {
 			// Игнорируем запросы с методом PRI и URI *
 			return
@@ -33,12 +36,15 @@ func Logging(next http.Handler) http.Handler {
 			body, err = io.ReadAll(r.Body)
 
 			if err != nil {
-				slog.Info("Request",
-					slog.String("URI", r.RequestURI),
-					slog.String("Method", r.Method),
-					slog.String("Header", strings.Join(head, "")),
-					slog.String("err", err.Error()),
+				logger.Infow(
+					ctx,
+					"Request",
+					"URI", r.RequestURI,
+					"Method", r.Method,
+					"Header", strings.Join(head, ""),
+					"err", err.Error(),
 				)
+
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -48,12 +54,14 @@ func Logging(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 
-		slog.Info("Request",
-			slog.String("URI", r.RequestURI),
-			slog.String("Method", r.Method),
-			slog.String("Body", string(body)),
-			slog.String("Header", strings.Join(head, "")),
-			slog.Duration("Время обработки запроса", time.Since(start)),
+		logger.Infow(
+			ctx,
+			"Request",
+			"URI", r.RequestURI,
+			"Method", r.Method,
+			"Body", string(body),
+			"Header", strings.Join(head, ""),
+			"Время обработки запроса", time.Since(start),
 		)
 	})
 }

@@ -2,9 +2,13 @@ package grpc_handlers
 
 import (
 	"context"
-	"log/slog"
+	"route256/loms/internal/model"
+	"route256/loms/internal/pkg/logger"
 	"route256/loms/pkg/api/loms/v1"
+	"route256/loms/pkg/statuses"
+	"time"
 
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -12,20 +16,36 @@ import (
 // OrderCreate - создает ордер
 func (h *Handlers) OrderCreate(ctx context.Context, order *loms.OrderCreateRequest) (*loms.OrderCreateResponse, error) {
 	const op = "OrderCreate"
+	var errExit error
+
+	tracer := otel.Tracer(model.ServiceName)
+	ctx, span := tracer.Start(ctx, op)
+	defer span.End()
+
+	requestTotal.WithLabelValues(op).Inc()
+
+	defer func(start time.Time) {
+		requestTimeStatusUrl.WithLabelValues(
+			statuses.GetStatusGRPC(errExit),
+			op,
+		).Observe(time.Since(start).Seconds())
+	}(time.Now())
 
 	orderModel, err := h.RepackOrderToModel(order)
 	if err != nil {
-		slog.Error(op, "h.RepackOrderInOrderModel", err.Error())
-		return nil, status.Error(codes.FailedPrecondition, "so")
+		logger.Errorw(ctx, op, "h.RepackOrderInOrderModel", "err", err)
+		errExit = status.Error(codes.FailedPrecondition, "so")
+		return nil, errExit
 	}
 
 	orderIdModel, err := h.service.Create(ctx, orderModel)
 	if err != nil {
-		slog.Error(op, "h.service.OrderCreate", err.Error())
-		return nil, status.Error(codes.FailedPrecondition, "I am sorry")
+		logger.Errorw(ctx, op, "h.service.OrderCreate", "err", err)
+		errExit = status.Error(codes.FailedPrecondition, "I am sorry")
+		return nil, errExit
 	}
 
 	return &loms.OrderCreateResponse{
 		OrderId: int64(orderIdModel),
-	}, nil
+	}, errExit
 }

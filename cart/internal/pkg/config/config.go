@@ -6,22 +6,26 @@ import (
 )
 
 var (
-	Port              = "8082"
-	TokenStore        = "testtoken"
-	AddressStore      = "http://route256.pavl.uk:8080/get_product"
-	AddressStoreLoms  = "localhost" // localhost // loms
-	PostLoms          = "50051"
-	TimeGraceShutdown = 5
+	Port                  = "8082"
+	TokenStore            = "testtoken"
+	AddressStore          = "http://route256.pavl.uk:8080/get_product"
+	AddressStoreLoms      = "localhost" // localhost // loms
+	PostLoms              = "50051"
+	TimeGraceShutdown     = 5
+	TraceEndpointURL      = "http://jaeger:4318"
+	DeploymentEnvironment = "development"
 )
 
 // Config - конфигурация приложения
 type Config struct {
-	Port              string // Port - порт приложения
-	TokenStore        string // TokenStore - токен для стороннего хранилища
-	AddressStore      string // AddressStore - адрес стороннего хранилища
-	AddressStoreLoms  string // AddressStoreLoms - адрес Loms хранилища
-	PostLoms          string // Port grpc loms
-	TimeGraceShutdown int    // Время для плавного завершения работы сервера
+	Port                  string // Port - порт приложения
+	TokenStore            string // TokenStore - токен для стороннего хранилища
+	AddressStore          string // AddressStore - адрес стороннего хранилища
+	AddressStoreLoms      string // AddressStoreLoms - адрес Loms хранилища
+	PostLoms              string // Port grpc loms
+	TimeGraceShutdown     int    // Время для плавного завершения работы сервера
+	TraceEndpointURL      string // Адрес куда отправляет данные трейс экспортер
+	DeploymentEnvironment string // Среда развертывания
 }
 
 // New - создает экземпляр конфига
@@ -50,13 +54,23 @@ func New() *Config {
 		TimeGraceShutdown, _ = strconv.Atoi(os.Getenv("TIME_GRACE_SHUTDOWN"))
 	}
 
+	if len(os.Getenv("TRACE_END_POINT_URL")) > 0 {
+		TraceEndpointURL = os.Getenv("TRACE_END_POINT_URL")
+	}
+
+	if len(os.Getenv("DEPLOYMENT_ENVIRONMENT")) > 0 {
+		DeploymentEnvironment = os.Getenv("DEPLOYMENT_ENVIRONMENT")
+	}
+
 	return &Config{
-		Port:              Port,
-		TokenStore:        TokenStore,
-		AddressStore:      AddressStore,
-		AddressStoreLoms:  AddressStoreLoms,
-		PostLoms:          PostLoms,
-		TimeGraceShutdown: TimeGraceShutdown,
+		Port:                  Port,
+		TokenStore:            TokenStore,
+		AddressStore:          AddressStore,
+		AddressStoreLoms:      AddressStoreLoms,
+		PostLoms:              PostLoms,
+		TimeGraceShutdown:     TimeGraceShutdown,
+		TraceEndpointURL:      TraceEndpointURL,
+		DeploymentEnvironment: DeploymentEnvironment,
 	}
 }
 
@@ -80,12 +94,22 @@ func (c *Config) GetAddressStore() string {
 	return c.AddressStore
 }
 
-// GetAddressStoreLoms - получает адрес хранилища
+// GetAddressStoreLoms - получает адрес хранилища Loms
 func (c *Config) GetAddressStoreLoms() string {
 	return c.AddressStoreLoms
 }
 
-// GetTimeGraceShutdown - получает адрес хранилища
+// GetTimeGraceShutdown - получает время необходимое для GraceShutdown
 func (c *Config) GetTimeGraceShutdown() int {
 	return c.TimeGraceShutdown
+}
+
+// GetTraceEndpointURL - адрес куда отправляет данные трейс экспортер
+func (c *Config) GetTraceEndpointURL() string {
+	return c.TraceEndpointURL
+}
+
+// GetDeploymentEnvironment - среда развертывания
+func (c *Config) GetDeploymentEnvironment() string {
+	return c.DeploymentEnvironment
 }

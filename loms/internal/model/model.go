@@ -27,3 +27,5 @@ const (
 	StatusPayed           OrderStatus = "payed"
 	StatusCancelled       OrderStatus = "cancelled"
 )
+
+const ServiceName = "Loms"

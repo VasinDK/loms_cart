@@ -11,3 +11,4 @@ var ErrStrConnIsEmpty = errors.New("the database connection string is empty") //
 var ErrDuplicateSku = errors.New("there is a duplicate sku")                  // Имеется дублирование sku
 var ErrAddOrder = errors.New("error adding an order")                         // ошибка добавления ордера
 var ErrAddStatus = errors.New("error adding status")                          // ошибка установки статуса
+var ErrOk = errors.New("OK")                                                  // Ошибки нет

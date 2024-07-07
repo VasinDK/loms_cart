@@ -3,8 +3,8 @@ package httpserver
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
+	"route256/cart/internal/pkg/logger"
 	"time"
 )
 
@@ -50,6 +50,6 @@ func (s *Server) GraceShutdown() {
 
 	err := s.HttpServer.Shutdown(ctx)
 	if err != nil {
-		slog.Info("s.HttpServer.Shutdown", "err", err)
+		logger.Errorw(ctx, "s.HttpServer.Shutdown", "err", err)
 	}
 }
