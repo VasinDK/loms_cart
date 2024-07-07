@@ -2,7 +2,7 @@ version: "3.8"
 
 volumes:
   prometheus_data: {}
-#  grafana_data: {}
+  grafana_data: {}
 
 services:
   postgres:
@@ -81,6 +81,15 @@ services:
     ports:
       - "16686:16686"
       - "4318:4318"    
+    networks:
+        - app-network
+
+  grafana:
+    image: gitlab-registry.ozon.dev/go/classroom-12/students/homework/grafana:latest
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
     networks:
         - app-network
         

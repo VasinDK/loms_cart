@@ -23,12 +23,13 @@ run:
 
 run-docker:
 	docker-compose up postgres -d && \
-	docker-compose build --no-cache && docker-compose up cart --force-recreate -d && \
+	docker-compose up cart -d && \
 	docker-compose up pgadmin -d && \
 	docker-compose up prometheus -d && \
 	docker-compose up jaeger -d && \
-	docker-compose build --no-cache && docker-compose up loms --force-recreate -d	
-#	docker-compose up loms --force-recreate --build -d
+	docker-compose up loms -d
+	docker-compose up grafana -d
+#	docker-compose build --no-cache && docker-compose up loms --force-recreate -d	
 
 stop-docker: 
 	docker-compose down -v
