@@ -30,9 +30,9 @@ func (s *Server) Checkout(h *checkout.Handler) http.HandlerFunc {
 		ctx, span := tracer.Start(ctx, currentAddress)
 		defer span.End()
 
-		requestTotal.WithLabelValues(r.URL.Path).Inc()
+		requestTotal.WithLabelValues(currentAddress).Inc()
 		defer func(start time.Time) {
-			requestTimeStatusUrl.WithLabelValues(errExit.Error(), r.URL.Path).Observe(time.Since(start).Seconds())
+			requestTimeStatusUrl.WithLabelValues(errExit.Error(), currentAddress).Observe(time.Since(start).Seconds())
 		}(time.Now())
 
 		w.Header().Set("Content-Type", "application/json")
@@ -43,7 +43,7 @@ func (s *Server) Checkout(h *checkout.Handler) http.HandlerFunc {
 		if err != nil {
 			logger.Errorw(ctx, op, "Checkout", "err", err)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = err
+			errExit = model.ErrJsonNewDecoder
 			return
 		}
 
@@ -51,7 +51,7 @@ func (s *Server) Checkout(h *checkout.Handler) http.HandlerFunc {
 		if err != nil {
 			logger.Errorw(ctx, op, "h.Checkout", "err", err)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = err
+			errExit = model.ErrHCheckout
 			return
 		}
 
@@ -62,7 +62,7 @@ func (s *Server) Checkout(h *checkout.Handler) http.HandlerFunc {
 		if err != nil {
 			logger.Errorw(ctx, op, "h.Checkout", "err", err)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = err
+			errExit = model.ErrJsonMarshal
 			return
 		}
 

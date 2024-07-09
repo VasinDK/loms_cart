@@ -35,8 +35,8 @@ run-docker-base:
 
 
 run-docker-dev:
-	docker-compose build --no-cache && docker-compose up cart --force-recreate -d && \
 	docker-compose up jaeger -d && \
+	docker-compose build --no-cache && docker-compose up cart --force-recreate -d && \
 	docker-compose build --no-cache && docker-compose up loms --force-recreate -d 
 
 #	docker-compose build --no-cache && docker-compose up loms --force-recreate -d	

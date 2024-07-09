@@ -19,14 +19,14 @@ func (s *Server) DeleteItem(h *delete_item.Handler) http.HandlerFunc {
 		ctx, span := tracer.Start(ctx, currentAddress)
 		defer span.End()
 
-		requestTotal.WithLabelValues(r.URL.Path).Inc()
+		requestTotal.WithLabelValues(currentAddress).Inc()
 		defer func(start time.Time) {
-			requestTimeStatusUrl.WithLabelValues(errExit.Error(), r.URL.Path).Observe(time.Since(start).Seconds())
+			requestTimeStatusUrl.WithLabelValues(errExit.Error(), currentAddress).Observe(time.Since(start).Seconds())
 		}(time.Now())
 
 		userId, err := getPathValueInt(w, r, "user_id")
 		if err != nil {
-			errExit = err
+			errExit = model.ErrGetPathValueInt
 			return
 		}
 
@@ -34,13 +34,13 @@ func (s *Server) DeleteItem(h *delete_item.Handler) http.HandlerFunc {
 		if errs != nil {
 			logger.Errorw(ctx, op, "errs", errs)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = errs
+			errExit = model.ErrValidateVar
 			return
 		}
 
 		sku, err := getPathValueInt(w, r, "sku_id")
 		if err != nil {
-			errExit = err
+			errExit = model.ErrGetPathValueInt
 			return
 		}
 
@@ -48,7 +48,7 @@ func (s *Server) DeleteItem(h *delete_item.Handler) http.HandlerFunc {
 		if errs != nil {
 			logger.Errorw(ctx, op, "errs", errs)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = errs
+			errExit = model.ErrValidateVar
 			return
 		}
 
@@ -56,7 +56,7 @@ func (s *Server) DeleteItem(h *delete_item.Handler) http.HandlerFunc {
 		if err != nil {
 			logger.Errorw(ctx, op, "err", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			errExit = err
+			errExit = model.ErrHDeleteProductCart
 			return
 		}
 

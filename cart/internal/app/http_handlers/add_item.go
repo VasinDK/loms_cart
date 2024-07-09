@@ -21,14 +21,14 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		ctx, span := tracer.Start(ctx, currentAddress)
 		defer span.End()
 
-		requestTotal.WithLabelValues(r.URL.Path).Inc()
+		requestTotal.WithLabelValues(currentAddress).Inc()
 		defer func(start time.Time) {
-			requestTimeStatusUrl.WithLabelValues(errExit.Error(), r.URL.Path).Observe(time.Since(start).Seconds())
+			requestTimeStatusUrl.WithLabelValues(errExit.Error(), currentAddress).Observe(time.Since(start).Seconds())
 		}(time.Now())
 
 		userId, err := getPathValueInt(w, r, "user_id")
 		if err != nil {
-			errExit = err
+			errExit = model.ErrGetPathValueInt
 			return
 		}
 
@@ -36,13 +36,13 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		if errs != nil {
 			logger.Errorw(ctx, op, "errs", errs)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = errs
+			errExit = model.ErrValidateVar
 			return
 		}
 
 		sku, err := getPathValueInt(w, r, "sku_id")
 		if err != nil {
-			errExit = err
+			errExit = model.ErrGetPathValueInt
 			return
 		}
 
@@ -50,7 +50,7 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		if errs != nil {
 			logger.Errorw(ctx, op, "errs", errs)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = errs
+			errExit = model.ErrValidateVar
 			return
 		}
 
@@ -60,7 +60,7 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		if err != nil {
 			logger.Errorw(ctx, op, "errs", errs)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = err
+			errExit = model.ErrJsonNewDecoder
 			return
 		}
 
@@ -68,7 +68,7 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		if errs != nil {
 			logger.Errorw(ctx, op, "errs", errs)
 			w.WriteHeader(http.StatusBadRequest)
-			errExit = errs
+			errExit = model.ErrValidateStruct
 			return
 		}
 
@@ -79,7 +79,7 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 
 		err = h.AddProduct(ctx, &product, userId)
 		if err != nil {
-			errExit = err
+			errExit = model.ErrHAddProduct
 		}
 
 		if errors.Is(err, model.ErrNoProductInStock) {

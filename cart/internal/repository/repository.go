@@ -39,16 +39,16 @@ var (
 			Name: "cart_out_req_total",
 			Help: "Total out amount of request ",
 		},
-		[]string{"url"},
+		[]string{"externalAddress"},
 	)
 
-	requestOutTimeStatusUrl = promauto.NewSummaryVec(
+	requestOutTimeStatusAddress = promauto.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Name:       "cart_out_request_time_status_category",
 			Help:       "Cart out summary request time durations second, status, url",
 			Objectives: map[float64]float64{.5: .05, .9: .05, .99: .05},
 		},
-		[]string{"status", "url"},
+		[]string{"status", "externalAddress"},
 	)
 )
 
@@ -101,12 +101,13 @@ func (r *Repository) CheckSKU(ctx context.Context, sku int64) (*model.Product, e
 	}
 
 	start := time.Now()
+	externalAddress := r.Config.GetAddressStore()
 
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
 
-	requestOutTotal.WithLabelValues(req.URL.Path).Inc()
-	requestOutTimeStatusUrl.WithLabelValues(statuses.GetCodeHTTP(err), req.URL.Path).Observe(time.Since(start).Seconds())
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetCodeHTTP(err), externalAddress).Observe(time.Since(start).Seconds())
 
 	if err != nil {
 		return nil, err
@@ -210,11 +211,12 @@ func (r *Repository) Checkout(ctx context.Context, userId int64, cart []*model.P
 	}
 
 	start := time.Now()
+	externalAddress := "ClientLoms.OrderCreate"
 
 	orderIdloms, err := r.ClientLoms.OrderCreate(ctx, in)
 
-	requestOutTotal.WithLabelValues("ClientLoms.OrderCreate").Inc()
-	requestOutTimeStatusUrl.WithLabelValues(statuses.GetStatusCodeGRPC(err), "ClientLoms.OrderCreate").Observe(time.Since(start).Seconds())
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetStatusCodeGRPC(err), externalAddress).Observe(time.Since(start).Seconds())
 
 	if err != nil {
 		return 0, err
@@ -226,11 +228,12 @@ func (r *Repository) Checkout(ctx context.Context, userId int64, cart []*model.P
 // StockInfo - инфа по остаткам
 func (r *Repository) StockInfo(ctx context.Context, sku int64) (int64, error) {
 	start := time.Now()
+	externalAddress := "ClientLoms.StocksInfo"
 
 	countloms, err := r.ClientLoms.StocksInfo(ctx, &loms.StocksInfoRequest{Sku: uint32(sku)})
 
-	requestOutTotal.WithLabelValues("ClientLoms.StocksInfo").Inc()
-	requestOutTimeStatusUrl.WithLabelValues(statuses.GetStatusCodeGRPC(err), "ClientLoms.StocksInfo").Observe(time.Since(start).Seconds())
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetStatusCodeGRPC(err), externalAddress).Observe(time.Since(start).Seconds())
 
 	if err != nil {
 		return 0, err

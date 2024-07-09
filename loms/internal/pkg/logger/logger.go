@@ -20,6 +20,7 @@ type Logger struct {
 }
 
 var globalLogger *Logger
+var once = sync.Once{}
 
 func New() (*Logger, error) {
 	loggerConfig := zap.NewProductionConfig()
@@ -31,7 +32,6 @@ func New() (*Logger, error) {
 		return nil, fmt.Errorf("loggerConfig.Build: %w", err)
 	}
 
-	once := sync.Once{}
 	once.Do(func() {
 		globalLogger = &Logger{logger: logger.Sugar()}
 	})
