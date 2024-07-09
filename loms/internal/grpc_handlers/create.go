@@ -2,13 +2,11 @@ package grpc_handlers
 
 import (
 	"context"
-	"route256/loms/internal/model"
 	"route256/loms/internal/pkg/logger"
 	"route256/loms/pkg/api/loms/v1"
 	"route256/loms/pkg/statuses"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -18,7 +16,6 @@ func (h *Handlers) OrderCreate(ctx context.Context, order *loms.OrderCreateReque
 	const op = "OrderCreate"
 	var errExit error
 
-	tracer := otel.Tracer(model.ServiceName)
 	ctx, span := tracer.Start(ctx, op)
 	defer span.End()
 

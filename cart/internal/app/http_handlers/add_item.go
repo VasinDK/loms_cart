@@ -8,8 +8,6 @@ import (
 	"route256/cart/internal/pkg/logger"
 	"route256/cart/internal/service/item/add_product"
 	"time"
-
-	"go.opentelemetry.io/otel"
 )
 
 // AddItem - добавляет товар в корзину
@@ -20,7 +18,6 @@ func (s *Server) AddItem(h *add_product.Handler) http.HandlerFunc {
 		var errExit = model.ErrOk
 		var ctx = r.Context()
 
-		tracer := otel.Tracer(model.ServiceName)
 		ctx, span := tracer.Start(ctx, currentAddress)
 		defer span.End()
 

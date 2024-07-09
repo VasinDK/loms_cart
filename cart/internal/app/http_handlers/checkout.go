@@ -8,7 +8,6 @@ import (
 	"route256/cart/internal/service/list/checkout"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 )
 
@@ -28,7 +27,6 @@ func (s *Server) Checkout(h *checkout.Handler) http.HandlerFunc {
 		var errExit = model.ErrOk
 		var ctx = r.Context()
 
-		tracer := otel.Tracer(model.ServiceName)
 		ctx, span := tracer.Start(ctx, currentAddress)
 		defer span.End()
 

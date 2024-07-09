@@ -9,7 +9,6 @@ import (
 	"route256/loms/pkg/statuses"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -19,7 +18,6 @@ func (h *Handlers) StocksInfo(ctx context.Context, sku *loms.StocksInfoRequest) 
 	const op = "StocksInfo"
 	var errExit error
 
-	tracer := otel.Tracer(model.ServiceName)
 	ctx, span := tracer.Start(ctx, op)
 	defer span.End()
 

@@ -34,13 +34,15 @@ func Run(config *config.Config) {
 	ctxStart := context.Background()
 	logger.New()
 
-	conn, err := grpc.Dial(
+	var conn *grpc.ClientConn
+	conn, err := grpc.NewClient(
 		fmt.Sprintf("%v:%v", config.GetAddressStoreLoms(), config.GetPortLoms()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 	)
+
 	if err != nil {
-		logger.Errorw(ctxStart, "grpc.Dial", "err", err)
+		logger.Errorw(ctxStart, "grpc.NewClient", "err", err)
 		os.Exit(1)
 	}
 

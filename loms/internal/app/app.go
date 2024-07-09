@@ -21,6 +21,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -56,8 +57,8 @@ func Run(config *config.Config) {
 	}
 
 	grpcServer := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 		grpc.ChainUnaryInterceptor(
-			otelgrpc.UnaryServerInterceptor(),
 			middleware.Validate,
 		),
 	)
@@ -78,11 +79,12 @@ func Run(config *config.Config) {
 		}
 	}()
 
-	conn, err := grpc.DialContext(
-		ctxStart,
+	conn, err := grpc.NewClient(
 		fmt.Sprintf("%v:%v", config.GetHost(), config.GetPort()),
-		grpc.WithInsecure(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 	)
+
 	if err != nil {
 		logger.Errorw(ctxStart, "Failed to dial server", "err", err)
 	}

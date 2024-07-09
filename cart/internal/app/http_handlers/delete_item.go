@@ -6,8 +6,6 @@ import (
 	"route256/cart/internal/pkg/logger"
 	"route256/cart/internal/service/item/delete_item"
 	"time"
-
-	"go.opentelemetry.io/otel"
 )
 
 // DeleteItem - удаляет товар из корзины
@@ -18,7 +16,6 @@ func (s *Server) DeleteItem(h *delete_item.Handler) http.HandlerFunc {
 		var errExit = model.ErrOk
 		var ctx = r.Context()
 
-		tracer := otel.Tracer(model.ServiceName)
 		ctx, span := tracer.Start(ctx, currentAddress)
 		defer span.End()
 

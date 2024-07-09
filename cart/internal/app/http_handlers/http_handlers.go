@@ -1,9 +1,12 @@
 package http_handlers
 
 import (
+	"route256/cart/internal/model"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"go.opentelemetry.io/otel"
 )
 
 // CartResponse - корзина, ответ
@@ -44,6 +47,7 @@ var (
 		},
 		[]string{"status", "url"},
 	)
+	tracer = otel.Tracer(model.ServiceName)
 )
 
 // New - инициализирует экземпляр транспорта

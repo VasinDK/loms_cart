@@ -7,8 +7,6 @@ import (
 	"route256/cart/internal/pkg/logger"
 	"route256/cart/internal/service/list/get_cart"
 	"time"
-
-	"go.opentelemetry.io/otel"
 )
 
 // GetItemsByUserID - получает все товары корзины пользователя по id пользователя
@@ -19,7 +17,6 @@ func (s *Server) GetItemsByUserID(h *get_cart.Handler) http.HandlerFunc {
 		var errExit = model.ErrOk
 		var ctx = r.Context()
 
-		tracer := otel.Tracer(model.ServiceName)
 		ctx, span := tracer.Start(ctx, currentAddress)
 		defer span.End()
 

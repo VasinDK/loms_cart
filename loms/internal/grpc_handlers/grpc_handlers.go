@@ -7,6 +7,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"go.opentelemetry.io/otel"
 )
 
 type Handlers struct {
@@ -39,6 +40,7 @@ var (
 		},
 		[]string{"status", "handle"},
 	)
+	tracer = otel.Tracer(model.ServiceName)
 )
 
 func New(service Service) *Handlers {
