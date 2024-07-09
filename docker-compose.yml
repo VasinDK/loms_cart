@@ -35,6 +35,7 @@ services:
     restart: unless-stopped
     environment:
       DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
+      TRACE_END_POINT_URL: "http://jaeger:4318"
     build:
       context: ./loms
       dockerfile: ./build/Dockerfile
@@ -51,6 +52,7 @@ services:
     restart: unless-stopped
     environment:
       ADDRESS_STORE_LOMS: loms
+      TRACE_END_POINT_URL: "http://jaeger:4318"
     build:
       context: ./cart
       dockerfile: ./build/Dockerfile

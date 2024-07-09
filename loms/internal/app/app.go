@@ -67,7 +67,7 @@ func Run(config *config.Config) {
 
 	loms.RegisterLomsServer(grpcServer, grpcHandlers)
 
-	logger.Infow(ctxStart, "server grpc listening at", lis.Addr())
+	logger.Infow(ctxStart, "server grpc listening at")
 
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {

@@ -7,7 +7,7 @@ var (
 	HttpPort              = "8085"
 	Host                  = "localhost"
 	DBConnect             = "postgres://admin_loms:password@localhost:5432/loms" // в docker postgres вместо localhost
-	TraceEndpointURL      = "http://jaeger:4318"
+	TraceEndpointURL      = "http://localhost:4318"                              // в docker jaeger вместо localhost
 	DeploymentEnvironment = "development"
 )
 

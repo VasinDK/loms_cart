@@ -20,24 +20,28 @@ run-cover:
 
 # for development
 
-run-go-serv:
-	go run ./cart/cmd/server/server.go && \
+run-loms:
 	go run ./loms/cmd/server/server.go
 
-run-doc-base:
+run-cart:
+	go run ./cart/cmd/server/server.go
+
+run-docker-base:
 	docker-compose up postgres -d && \
 	docker-compose up pgadmin -d && \
 	docker-compose up prometheus -d && \
-	docker-compose up grafana -d
+	docker-compose up grafana -d && \
+	docker-compose up jaeger -d
 
-run-doc-dev:
+
+run-docker-dev:
 	docker-compose build --no-cache && docker-compose up cart --force-recreate -d && \
 	docker-compose up jaeger -d && \
 	docker-compose build --no-cache && docker-compose up loms --force-recreate -d 
 
 #	docker-compose build --no-cache && docker-compose up loms --force-recreate -d	
 
-stop-doc-dev:
+stop-docker-dev:
 	docker-compose stop cart && \
 	docker-compose stop loms && \
 	docker-compose stop jaeger && \
@@ -46,5 +50,5 @@ stop-doc-dev:
 	docker-compose rm -v jaeger
 #	 docker volume rm 
 
-stop-doc-all: 
+stop-docker-all: 
 	docker-compose down -v

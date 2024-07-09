@@ -12,7 +12,7 @@ var (
 	AddressStoreLoms      = "localhost" // localhost // loms
 	PostLoms              = "50051"
 	TimeGraceShutdown     = 5
-	TraceEndpointURL      = "http://jaeger:4318"
+	TraceEndpointURL      = "http://localhost:4318" // в docker jaeger вместо localhost
 	DeploymentEnvironment = "development"
 )
 
