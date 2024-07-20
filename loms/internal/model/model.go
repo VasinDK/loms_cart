@@ -1,5 +1,9 @@
 package model
 
+import (
+	"time"
+)
+
 type OrderId int64
 type OrderStatus string // статус ордеров
 
@@ -20,6 +24,18 @@ type StockItem struct {
 	Reserved   uint64
 }
 
+type ProducerMessage struct {
+	Topic     string
+	Key       string
+	Value     string
+	Partition int32
+	Timestamp time.Time
+	Headers   []struct {
+		Key   []byte
+		Value []byte
+	}
+}
+
 const (
 	StatusNew             OrderStatus = "new"
 	StatusAwaitingPayment OrderStatus = "awaiting payment"
@@ -29,3 +45,5 @@ const (
 )
 
 const ServiceName = "Loms"
+
+const TopicLomsOrderEvents = "loms.order-events"

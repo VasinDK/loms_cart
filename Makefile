@@ -10,8 +10,8 @@ run-protoc:
 
 run-all:
 #	docker-compose up -d
-#	docker-compose up --force-recreate --build -d
-	docker-compose build --no-cache && docker-compose up --force-recreate -d
+	docker-compose up --force-recreate --build -d
+#	docker-compose build --no-cache && docker-compose up --force-recreate -d
 
 run-cover:
 	go test -cover $(PACKAGES) | grep -v cart/internal/repository
@@ -20,6 +20,9 @@ run-cover:
 
 # for development
 
+run-notifier:
+	go run ./notifier/cmd/server/server.go
+
 run-loms:
 	go run ./loms/cmd/server/server.go
 
@@ -27,11 +30,20 @@ run-cart:
 	go run ./cart/cmd/server/server.go
 
 run-docker-base:
+	docker-compose up kafka0 -d && \
+	docker-compose up kafka-ui -d && \
 	docker-compose up postgres -d && \
 	docker-compose up pgadmin -d && \
 	docker-compose up prometheus -d && \
+	docker-compose up jaeger -d && \
 	docker-compose up grafana -d && \
-	docker-compose up jaeger -d
+	docker-compose up kafka-init-topics -d
+#	 && \
+	docker-compose up go-consumer-1 --force-recreate -d && \
+	docker-compose up go-consumer-2 --force-recreate -d && \
+	docker-compose up go-consumer-3 --force-recreate -d
+	
+	
 
 
 run-docker-dev:

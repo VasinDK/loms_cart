@@ -15,4 +15,5 @@
 /cart/vendor-proto
 /cart/pkg/api/loms
 /loms/pkg/api/loms
+/loms/internal/pkg/config/_config.go
 /cart/internal/app/http_handlers/test.go

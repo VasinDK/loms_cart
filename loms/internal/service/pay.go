@@ -22,5 +22,11 @@ func (s *Service) OrderPay(ctx context.Context, orderId model.OrderId) error {
 		return fmt.Errorf("s.OrderRepository.OrderPay %w", err)
 	}
 
+	s.Producer.MessagePush(&model.ProducerMessage{
+		Topic:     string(model.TopicLomsOrderEvents),
+		Partition: s.Producer.GetPartition(int32(orderId)),
+		Value:     string(fmt.Sprintf("OrderId: %v Status: %v", orderId, model.StatusPayed)),
+	})
+
 	return nil
 }

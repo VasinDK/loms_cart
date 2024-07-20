@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 var (
 	Port                  = "50051"
@@ -8,7 +11,8 @@ var (
 	Host                  = "localhost"
 	DBConnect             = "postgres://admin_loms:password@localhost:5432/loms" // в docker postgres вместо localhost
 	TraceEndpointURL      = "http://localhost:4318"                              // в docker jaeger вместо localhost
-	DeploymentEnvironment = "development"
+	DeploymentEnvironment = "development"                                        // Среда развертывания
+	Brokers               = "localhost:9092"                                     // в docker kafka0 вместо localhost
 )
 
 // Config - конфигурация приложения
@@ -19,6 +23,7 @@ type Config struct {
 	dbConnect             string // Строка подключения
 	TraceEndpointURL      string // Адрес куда отправляет данные трейс экспортер
 	DeploymentEnvironment string // Среда развертывания
+	Brokers               string // брокеры сообщений
 }
 
 // New - создает экземпляр конфига
@@ -47,6 +52,10 @@ func New() *Config {
 		DeploymentEnvironment = os.Getenv("DEPLOYMENT_ENVIRONMENT")
 	}
 
+	if len(os.Getenv("BROKERS")) > 0 {
+		Brokers = os.Getenv("BROKERS")
+	}
+
 	return &Config{
 		port:                  Port,
 		httpPort:              HttpPort,
@@ -54,6 +63,7 @@ func New() *Config {
 		dbConnect:             DBConnect,
 		TraceEndpointURL:      TraceEndpointURL,
 		DeploymentEnvironment: DeploymentEnvironment,
+		Brokers:               Brokers,
 	}
 }
 
@@ -85,4 +95,10 @@ func (c *Config) GetTraceEndpointURL() string {
 // GetDeploymentEnvironment - среда развертывания
 func (c *Config) GetDeploymentEnvironment() string {
 	return c.DeploymentEnvironment
+}
+
+// GetBrokers - брокеры сообщений
+func (c *Config) GetBrokers() *[]string {
+	Brokers := strings.Split(c.Brokers, ",")
+	return &Brokers
 }

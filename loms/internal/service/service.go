@@ -10,6 +10,7 @@ import (
 type Service struct {
 	OrderRepository OrderRepo
 	StockRepository StockRepo
+	Producer        Producer
 }
 
 type OrderRepo interface {
@@ -27,9 +28,15 @@ type StockRepo interface {
 	GetItemsBySku(context.Context, *[]uint32) (*[]model.StockItem, error)
 }
 
-func New(OrderRepository OrderRepo, StockRepository StockRepo) *Service {
+type Producer interface {
+	MessagePush(*model.ProducerMessage)
+	GetPartition(int32) int32
+}
+
+func New(OrderRepository OrderRepo, StockRepository StockRepo, Producer Producer) *Service {
 	return &Service{
 		OrderRepository,
 		StockRepository,
+		Producer,
 	}
 }

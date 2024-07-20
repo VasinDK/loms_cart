@@ -17,6 +17,12 @@ func (s *Service) Create(ctx context.Context, order *model.Order) (model.OrderId
 		return 0, fmt.Errorf("%v s.OrderRepository.Add %w", op, err)
 	}
 
+	s.Producer.MessagePush(&model.ProducerMessage{
+		Topic:     string(model.TopicLomsOrderEvents),
+		Partition: s.Producer.GetPartition(int32(orderId)),
+		Value:     string(fmt.Sprintf("OrderId: %v Status: %v", orderId, order.Status)),
+	})
+
 	err = s.OrderRepository.AddItem(ctx, order, orderId)
 	if err != nil {
 		return 0, fmt.Errorf("%v s.OrderRepository.Add %w", op, err)
@@ -75,6 +81,11 @@ func (s *Service) Create(ctx context.Context, order *model.Order) (model.OrderId
 	if err != nil {
 		return 0, model.ErrAddStatus
 	}
+	s.Producer.MessagePush(&model.ProducerMessage{
+		Topic:     string(model.TopicLomsOrderEvents),
+		Partition: s.Producer.GetPartition(int32(orderId)),
+		Value:     string(fmt.Sprintf("OrderId: %v Status: %v", orderId, model.StatusAwaitingPayment)),
+	})
 
 	return orderId, nil
 }
@@ -87,4 +98,10 @@ func (s *Service) setStatus(ctx context.Context, op string, orderId model.OrderI
 	if errChangStatus != nil {
 		logger.Errorw(ctx, op, "s.OrderRepository.SetStatus", "errChangStatus", errChangStatus)
 	}
+
+	s.Producer.MessagePush(&model.ProducerMessage{
+		Topic:     string(model.TopicLomsOrderEvents),
+		Partition: s.Producer.GetPartition(int32(orderId)),
+		Value:     string(fmt.Sprintf("OrderId: %v Status: %v", orderId, Status)),
+	})
 }

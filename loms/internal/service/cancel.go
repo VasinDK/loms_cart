@@ -18,6 +18,12 @@ func (s *Service) OrderCancel(ctx context.Context, orderId model.OrderId) error 
 		return fmt.Errorf("s.OrderRepository.SetStatus %w", err)
 	}
 
+	s.Producer.MessagePush(&model.ProducerMessage{
+		Topic:     string(model.TopicLomsOrderEvents),
+		Partition: s.Producer.GetPartition(int32(orderId)),
+		Value:     string(fmt.Sprintf("OrderId: %v Status: %v", orderId, model.StatusCancelled)),
+	})
+
 	for i := range order.Items {
 		err = s.StockRepository.ReserveRemove(ctx, order.Items[i])
 		if err != nil {
