@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"strings"
 )
 
 var (
@@ -12,7 +11,7 @@ var (
 	DBConnect             = "postgres://admin_loms:password@localhost:5432/loms" // в docker postgres вместо localhost
 	TraceEndpointURL      = "http://localhost:4318"                              // в docker jaeger вместо localhost
 	DeploymentEnvironment = "development"                                        // Среда развертывания
-	Brokers               = "localhost:9092"                                     // в docker kafka0 вместо localhost
+	Brokers               = "kafka0:29092"                                       // в docker kafka0 вместо localhost
 )
 
 // Config - конфигурация приложения
@@ -99,6 +98,6 @@ func (c *Config) GetDeploymentEnvironment() string {
 
 // GetBrokers - брокеры сообщений
 func (c *Config) GetBrokers() *[]string {
-	Brokers := strings.Split(c.Brokers, ",")
+	Brokers := []string{c.Brokers}
 	return &Brokers
 }

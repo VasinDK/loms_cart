@@ -48,6 +48,7 @@ func TestOrderInfo(t *testing.T) {
 			ctrl := minimock.NewController(t)
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
+			ProducerMock := mocks.NewProducerRepoMock(ctrl)
 
 			OrderMock.GetByIdMock.Set(func(ctx context.Context, op1 model.OrderId) (*model.Order, error) {
 				switch op1 {
@@ -60,7 +61,7 @@ func TestOrderInfo(t *testing.T) {
 				}
 			})
 
-			NewService := New(OrderMock, StockMock)
+			NewService := New(OrderMock, StockMock, ProducerMock)
 			order, err := NewService.OrderInfo(context.Background(), tt.OrderId)
 			assert.Equal(t, err, tt.WantError)
 			assert.Equal(t, order, tt.Order)

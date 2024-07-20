@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"strings"
 )
 
 // Config - конфигурация приложения
@@ -17,7 +16,7 @@ func New() *Config {
 	Config := &Config{
 		ConsumerGroupName: getEnv("CONSUMER_GROUP", "CG_BASE"),
 		Topic:             getEnvByStr("TOPIC", "loms.order-events"),
-		Brokers:           getEnvByStr("BOOTSTRAP_SERVER", "localhost:9092"),
+		Brokers:           getEnvByStr("BOOTSTRAP_SERVER", "kafka0:29092"),
 	}
 
 	return Config
@@ -32,7 +31,7 @@ func getEnv(key, defaultValue string) string {
 
 func getEnvByStr(key, defaultValue string) *[]string {
 	if v, ok := os.LookupEnv(key); ok {
-		res := strings.Split(v, ",")
+		res := []string{v}
 		return &res
 	}
 	return &[]string{defaultValue}

@@ -42,10 +42,11 @@ func TestSetStatus(t *testing.T) {
 			ctrl := minimock.NewController(t)
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
+			ProducerMock := mocks.NewProducerRepoMock(ctrl)
 
 			OrderMock.SetStatusMock.Expect(context.Background(), tt.OrderId, tt.Status).Return(tt.Error)
 
-			NewService := New(OrderMock, StockMock)
+			NewService := New(OrderMock, StockMock, ProducerMock)
 			err := NewService.SetStatus(context.Background(), tt.OrderId, tt.Status)
 			assert.Equal(t, err, tt.WantError)
 		})

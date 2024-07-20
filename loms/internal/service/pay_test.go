@@ -69,13 +69,15 @@ func TestOrderPay(t *testing.T) {
 			ctrl := minimock.NewController(t)
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
+			ProducerMock := mocks.NewProducerRepoMock(ctrl)
 
 			OrderMock.GetByIdMock.Expect(context.Background(), tt.OrderId).Return(tt.Order, tt.WantGetByIdError)
 			OrderMock.SetStatusMock.Optional().Return(nil)
 			StockMock.ReserveRemoveMock.Optional().Return(nil)
 			StockMock.StockRemoveItemMock.Optional().Return(nil)
+			ProducerMock.MessagePushMock.Optional().Return()
 
-			NewService := New(OrderMock, StockMock)
+			NewService := New(OrderMock, StockMock, ProducerMock)
 			err := NewService.OrderPay(context.Background(), tt.OrderId)
 			assert.Equal(t, err, tt.WantError)
 		})

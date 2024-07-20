@@ -59,6 +59,7 @@ func TestCreate(t *testing.T) {
 			ctrl := minimock.NewController(t)
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
+			ProducerMock := mocks.NewProducerRepoMock(ctrl)
 
 			OrderMock.AddOrderMock.Expect(context.Background(), tt.Order).Return(tt.OrderId, tt.WantAddError)
 			OrderMock.SetStatusMock.Optional().Return(nil)
@@ -68,8 +69,9 @@ func TestCreate(t *testing.T) {
 					return nil
 				}
 			})
+			ProducerMock.MessagePushMock.Optional().Return()
 
-			NewService := New(OrderMock, StockMock)
+			NewService := New(OrderMock, StockMock, ProducerMock)
 			orderId, err := NewService.Create(context.Background(), tt.Order)
 			assert.Equal(t, err, tt.WantError)
 			assert.Equal(t, orderId, tt.OrderId)

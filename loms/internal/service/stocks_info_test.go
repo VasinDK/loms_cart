@@ -51,10 +51,12 @@ func TestStocksInfo(t *testing.T) {
 			ctrl := minimock.NewController(t)
 			OrderMock := mocks.NewOrderRepoMock(ctrl)
 			StockMock := mocks.NewStockRepoMock(ctrl)
+			ProducerMock := mocks.NewProducerRepoMock(ctrl)
+
 
 			StockMock.GetItemsBySkuMock.Expect(context.Background(), &[]uint32{tt.Sku}).Return(tt.Item, tt.WantGetStockErr)
 
-			NewService := New(OrderMock, StockMock)
+			NewService := New(OrderMock, StockMock, ProducerMock)
 			remains, err := NewService.StocksInfo(context.Background(), tt.Sku)
 			assert.Equal(t, err, tt.WantError)
 			assert.Equal(t, remains, tt.Remains)

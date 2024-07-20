@@ -30,39 +30,40 @@ services:
     networks:
         - app-network
   
-  # loms:
-  #   container_name: loms
-  #   restart: unless-stopped
-  #   environment:
-  #     DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
-  #     TRACE_END_POINT_URL: "http://jaeger:4318"
-  #     TOPIC_1: loms.order-events
-  #   build:
-  #     context: ./loms
-  #     dockerfile: ./build/Dockerfile
-  #   ports:
-  #     - "50051:50051" # grpc
-  #     - "8085:8085"   # http
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #       - app-network
+  loms:
+    container_name: loms
+    restart: unless-stopped
+    environment:
+      DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
+      TRACE_END_POINT_URL: "http://jaeger:4318"
+      TOPIC_1: loms.order-events
+      BOOTSTRAP_SERVER: kafka0:29092
+    build:
+      context: ./loms
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "50051:50051" # grpc
+      - "8085:8085"   # http
+    depends_on:
+      - postgres
+    networks:
+        - app-network
 
-  # cart:
-  #   container_name: cart
-  #   restart: unless-stopped
-  #   environment:
-  #     ADDRESS_STORE_LOMS: loms
-  #     TRACE_END_POINT_URL: "http://jaeger:4318"
-  #   build:
-  #     context: ./cart
-  #     dockerfile: ./build/Dockerfile
-  #   ports:
-  #     - "8082:8082" # http
-  #   depends_on:
-  #     - loms
-  #   networks:
-  #       - app-network
+  cart:
+    container_name: cart
+    restart: unless-stopped
+    environment:
+      ADDRESS_STORE_LOMS: loms
+      TRACE_END_POINT_URL: "http://jaeger:4318"
+    build:
+      context: ./cart
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "8082:8082" # http
+    depends_on:
+      - loms
+    networks:
+        - app-network
 
   prometheus:
     image: gitlab-registry.ozon.dev/go/classroom-12/students/homework/prometheus:v2.36.2
