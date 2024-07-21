@@ -36,7 +36,7 @@ services:
     environment:
       DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
       TRACE_END_POINT_URL: "http://jaeger:4318"
-      # TOPIC: loms.order-events
+      # TOPIC: loms-order-events
       BOOTSTRAP_SERVER: kafka0:29092
     build:
       context: ./loms
@@ -140,7 +140,8 @@ services:
       - kafka0
     command: "bash -c 'echo Waiting for Kafka to be ready... && \
       cub kafka-ready -b kafka0:29092 1 30 && \
-      kafka-topics --create --topic loms.order-events --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka0:29092'"
+      kafka-topics --create --topic loms-order-events --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka0:29092 && \
+      kafka-topics --bootstrap-server kafka0:29092 --alter --topic loms-order-events --partitions 2 --if-exists'"
     networks:
         - app-network
   
@@ -152,8 +153,8 @@ services:
       context: ./notifier
       dockerfile: ./build/Dockerfile
     environment:
-      CONSUMER_GROUP: CGName-loms.order-events
-      TOPIC: loms.order-events
+      CONSUMER_GROUP: CGNameLomsOrderEvents
+      TOPIC: loms-order-events
       BOOTSTRAP_SERVER: kafka0:29092
     depends_on:
       - kafka-init-topics
@@ -165,8 +166,8 @@ services:
     image: go-consumer-image
     restart: unless-stopped
     environment:
-      CONSUMER_GROUP: CGName-loms.order-events
-      TOPIC: loms.order-events
+      CONSUMER_GROUP: CGNameLomsOrderEvents
+      TOPIC: loms-order-events
       BOOTSTRAP_SERVER: kafka0:29092
     depends_on:
       - go-consumer-1
@@ -178,8 +179,8 @@ services:
     image: go-consumer-image
     restart: unless-stopped
     environment:
-      CONSUMER_GROUP: CGName-loms.order-events
-      TOPIC: loms.order-events
+      CONSUMER_GROUP: CGNameLomsOrderEvents
+      TOPIC: loms-order-events
       BOOTSTRAP_SERVER: kafka0:29092
     depends_on:
       - go-consumer-2

@@ -16,7 +16,7 @@ type Config struct {
 func New() *Config {
 	Config := &Config{
 		ConsumerGroupName: getEnv("CONSUMER_GROUP", "CG_BASE"),
-		Topic:             getEnvByStr("TOPIC", "loms.order-events"),
+		Topic:             getEnvByStr("TOPIC", "loms-order-events"),
 		Brokers:           getEnvByStr("BOOTSTRAP_SERVER", "localhost:9092"),
 	}
 

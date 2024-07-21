@@ -30,7 +30,8 @@ run-cart:
 	go run ./cart/cmd/server/server.go
 
 run-docker-dev:
-	docker-compose build --no-cache && docker-compose up loms --force-recreate -d 
+#	docker-compose build --no-cache && docker-compose up loms --force-recreate -d 
+#	docker-compose build --no-cache && docker-compose up kafka-init-topics --force-recreate -d 
 #	docker-compose build --no-cache && docker-compose up cart --force-recreate -d
 
 run-docker-base:
