@@ -29,6 +29,10 @@ run-loms:
 run-cart:
 	go run ./cart/cmd/server/server.go
 
+run-docker-dev:
+	docker-compose build --no-cache && docker-compose up loms --force-recreate -d 
+#	docker-compose build --no-cache && docker-compose up cart --force-recreate -d
+
 run-docker-base:
 	docker-compose up kafka0 -d && \
 	docker-compose up kafka-ui -d && \
@@ -41,10 +45,6 @@ run-docker-base:
 	docker-compose up go-consumer-1 -d && \
 	docker-compose up go-consumer-2 -d && \
 	docker-compose up go-consumer-3 -d
-
-run-docker-dev:
-	docker-compose build --no-cache && docker-compose up loms --force-recreate -d 
-#	docker-compose build --no-cache && docker-compose up cart --force-recreate -d
 
 stop-docker-dev:
 	docker-compose stop cart && \

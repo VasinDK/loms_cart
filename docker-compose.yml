@@ -36,7 +36,7 @@ services:
     environment:
       DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
       TRACE_END_POINT_URL: "http://jaeger:4318"
-      TOPIC_1: loms.order-events
+      # TOPIC: loms.order-events
       BOOTSTRAP_SERVER: kafka0:29092
     build:
       context: ./loms
@@ -147,6 +147,7 @@ services:
   go-consumer-1:
     container_name: route256-go-consumer-1
     image: go-consumer-image
+    restart: unless-stopped
     build:
       context: ./notifier
       dockerfile: ./build/Dockerfile
@@ -162,6 +163,7 @@ services:
   go-consumer-2:
     container_name: route256-go-consumer-2
     image: go-consumer-image
+    restart: unless-stopped
     environment:
       CONSUMER_GROUP: CGName-loms.order-events
       TOPIC: loms.order-events
@@ -174,6 +176,7 @@ services:
   go-consumer-3:
     container_name: route256-go-consumer-3
     image: go-consumer-image
+    restart: unless-stopped
     environment:
       CONSUMER_GROUP: CGName-loms.order-events
       TOPIC: loms.order-events

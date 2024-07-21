@@ -2,68 +2,41 @@ package config
 
 import (
 	"os"
-)
-
-var (
-	Port                  = "50051"
-	HttpPort              = "8085"
-	Host                  = "localhost"
-	DBConnect             = "postgres://admin_loms:password@localhost:5432/loms" // в docker postgres вместо localhost
-	TraceEndpointURL      = "http://localhost:4318"                              // в docker jaeger вместо localhost
-	DeploymentEnvironment = "development"                                        // Среда развертывания
-	Brokers               = "kafka0:29092"                                       // в docker kafka0 вместо localhost
+	"strings"
 )
 
 // Config - конфигурация приложения
 type Config struct {
-	port                  string // grpc порт приложения
-	httpPort              string // Http порт приложения
-	host                  string // Хост
-	dbConnect             string // Строка подключения
-	TraceEndpointURL      string // Адрес куда отправляет данные трейс экспортер
-	DeploymentEnvironment string // Среда развертывания
-	Brokers               string // брокеры сообщений
+	port                  string `env:"PORT"`                   // grpc порт приложения
+	httpPort              string `env:"HTTP_PORT"`              // Http порт приложения
+	host                  string `env:"HOST"`                   // Хост
+	dbConnect             string `env:"DB_CONNECTION"`          // Строка подключения
+	traceEndpointURL      string `env:"TRACE_END_POINT_URL"`    // Адрес куда отправляет данные трейс экспортер
+	deploymentEnvironment string `env:"DEPLOYMENT_ENVIRONMENT"` // Среда развертывания
+	brokers               string `env:"BOOTSTRAP_SERVER"`       // брокеры
 }
 
 // New - создает экземпляр конфига
 func New() *Config {
-	if len(os.Getenv("PORT")) > 0 {
-		Port = os.Getenv("PORT")
+	Config := &Config{
+		port:                  getEnv("PORT", "50051"),
+		httpPort:              getEnv("HTTP_PORT", "8085"),
+		host:                  getEnv("HOST", "localhost"),
+		dbConnect:             getEnv("DB_CONNECTION", "postgres://admin_loms:password@localhost:5432/loms"),
+		traceEndpointURL:      getEnv("TRACE_END_POINT_URL", "http://localhost:4318"),
+		deploymentEnvironment: getEnv("DEPLOYMENT_ENVIRONMENT", "development"),
+		brokers:               getEnv("BOOTSTRAP_SERVER", "localhost:9092"),
 	}
 
-	if len(os.Getenv("HOST")) > 0 {
-		Host = os.Getenv("HOST")
+	return Config
+}
+
+func getEnv(key, defaultValue string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return v
 	}
 
-	if len(os.Getenv("HTTP_PORT")) > 0 {
-		HttpPort = os.Getenv("HTTP_PORT")
-	}
-
-	if len(os.Getenv("DB_CONNECTION")) > 0 {
-		DBConnect = os.Getenv("DB_CONNECTION")
-	}
-
-	if len(os.Getenv("TRACE_END_POINT_URL")) > 0 {
-		TraceEndpointURL = os.Getenv("TRACE_END_POINT_URL")
-	}
-
-	if len(os.Getenv("DEPLOYMENT_ENVIRONMENT")) > 0 {
-		DeploymentEnvironment = os.Getenv("DEPLOYMENT_ENVIRONMENT")
-	}
-
-	if len(os.Getenv("BROKERS")) > 0 {
-		Brokers = os.Getenv("BROKERS")
-	}
-
-	return &Config{
-		port:                  Port,
-		httpPort:              HttpPort,
-		host:                  Host,
-		dbConnect:             DBConnect,
-		TraceEndpointURL:      TraceEndpointURL,
-		DeploymentEnvironment: DeploymentEnvironment,
-		Brokers:               Brokers,
-	}
+	return defaultValue
 }
 
 // GetPort - получает grpc порт
@@ -88,16 +61,16 @@ func (c *Config) GetDBConnect() string {
 
 // GetTraceEndpointURL - адрес куда отправляет данные трейс экспортер
 func (c *Config) GetTraceEndpointURL() string {
-	return c.TraceEndpointURL
+	return c.traceEndpointURL
 }
 
 // GetDeploymentEnvironment - среда развертывания
 func (c *Config) GetDeploymentEnvironment() string {
-	return c.DeploymentEnvironment
+	return c.deploymentEnvironment
 }
 
 // GetBrokers - брокеры сообщений
 func (c *Config) GetBrokers() *[]string {
-	Brokers := []string{c.Brokers}
-	return &Brokers
+	brokers := strings.Split(c.brokers, ",")
+	return &brokers
 }
