@@ -1,77 +1,59 @@
 package config
 
 import (
+	"context"
 	"os"
+	"route256/cart/internal/pkg/logger"
 	"strconv"
-)
-
-var (
-	Port                  = "8082"
-	TokenStore            = "testtoken"
-	AddressStore          = "http://route256.pavl.uk:8080/get_product"
-	AddressStoreLoms      = "localhost" // localhost // loms
-	PostLoms              = "50051"
-	TimeGraceShutdown     = 5
-	TraceEndpointURL      = "http://localhost:4318" // в docker jaeger вместо localhost
-	DeploymentEnvironment = "development"
 )
 
 // Config - конфигурация приложения
 type Config struct {
-	Port                  string // Port - порт приложения
-	TokenStore            string // TokenStore - токен для стороннего хранилища
-	AddressStore          string // AddressStore - адрес стороннего хранилища
-	AddressStoreLoms      string // AddressStoreLoms - адрес Loms хранилища
-	PostLoms              string // Port grpc loms
-	TimeGraceShutdown     int    // Время для плавного завершения работы сервера
-	TraceEndpointURL      string // Адрес куда отправляет данные трейс экспортер
-	DeploymentEnvironment string // Среда развертывания
+	Port                  string `env:"PORT"`                   // Port - порт приложения
+	TokenStore            string `env:"TOKEN_STORE"`            // TokenStore - токен для стороннего хранилища
+	AddressStore          string `env:"ADDRESS_STORE"`          // AddressStore - адрес стороннего хранилища
+	AddressStoreLoms      string `env:"ADDRESS_STORE_LOMS"`     // AddressStoreLoms - адрес Loms хранилища
+	PostLoms              string `env:"PORT_LOMS"`              // Port grpc loms
+	TimeGraceShutdown     int64  `env:"TIME_GRACE_SHUTDOWN"`    // Время для плавного завершения работы сервера
+	TraceEndpointURL      string `env:"TRACE_END_POINT_URL"`    // Адрес куда отправляет данные трейс экспортер
+	DeploymentEnvironment string `env:"DEPLOYMENT_ENVIRONMENT"` // Среда развертывания
+	SizeBufferCache       int64  `env:"SIZE_BUFFER_CACHE"`      // Размер буфера кеша
 }
 
 // New - создает экземпляр конфига
 func New() *Config {
-	if len(os.Getenv("PORT")) > 0 {
-		Port = os.Getenv("PORT")
+	Config := &Config{
+		Port:                  getEnvStr("PORT", "8082"),
+		TokenStore:            getEnvStr("TOKEN_STORE", "testtoken"),
+		AddressStore:          getEnvStr("ADDRESS_STORE", "http://route256.pavl.uk:8080/get_product"),
+		AddressStoreLoms:      getEnvStr("ADDRESS_STORE_LOMS", "localhost"),
+		PostLoms:              getEnvStr("PORT_LOMS", "50051"),
+		TimeGraceShutdown:     getEnvInt64("TIME_GRACE_SHUTDOWN", 5),
+		TraceEndpointURL:      getEnvStr("TRACE_END_POINT_URL", "http://localhost:4318"),
+		DeploymentEnvironment: getEnvStr("DEPLOYMENT_ENVIRONMENT", "development"),
+		SizeBufferCache:       getEnvInt64("SIZE_BUFFER_CACHE", 5),
 	}
 
-	if len(os.Getenv("TOKEN_STORE")) > 0 {
-		TokenStore = os.Getenv("TOKEN_STORE")
-	}
+	return Config
+}
 
-	if len(os.Getenv("ADDRESS_STORE")) > 0 {
-		AddressStore = os.Getenv("ADDRESS_STORE")
+func getEnvStr(key, defaultValue string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return v
 	}
+	return defaultValue
+}
 
-	if len(os.Getenv("ADDRESS_STORE_LOMS")) > 0 {
-		AddressStoreLoms = os.Getenv("ADDRESS_STORE_LOMS")
+func getEnvInt64(key string, defaultValue int64) int64 {
+	if v, ok := os.LookupEnv(key); ok {
+		NewValue, err := strconv.Atoi(v)
+		if err != nil {
+			logger.Errorw(context.Background(), "getEnvInt env", err.Error())
+			return defaultValue
+		}
+		return int64(NewValue)
 	}
-
-	if len(os.Getenv("PORT_LOMS")) > 0 {
-		PostLoms = os.Getenv("PORT_LOMS")
-	}
-
-	if len(os.Getenv("TIME_GRACE_SHUTDOWN")) > 0 {
-		TimeGraceShutdown, _ = strconv.Atoi(os.Getenv("TIME_GRACE_SHUTDOWN"))
-	}
-
-	if len(os.Getenv("TRACE_END_POINT_URL")) > 0 {
-		TraceEndpointURL = os.Getenv("TRACE_END_POINT_URL")
-	}
-
-	if len(os.Getenv("DEPLOYMENT_ENVIRONMENT")) > 0 {
-		DeploymentEnvironment = os.Getenv("DEPLOYMENT_ENVIRONMENT")
-	}
-
-	return &Config{
-		Port:                  Port,
-		TokenStore:            TokenStore,
-		AddressStore:          AddressStore,
-		AddressStoreLoms:      AddressStoreLoms,
-		PostLoms:              PostLoms,
-		TimeGraceShutdown:     TimeGraceShutdown,
-		TraceEndpointURL:      TraceEndpointURL,
-		DeploymentEnvironment: DeploymentEnvironment,
-	}
+	return defaultValue
 }
 
 // GetPort - получает порт
@@ -100,7 +82,7 @@ func (c *Config) GetAddressStoreLoms() string {
 }
 
 // GetTimeGraceShutdown - получает время необходимое для GraceShutdown
-func (c *Config) GetTimeGraceShutdown() int {
+func (c *Config) GetTimeGraceShutdown() int64 {
 	return c.TimeGraceShutdown
 }
 
@@ -112,4 +94,8 @@ func (c *Config) GetTraceEndpointURL() string {
 // GetDeploymentEnvironment - среда развертывания
 func (c *Config) GetDeploymentEnvironment() string {
 	return c.DeploymentEnvironment
+}
+
+func (c *Config) GetSizeBufferCache() int64 {
+	return c.SizeBufferCache
 }

@@ -14,6 +14,7 @@ import (
 	"route256/cart/internal/pkg/jaegertracing"
 	"route256/cart/internal/pkg/logger"
 	"route256/cart/internal/repository"
+	"route256/cart/internal/repository/cache"
 	"route256/cart/internal/service/item/add_product"
 	"route256/cart/internal/service/item/delete_item"
 	"route256/cart/internal/service/list/checkout"
@@ -53,7 +54,8 @@ func Run(config *config.Config) {
 
 	clientLoms := loms.NewLomsClient(conn)
 
-	cartRepository := repository.NewRepository(config, clientLoms)
+	cartRepo := repository.NewRepository(config, clientLoms)
+	cartRepository := cache.New(config, cartRepo)
 	httpHandlers := http_handlers.New()
 
 	mux := http.NewServeMux()

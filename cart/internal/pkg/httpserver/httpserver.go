@@ -10,12 +10,12 @@ import (
 
 type Config interface {
 	GetPort() string
-	GetTimeGraceShutdown() int
+	GetTimeGraceShutdown() int64
 }
 
 type Server struct {
 	HttpServer        http.Server
-	TimeGraceShutdown int
+	TimeGraceShutdown int64
 }
 
 // New - создает http сервер
