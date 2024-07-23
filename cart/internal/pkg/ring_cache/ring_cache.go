@@ -6,7 +6,7 @@ import (
 )
 
 type Cacher struct {
-	SizeBuffer int64
+	SizeBuffer int64	// Размер буфера
 	Cache      sync.Map
 	RingBuffer []string
 	mx         sync.RWMutex

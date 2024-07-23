@@ -96,6 +96,7 @@ func (c *Config) GetDeploymentEnvironment() string {
 	return c.DeploymentEnvironment
 }
 
+// GetSizeBufferCache - возвращает размер буфера
 func (c *Config) GetSizeBufferCache() int64 {
 	return c.SizeBufferCache
 }
