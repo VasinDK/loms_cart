@@ -7,7 +7,14 @@ import (
 )
 
 type OrderRepository struct {
-	Conn *pgxpool.Pool
+	Sm ShardManager
+}
+
+type ShardManager interface {
+	GetShardIndexFromID(id int64) int
+	GetShardIndex(key string) (uint32, error)
+	Pick(index int) (*pgxpool.Pool, error)
+	GetMainShard() int
 }
 
 var (
@@ -16,8 +23,8 @@ var (
 )
 
 // New - создает OrderRepository
-func New(conn *pgxpool.Pool) *OrderRepository {
+func New(sm ShardManager) *OrderRepository {
 	return &OrderRepository{
-		Conn: conn,
+		Sm: sm,
 	}
 }

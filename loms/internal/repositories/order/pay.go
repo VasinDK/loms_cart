@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"fmt"
 	"route256/loms/internal/model"
 	"route256/loms/pkg/statuses"
 	"sync"
@@ -12,6 +13,14 @@ import (
 
 // OrderPay - транзакция на покупку
 func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, order *model.Order) error {
+	/* shIndex := o.Sm.GetShardIndexFromID(int64(orderId))
+	Conn, err := o.Sm.Pick(shIndex) */
+	Conn, err := o.Sm.Pick(o.Sm.GetMainShard())
+
+	if err != nil {
+		return fmt.Errorf("o.Sm.Pick %w", err)
+	}
+
 	// Получаем стоки
 	skus := make([]uint32, len(order.Items))
 	for i := range order.Items {
@@ -27,7 +36,7 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 
 	start := time.Now()
 
-	rows, err := o.Conn.Query(ctx, queryGetItem, skus)
+	rows, err := Conn.Query(ctx, queryGetItem, skus)
 
 	RequestDBTotal.WithLabelValues("SELECT").Inc()
 	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "SELECT").Observe(float64(time.Since(start).Seconds()))

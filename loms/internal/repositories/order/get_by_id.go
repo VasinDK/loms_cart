@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"fmt"
 	"route256/loms/internal/model"
 	"route256/loms/pkg/statuses"
 	"time"
@@ -9,6 +10,12 @@ import (
 
 // GetById - получает ордер по id
 func (o *OrderRepository) GetById(ctx context.Context, orderId model.OrderId) (*model.Order, error) {
+	shIndex := o.Sm.GetShardIndexFromID(int64(orderId))
+	Conn, err := o.Sm.Pick(shIndex)
+	if err != nil {
+		return nil, fmt.Errorf("o.Sm.Pick %w", err)
+	}
+
 	const query = `
 		SELECT orders.user_id, orders.status, items_order.sku, items_order.count
 		FROM orders
@@ -17,7 +24,7 @@ func (o *OrderRepository) GetById(ctx context.Context, orderId model.OrderId) (*
 	`
 	start := time.Now()
 
-	rows, err := o.Conn.Query(ctx, query, orderId)
+	rows, err := Conn.Query(ctx, query, orderId)
 
 	RequestDBTotal.WithLabelValues("SELECT").Inc()
 	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "SELECT").Observe(float64(time.Since(start).Seconds()))

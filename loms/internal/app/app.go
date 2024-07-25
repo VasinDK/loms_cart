@@ -10,7 +10,7 @@ import (
 	"route256/loms/internal/middleware"
 	"route256/loms/internal/model"
 	"route256/loms/internal/pkg/config"
-	"route256/loms/internal/pkg/db"
+	"route256/loms/internal/pkg/db_shard"
 	"route256/loms/internal/pkg/jaegertracing"
 	"route256/loms/internal/pkg/logger"
 	"route256/loms/internal/repositories/async_producer"
@@ -18,7 +18,6 @@ import (
 	"route256/loms/internal/repositories/stock"
 	"syscall"
 
-	// "route256/loms/internal/repository"
 	"route256/loms/internal/service"
 	"route256/loms/pkg/api/loms/v1"
 
@@ -37,15 +36,15 @@ func Run(config *config.Config) {
 	logger.New()
 
 	// Подключение к БД
-	connDB, err := db.NewConn(config)
+	sm, err := db_shard.New(ctxStart, config)
 	if err != nil {
-		panic("db.NewConn " + err.Error())
+		panic("dbShard.New " + err.Error())
 	}
-	defer connDB.Close()
+	defer sm.Close()
 
 	// Репозитории
-	order := order.New(connDB)
-	stock := stock.New(connDB)
+	order := order.New(sm)
+	stock := stock.New(sm)
 
 	// Брокер сообщений
 	producer, err := async_producer.NewAsyncProducer(ctxStart, config)

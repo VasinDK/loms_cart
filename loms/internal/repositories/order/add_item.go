@@ -11,8 +11,14 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// Add - добавляет ордер
+// AddItem - добавляет sku в ордер
 func (o *OrderRepository) AddItem(ctx context.Context, order *model.Order, orderId model.OrderId) error {
+	shIndex := o.Sm.GetShardIndexFromID(int64(orderId))
+	Conn, err := o.Sm.Pick(shIndex)
+	if err != nil {
+		return fmt.Errorf("o.Sm.Pick %w", err)
+	}
+
 	const query = `
 		INSERT INTO items_order (sku, count, order_id) VALUES (@sku, @count, @orderId);
 	`
@@ -30,7 +36,7 @@ func (o *OrderRepository) AddItem(ctx context.Context, order *model.Order, order
 
 	start := time.Now()
 
-	res := o.Conn.SendBatch(ctx, batch)
+	res := Conn.SendBatch(ctx, batch)
 	defer res.Close()
 
 	var errForLabel error

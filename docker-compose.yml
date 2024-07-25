@@ -5,17 +5,33 @@ volumes:
   grafana_data: {}
 
 services:
-  postgres:
+  postgres0:
+    container_name: postgres-shard0
     image: postgres:14.8-alpine3.18
     restart: unless-stopped	
     environment:
-      POSTGRES_DB: loms
-      POSTGRES_USER: admin_loms
-      POSTGRES_PASSWORD: password 
+      POSTGRES_DB: ${DOCKER_POSTGRES_DB_1}
+      POSTGRES_USER: ${DOCKER_POSTGRES_USER_1}
+      POSTGRES_PASSWORD: ${DOCKER_POSTGRES_PASSWORD_1} 
     ports:
-      - "5432:5432"
-    volumes:
-      - ./loms/migrations:/docker-entrypoint-initdb.d	
+      - ${DOCKER_POSTGRES_HOST_PORT_1}:5432
+    # volumes:
+      # - ./loms/migrations:/docker-entrypoint-initdb.d	
+    networks:
+        - app-network
+
+  postgres1:
+    container_name: postgres-shard1
+    image: postgres:14.8-alpine3.18
+    restart: unless-stopped	
+    environment:
+      POSTGRES_DB: ${DOCKER_POSTGRES_DB_2}
+      POSTGRES_USER: ${DOCKER_POSTGRES_USER_2}
+      POSTGRES_PASSWORD: ${DOCKER_POSTGRES_PASSWORD_2} 
+    ports:
+      - ${DOCKER_POSTGRES_HOST_PORT_2}:5432
+    # volumes:
+      # - ./loms/migrations:/docker-entrypoint-initdb.d	
     networks:
         - app-network
 
@@ -34,7 +50,8 @@ services:
     container_name: loms
     restart: unless-stopped
     environment:
-      DB_CONNECTION: "postgres://admin_loms:password@postgres:5432/loms"
+      DB_CONNECTION_0: ${DB_CONNECTION_0}
+      DB_CONNECTION_1: ${DB_CONNECTION_1}
       TRACE_END_POINT_URL: "http://jaeger:4318"
       # TOPIC: loms-order-events
       BOOTSTRAP_SERVER: kafka0:29092
@@ -45,7 +62,7 @@ services:
       - "50051:50051" # grpc
       - "8085:8085"   # http
     depends_on:
-      - postgres
+      - postgres0
     networks:
         - app-network
 

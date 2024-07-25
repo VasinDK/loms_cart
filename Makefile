@@ -4,6 +4,8 @@ PACKAGES := $(shell go list \
 	./cart/test/... \
 	| grep -v mock)
 
+-include .env
+
 run-protoc:
 	cd ./cart && make .protoc-generate && cd .. && \
 	cd ./loms && make .protoc-generate
@@ -12,10 +14,20 @@ run-all:
 #	docker-compose up -d
 	docker-compose up --force-recreate --build -d
 #	docker-compose build --no-cache && docker-compose up --force-recreate -d
-
+	make run-ddl-migration
+	make run-dml-migration
+	
 run-cover:
 	go test -cover $(PACKAGES) | grep -v cart/internal/repository
 
+run-ddl-migration:
+	cd ./loms && \
+	goose -dir migrations/ddl postgres "postgresql://admin_loms:password@localhost:5432/loms?sslmode=disable" up && \
+	goose -dir migrations/ddl postgres "postgresql://admin_loms:password@localhost:5433/loms?sslmode=disable" up && cd ..
+
+run-dml-migration:
+	cd ./loms && \
+	goose -dir migrations/dml postgres "postgresql://admin_loms:password@localhost:5432/loms?sslmode=disable" up && cd ..
 
 
 # for development
@@ -35,9 +47,10 @@ run-docker-dev:
 #	docker-compose build --no-cache && docker-compose up cart --force-recreate -d
 
 run-docker-base:
+	docker-compose up postgres0 --force-recreate -d && \
+	docker-compose up postgres1 --force-recreate -d && \
 	docker-compose up kafka0 -d && \
 	docker-compose up kafka-ui -d && \
-	docker-compose up postgres -d && \
 	docker-compose up pgadmin -d && \
 	docker-compose up prometheus -d && \
 	docker-compose up jaeger -d && \
