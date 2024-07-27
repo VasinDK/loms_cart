@@ -17,6 +17,7 @@ type Conf interface {
 	GetMainShard() string
 }
 
+// ShardManager - менеджер шардов
 type ShardManager struct {
 	shards        []*pgxpool.Pool
 	sequenceShift int64 // id начинается не с 1 а с 1000. Тут указывается сдвиг последовательности
@@ -25,6 +26,7 @@ type ShardManager struct {
 	hasher        hash.Hash32
 }
 
+// New - создает новый ShardManager
 func New(ctx context.Context, config Conf) (*ShardManager, error) {
 	shift, err := strconv.ParseInt(config.GetSequenceShift(), 10, 64)
 	if err != nil {
@@ -59,6 +61,7 @@ func New(ctx context.Context, config Conf) (*ShardManager, error) {
 	return sm, nil
 }
 
+// NewConn - создает новое соединение для ShardManager-а
 func NewConn(ctx context.Context, i int, connStr string) (*pgxpool.Pool, error) {
 	connection, err := pgxpool.New(ctx, connStr)
 	if err != nil {
@@ -73,6 +76,7 @@ func NewConn(ctx context.Context, i int, connStr string) (*pgxpool.Pool, error) 
 	return connection, nil
 }
 
+// Close - закрывает открытые соединения ShardManager
 func (sm *ShardManager) Close() {
 	for i := range sm.shards {
 		sm.shards[i].Close()

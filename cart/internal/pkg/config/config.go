@@ -37,6 +37,7 @@ func New() *Config {
 	return Config
 }
 
+// getEnvStr - задаем ENV либо значение по умолчанию
 func getEnvStr(key, defaultValue string) string {
 	if v, ok := os.LookupEnv(key); ok {
 		return v
@@ -44,6 +45,7 @@ func getEnvStr(key, defaultValue string) string {
 	return defaultValue
 }
 
+// getEnvInt64 - задаем ENV либо значение по умолчанию
 func getEnvInt64(key string, defaultValue int64) int64 {
 	if v, ok := os.LookupEnv(key); ok {
 		NewValue, err := strconv.Atoi(v)

@@ -47,8 +47,8 @@ run-docker-dev:
 #	docker-compose build --no-cache && docker-compose up cart --force-recreate -d
 
 run-docker-base:
-	docker-compose up postgres0 --force-recreate -d && \
-	docker-compose up postgres1 --force-recreate -d && \
+	docker-compose up postgres0 -d && \
+	docker-compose up postgres1 -d && \
 	docker-compose up kafka0 -d && \
 	docker-compose up kafka-ui -d && \
 	docker-compose up pgadmin -d && \

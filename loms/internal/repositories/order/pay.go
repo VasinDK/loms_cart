@@ -13,12 +13,9 @@ import (
 
 // OrderPay - транзакция на покупку
 func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, order *model.Order) error {
-	/* shIndex := o.Sm.GetShardIndexFromID(int64(orderId))
-	Conn, err := o.Sm.Pick(shIndex) */
-	Conn, err := o.Sm.Pick(o.Sm.GetMainShard())
-
+	ConnMain, err := o.Sm.Pick(o.Sm.GetMainShard())
 	if err != nil {
-		return fmt.Errorf("o.Sm.Pick %w", err)
+		return fmt.Errorf("o.Sm.Pick_1 %w", err)
 	}
 
 	// Получаем стоки
@@ -36,13 +33,13 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 
 	start := time.Now()
 
-	rows, err := Conn.Query(ctx, queryGetItem, skus)
+	rows, err := ConnMain.Query(ctx, queryGetItem, skus)
 
 	RequestDBTotal.WithLabelValues("SELECT").Inc()
 	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "SELECT").Observe(float64(time.Since(start).Seconds()))
 
 	if err != nil {
-		return err
+		return fmt.Errorf("ConnMain.Query %w", err)
 	}
 	defer rows.Close()
 
@@ -53,15 +50,21 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 	}
 
 	if err = rows.Err(); err != nil {
-		return err
+		return fmt.Errorf("rows.Err %w", err)
 	}
 
 	// Делаем транзакцию на покупку
-	tx, err := o.Conn.BeginTx(ctx, pgx.TxOptions{})
+	shIndex := o.Sm.GetShardIndexFromID(int64(orderId))
+	ConnOrder, err := o.Sm.Pick(shIndex)
 	if err != nil {
-		return err
+		return fmt.Errorf("o.Sm.Pick_2 %w", err)
 	}
-	defer tx.Rollback(ctx)
+
+	txOrder, err := ConnOrder.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("ConnOrder.BeginTx_1 %w", err)
+	}
+	defer txOrder.Rollback(ctx)
 
 	// Меняем статус
 	const queryStatus = `
@@ -76,13 +79,13 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 
 	start = time.Now()
 
-	_, err = tx.Exec(ctx, queryStatus, argsStatus)
+	_, err = txOrder.Exec(ctx, queryStatus, argsStatus)
 
 	RequestDBTotal.WithLabelValues("UPDATE").Inc()
 	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "UPDATE").Observe(float64(time.Since(start).Seconds()))
 
 	if err != nil {
-		return err
+		return fmt.Errorf("txOrder.Exec %w", err)
 	}
 
 	// Меняем стоки
@@ -121,12 +124,18 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 	var errForLabel error
 	var once sync.Once
 
-	res := tx.SendBatch(ctx, batch)
+	txMain, err := ConnMain.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("ConnOrder.BeginTx_2 %w", err)
+	}
+	defer txMain.Rollback(ctx)
+
+	res := txMain.SendBatch(ctx, batch)
 	for i := 0; i < batch.Len(); i++ {
 		_, err := res.Exec()
 		if err != nil {
 			once.Do(func() { errForLabel = err })
-			return err
+			return fmt.Errorf("txMain.SendBatch %w", err)
 		}
 	}
 	res.Close() // если поставить defer, то появляется ошибка
@@ -134,9 +143,14 @@ func (o *OrderRepository) OrderPay(ctx context.Context, orderId model.OrderId, o
 	RequestDBTotal.WithLabelValues("UPDATE").Inc()
 	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(errForLabel), "UPDATE").Observe(float64(time.Since(start).Seconds()))
 
-	err = tx.Commit(ctx)
+	err = txOrder.Commit(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("txOrder.Commit %w", err)
+	}
+
+	err = txMain.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("txMain.Commit %w", err)
 	}
 
 	return nil

@@ -7,10 +7,12 @@ import (
 	"github.com/spaolacci/murmur3"
 )
 
+// SetHasher - созданет хешер
 func (sm *ShardManager) SetHasher() {
 	sm.hasher = murmur3.New32()
 }
 
+// Pick - возвращает полу соединений конкретного шарда
 func (sm *ShardManager) Pick(index int) (*pgxpool.Pool, error) {
 	if index < len(sm.shards) {
 		return sm.shards[index], nil
@@ -19,10 +21,13 @@ func (sm *ShardManager) Pick(index int) (*pgxpool.Pool, error) {
 	return nil, fmt.Errorf("%w: given index=%d, len=%d", ErrShardIndexOutOfRange, index, len(sm.shards))
 }
 
+// GetShardIndexFromID - получает номер шарда по id элемента шарда
 func (sm *ShardManager) GetShardIndexFromID(id int64) int {
-	return int(id % sm.sequenceShift)
+	res := int(id % sm.sequenceShift)
+	return res
 }
 
+// GetShardIndex - получает номер шарда по ключу
 func (sm *ShardManager) GetShardIndex(key string) (uint32, error) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
@@ -34,4 +39,9 @@ func (sm *ShardManager) GetShardIndex(key string) (uint32, error) {
 	}
 
 	return sm.hasher.Sum32() % uint32(len(sm.shards)), nil
+}
+
+// GetMainShard - возвращает главный шард
+func (sm *ShardManager) GetMainShard() int {
+	return sm.mainShard
 }

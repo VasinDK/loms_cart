@@ -5,20 +5,25 @@ import (
 	"fmt"
 	"route256/loms/internal/model"
 	"route256/loms/pkg/statuses"
+	"strconv"
 	"time"
 )
 
 // Add - добавляет ордер
 func (o *OrderRepository) AddOrder(ctx context.Context, order *model.Order) (model.OrderId, error) {
-	shIndex := o.Sm.GetShardIndexFromID(order.User)
-	Conn, err := o.Sm.Pick(shIndex)
+	shIndex, err := o.Sm.GetShardIndex(strconv.FormatInt(order.User, 10))
+	if err != nil {
+		return 0, fmt.Errorf("o.Sm.GetShardIndex %w", err)
+	}
+
+	Conn, err := o.Sm.Pick(int(shIndex))
 	if err != nil {
 		return 0, fmt.Errorf("o.Sm.Pick %w", err)
 	}
 
 	const query = `
 		INSERT INTO orders (id, user_id, status) 
-		VALUES (nextval('order_id_manual_seq') + $1, $2) RETURNING id;
+		VALUES (nextval('order_id_manual_seq') + $1, $2, $3) RETURNING id;
 	`
 	var id model.OrderId
 

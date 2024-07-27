@@ -37,6 +37,7 @@ func New() *Config {
 	return Config
 }
 
+// getEnv - задаем ENV либо значение по умолчанию
 func getEnv(key, defaultValue string) string {
 	if v, ok := os.LookupEnv(key); ok {
 		return v

@@ -5,13 +5,15 @@ import (
 	"sync"
 )
 
+// Cacher - кольцевой кэш с поочередным выдавливанием
 type Cacher struct {
-	SizeBuffer int64	// Размер буфера
+	SizeBuffer int64 // Размер буфера
 	Cache      sync.Map
 	RingBuffer []string
 	mx         sync.RWMutex
 }
 
+// Set - устанавливает кэш
 func (cr *Cacher) Set(ctx context.Context, key string, value any) {
 	if int64(len(cr.RingBuffer)) >= cr.SizeBuffer {
 		cr.mx.Lock()
@@ -32,6 +34,7 @@ func (cr *Cacher) Set(ctx context.Context, key string, value any) {
 	cr.Cache.Store(key, value)
 }
 
+// Get - получает значение кэша
 func (cr *Cacher) Get(ctx context.Context, key string) (any, bool) {
 	res, ok := cr.Cache.Load(key)
 	return res, ok

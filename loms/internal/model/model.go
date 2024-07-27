@@ -45,5 +45,4 @@ const (
 )
 
 const ServiceName = "Loms"
-
 const TopicLomsOrderEvents = "loms-order-events"

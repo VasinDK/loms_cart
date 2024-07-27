@@ -14,7 +14,7 @@ func (s *Service) Create(ctx context.Context, order *model.Order) (model.OrderId
 	order.Status = model.StatusNew
 	orderId, err := s.OrderRepository.AddOrder(ctx, order)
 	if err != nil {
-		return 0, fmt.Errorf("%v s.OrderRepository.Add %w", op, err)
+		return 0, fmt.Errorf("%v s.OrderRepository.AddOrder %w", op, err)
 	}
 
 	s.Producer.MessagePush(&model.ProducerMessage{
@@ -25,7 +25,7 @@ func (s *Service) Create(ctx context.Context, order *model.Order) (model.OrderId
 
 	err = s.OrderRepository.AddItem(ctx, order, orderId)
 	if err != nil {
-		return 0, fmt.Errorf("%v s.OrderRepository.Add %w", op, err)
+		return 0, fmt.Errorf("%v s.OrderRepository.AddItem %w", op, err)
 	}
 
 	skus := make([]uint32, len(order.Items))
