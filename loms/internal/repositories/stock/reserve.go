@@ -13,6 +13,11 @@ import (
 
 // Reserve - резервирует sku
 func (s *StockRepository) Reserve(ctx context.Context, stockItems *[]model.StockItem) error {
+	Conn, err := s.Sm.Pick(s.Sm.GetMainShard())
+	if err != nil {
+		return fmt.Errorf("s.Sm.Pick %w", err)
+	}
+
 	query := `
 		UPDATE stocks
 		SET reserved = @reserved
@@ -31,7 +36,7 @@ func (s *StockRepository) Reserve(ctx context.Context, stockItems *[]model.Stock
 
 	start := time.Now()
 
-	res := s.Conn.SendBatch(ctx, batch)
+	res := Conn.SendBatch(ctx, batch)
 	defer res.Close()
 
 	var errForLabel error

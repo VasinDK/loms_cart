@@ -12,6 +12,11 @@ import (
 
 // StockRemoveItem - удаляет элем.из стока
 func (s *StockRepository) StockRemoveItem(ctx context.Context, order *model.OrderItem) error {
+	Conn, err := s.Sm.Pick(s.Sm.GetMainShard())
+	if err != nil {
+		return fmt.Errorf("s.Sm.Pick %w", err)
+	}
+
 	currentStockItem, err := s.GetItemsBySku(ctx, &[]uint32{order.Sku})
 	if err != nil {
 		return err
@@ -38,7 +43,7 @@ func (s *StockRepository) StockRemoveItem(ctx context.Context, order *model.Orde
 
 	start := time.Now()
 
-	_, err = s.Conn.Exec(ctx, query, args)
+	_, err = Conn.Exec(ctx, query, args)
 
 	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "UPDATE").Observe(float64(time.Since(start).Seconds()))
 	RequestDBTotal.WithLabelValues("UPDATE").Inc()

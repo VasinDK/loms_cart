@@ -2,6 +2,7 @@ package stock
 
 import (
 	"context"
+	"fmt"
 	"route256/loms/internal/model"
 	"route256/loms/pkg/statuses"
 	"time"
@@ -11,6 +12,11 @@ import (
 
 // GetItemBySku - получает стоки по sku
 func (s *StockRepository) GetItemsBySku(ctx context.Context, sku *[]uint32) (*[]model.StockItem, error) {
+	Conn, err := s.Sm.Pick(s.Sm.GetMainShard())
+	if err != nil {
+		return nil, fmt.Errorf("s.Sm.Pick %w", err)
+	}
+
 	const query = `
 		SELECT sku as Sku, total_count as TotalCount, reserved as Reserved
 		FROM stocks
@@ -18,7 +24,7 @@ func (s *StockRepository) GetItemsBySku(ctx context.Context, sku *[]uint32) (*[]
 	`
 	start := time.Now()
 
-	rows, err := s.Conn.Query(ctx, query, sku)
+	rows, err := Conn.Query(ctx, query, sku)
 
 	RequestDBTotal.WithLabelValues("SELECT").Inc()
 	RequestTimeStatusCategoryBD.WithLabelValues(statuses.GetCodePG(err), "SELECT").Observe(time.Since(start).Seconds())

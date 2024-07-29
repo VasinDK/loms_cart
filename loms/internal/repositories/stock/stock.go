@@ -13,7 +13,14 @@ type StockItem struct {
 }
 
 type StockRepository struct {
-	Conn *pgxpool.Pool
+	Sm ShardManager
+}
+
+type ShardManager interface {
+	GetShardIndexFromID(id int64) int
+	GetShardIndex(key string) (uint32, error)
+	Pick(index int) (*pgxpool.Pool, error)
+	GetMainShard() int
 }
 
 var (
@@ -36,8 +43,8 @@ var (
 )
 
 // New - создает новый репозиторий для StockRepository
-func New(conn *pgxpool.Pool) *StockRepository {
+func New(Sm ShardManager) *StockRepository {
 	return &StockRepository{
-		Conn: conn,
+		Sm: Sm,
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"sync"
 )
 
+// CacheRepo - репозиторий который кэширует значения того или иного метода
 type CacheRepo struct {
 	*repository.Repository
 	checkSKUCache ring_cache.Cacher
@@ -20,6 +21,7 @@ type Config interface {
 	GetSizeBufferCache() int64
 }
 
+// New - возвращает новый CacheRepo
 func New(config Config, repo *repository.Repository) *CacheRepo {
 	return &CacheRepo{
 		Repository: repo,
@@ -31,6 +33,7 @@ func New(config Config, repo *repository.Repository) *CacheRepo {
 	}
 }
 
+// CheckSKU - метод значения которого кэшируются и соответственно обрабатываются
 func (c *CacheRepo) CheckSKU(ctx context.Context, sku int64) (*model.Product, error) {
 	skuStr := strconv.FormatInt(sku, 10)
 
