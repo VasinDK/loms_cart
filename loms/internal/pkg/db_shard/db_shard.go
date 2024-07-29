@@ -3,7 +3,6 @@ package db_shard
 import (
 	"context"
 	"fmt"
-	"hash"
 	"route256/loms/internal/model"
 	"strconv"
 	"sync"
@@ -12,7 +11,7 @@ import (
 )
 
 type Conf interface {
-	GetDBConnect() *[]string
+	GetDBConnect() []string
 	GetSequenceShift() string
 	GetMainShard() string
 }
@@ -23,7 +22,7 @@ type ShardManager struct {
 	sequenceShift int64 // id начинается не с 1 а с 1000. Тут указывается сдвиг последовательности
 	mainShard     int
 	mu            sync.RWMutex
-	hasher        hash.Hash32
+	hasher        sync.Pool
 }
 
 // New - создает новый ShardManager
@@ -43,7 +42,7 @@ func New(ctx context.Context, config Conf) (*ShardManager, error) {
 		mainShard:     int(mainShard),
 	}
 
-	for i, connStr := range *config.GetDBConnect() {
+	for i, connStr := range config.GetDBConnect() {
 		if connStr == "" {
 			return nil, model.ErrStrConnIsEmpty
 		}

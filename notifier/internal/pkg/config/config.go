@@ -7,9 +7,9 @@ import (
 
 // Config - конфигурация приложения
 type Config struct {
-	ConsumerGroupName string    `env:"CONSUMER_GROUP"`   // Консюмер группа
-	Topic             *[]string `env:"TOPIC"`            // Топик продюсера
-	Brokers           *[]string `env:"BOOTSTRAP_SERVER"` // хост:порт кафка брокера
+	ConsumerGroupName string   `env:"CONSUMER_GROUP"`   // Консюмер группа
+	Topic             []string `env:"TOPIC"`            // Топик продюсера
+	Brokers           []string `env:"BOOTSTRAP_SERVER"` // хост:порт кафка брокера
 }
 
 // New - создает экземпляр конфига
@@ -30,17 +30,17 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-func getEnvByStr(key, defaultValue string) *[]string {
+func getEnvByStr(key, defaultValue string) []string {
 	if v, ok := os.LookupEnv(key); ok {
 		res := strings.Split(v, ",")
 
-		return &res
+		return res
 	}
-	return &[]string{defaultValue}
+	return []string{defaultValue}
 }
 
 // GetBrokers -
-func (c *Config) GetBrokers() *[]string {
+func (c *Config) GetBrokers() []string {
 	return c.Brokers
 }
 
@@ -50,6 +50,6 @@ func (c *Config) GetGroupID() string {
 }
 
 // GetTopics -
-func (c *Config) GetTopics() *[]string {
+func (c *Config) GetTopics() []string {
 	return c.Topic
 }

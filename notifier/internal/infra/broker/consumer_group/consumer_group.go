@@ -15,9 +15,9 @@ type ConsumerGroup struct {
 }
 
 type Config interface {
-	GetBrokers() *[]string
+	GetBrokers() []string
 	GetGroupID() string
-	GetTopics() *[]string
+	GetTopics() []string
 }
 
 func New(ctx context.Context, configMain Config) (*ConsumerGroup, error) {
@@ -28,7 +28,7 @@ func New(ctx context.Context, configMain Config) (*ConsumerGroup, error) {
 	config.Consumer.Offsets.AutoCommit.Enable = false
 
 	sCG, err := sarama.NewConsumerGroup(
-		*configMain.GetBrokers(),
+		configMain.GetBrokers(),
 		configMain.GetGroupID(),
 		config,
 	)
@@ -39,7 +39,7 @@ func New(ctx context.Context, configMain Config) (*ConsumerGroup, error) {
 	ConsumerGroup := &ConsumerGroup{
 		sCG,
 		handlers,
-		*configMain.GetTopics(),
+		configMain.GetTopics(),
 	}
 
 	go ConsumerGroup.Run(ctx)

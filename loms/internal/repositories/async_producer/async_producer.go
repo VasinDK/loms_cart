@@ -14,7 +14,7 @@ type Producer struct {
 }
 
 type Config interface {
-	GetBrokers() *[]string
+	GetBrokers() []string
 }
 
 func (p *Producer) Message(msg *model.ProducerMessage) *sarama.ProducerMessage {
@@ -67,12 +67,12 @@ func NewAsyncProducer(ctx context.Context, config Config) (*Producer, error) {
 	prodConf.Producer.RequiredAcks = sarama.NoResponse
 	prodConf.Producer.Idempotent = false
 
-	asyncProd, err := sarama.NewAsyncProducer(*config.GetBrokers(), prodConf)
+	asyncProd, err := sarama.NewAsyncProducer(config.GetBrokers(), prodConf)
 	if err != nil {
 		return nil, fmt.Errorf("sarama.NewAsyncProducer %w", err)
 	}
 
-	client, err := sarama.NewClient(*config.GetBrokers(), prodConf)
+	client, err := sarama.NewClient(config.GetBrokers(), prodConf)
 	if err != nil {
 		return nil, fmt.Errorf("sarama.NewClient %w", err)
 	}

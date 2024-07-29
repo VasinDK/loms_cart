@@ -62,8 +62,8 @@ func (c *Config) GetHost() string {
 }
 
 // GetDBConnect - получает слайс строк для подключения к бд
-func (c *Config) GetDBConnect() *[]string {
-	return &[]string{
+func (c *Config) GetDBConnect() []string {
+	return []string{
 		c.dbConnect0,
 		c.dbConnect1,
 	}
@@ -80,9 +80,8 @@ func (c *Config) GetDeploymentEnvironment() string {
 }
 
 // GetBrokers - брокеры сообщений
-func (c *Config) GetBrokers() *[]string {
-	brokers := strings.Split(c.brokers, ",")
-	return &brokers
+func (c *Config) GetBrokers() []string {
+	return strings.Split(c.brokers, ",")
 }
 
 // GetSequenceShift - Сдвиг id последовательности
