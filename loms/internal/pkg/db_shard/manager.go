@@ -36,10 +36,6 @@ func (sm *ShardManager) GetShardIndexFromID(id int64) int {
 // GetShardIndex - получает номер шарда по ключу
 func (sm *ShardManager) GetShardIndex(key string) (uint32, error) {
 	hash := sm.hasher.Get().(hash.Hash32)
-	defer func() {
-		hash.Reset()
-		sm.hasher.Put(hash)
-	}()
 
 	_, err := hash.Write([]byte(key))
 	if err != nil {
@@ -47,6 +43,10 @@ func (sm *ShardManager) GetShardIndex(key string) (uint32, error) {
 	}
 
 	res := hash.Sum32() % uint32(len(sm.shards))
+
+	hash.Reset()
+
+	sm.hasher.Put(hash)
 
 	return res, nil
 }
