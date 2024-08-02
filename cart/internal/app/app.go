@@ -17,6 +17,7 @@ import (
 	"route256/cart/internal/repository/cache"
 	"route256/cart/internal/service/item/add_product"
 	"route256/cart/internal/service/item/delete_item"
+	"route256/cart/internal/service/item/echo"
 	"route256/cart/internal/service/list/checkout"
 	"route256/cart/internal/service/list/clear_cart"
 	"route256/cart/internal/service/list/get_cart"
@@ -33,23 +34,19 @@ import (
 // Run - запускает сервер
 func Run(config *config.Config) {
 	ctxStart := context.Background()
+
+	// Инициализация логера
 	logger.New()
 
-	var conn *grpc.ClientConn
+	// GRPC клиент
 	conn, err := grpc.NewClient(
 		fmt.Sprintf("%v:%v", config.GetAddressStoreLoms(), config.GetPortLoms()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 	)
-
 	if err != nil {
 		logger.Errorw(ctxStart, "grpc.NewClient", "err", err)
 		os.Exit(1)
-	}
-
-	tp, err := jaegertracing.New(config, model.ServiceName)
-	if err != nil {
-		logger.Panicw(ctxStart, "err", err)
 	}
 
 	clientLoms := loms.NewLomsClient(conn)
@@ -58,14 +55,21 @@ func Run(config *config.Config) {
 	cartRepository := cache.New(config, cartRepo)
 	httpHandlers := http_handlers.New()
 
+	// jaeger
+	tp, err := jaegertracing.New(config, model.ServiceName)
+	if err != nil {
+		logger.Panicw(ctxStart, "err", err)
+	}
+
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /metrics", promhttp.Handler())
 	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", httpHandlers.AddItem(add_product.New(cartRepository)))
 	mux.HandleFunc("DELETE /user/{user_id}/cart/{sku_id}", httpHandlers.DeleteItem(delete_item.New(cartRepository)))
 	mux.HandleFunc("DELETE /user/{user_id}/cart", httpHandlers.DeleteItemsByUserID(clear_cart.New(cartRepository)))
 	mux.HandleFunc("GET /user/{user_id}/cart/list", httpHandlers.GetItemsByUserID(get_cart.New(cartRepository)))
 	mux.HandleFunc("POST /user/cart/checkout", httpHandlers.Checkout(checkout.New(cartRepository)))
+	mux.Handle("GET /echo", httpHandlers.Echo(echo.New()))
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	handle := middleware.Tracing(mux)
 	handle = middleware.Logging(handle)
