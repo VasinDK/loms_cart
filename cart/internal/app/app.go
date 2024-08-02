@@ -26,6 +26,7 @@ import (
 	"route256/cart/pkg/api/loms/v1"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -51,7 +52,13 @@ func Run(config *config.Config) {
 
 	clientLoms := loms.NewLomsClient(conn)
 
-	cartRepo := repository.NewRepository(config, clientLoms)
+	inMemoryDB := redis.NewClient(&redis.Options{
+		Addr:     config.InMemoryDBAddr,
+		Password: config.InMemoryDBPass,
+		DB:       config.InMemoryDB0,
+	})
+
+	cartRepo := repository.NewRepository(config, clientLoms, inMemoryDB)
 	cartRepository := cache.New(config, cartRepo)
 	httpHandlers := http_handlers.New()
 
@@ -68,7 +75,8 @@ func Run(config *config.Config) {
 	mux.HandleFunc("DELETE /user/{user_id}/cart", httpHandlers.DeleteItemsByUserID(clear_cart.New(cartRepository)))
 	mux.HandleFunc("GET /user/{user_id}/cart/list", httpHandlers.GetItemsByUserID(get_cart.New(cartRepository)))
 	mux.HandleFunc("POST /user/cart/checkout", httpHandlers.Checkout(checkout.New(cartRepository)))
-	mux.Handle("GET /echo", httpHandlers.Echo(echo.New()))
+	mux.HandleFunc("GET /echo", httpHandlers.Echo(echo.New(cartRepository)))
+	// mux.Handle("GET /echo", httpHandlers.Echo(ctxStart, echo.New(cartRepository)))
 	mux.Handle("GET /metrics", promhttp.Handler())
 
 	handle := middleware.Tracing(mux)

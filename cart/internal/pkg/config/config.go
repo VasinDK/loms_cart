@@ -18,6 +18,9 @@ type Config struct {
 	TraceEndpointURL      string `env:"TRACE_END_POINT_URL"`    // Адрес куда отправляет данные трейс экспортер
 	DeploymentEnvironment string `env:"DEPLOYMENT_ENVIRONMENT"` // Среда развертывания
 	SizeBufferCache       int64  `env:"SIZE_BUFFER_CACHE"`      // Размер буфера кеша
+	InMemoryDBAddr        string `env:"IN_MEMORY_DB_ADDR"`      // Адрес InMemory бд
+	InMemoryDBPass        string `env:"IN_MEMORY_DB_PASS"`      // Пароль InMemory бд
+	InMemoryDB0           int    `env:"IN_MEMORY_DB_0"`         // Номер бд InMemory
 }
 
 // New - создает экземпляр конфига
@@ -32,6 +35,9 @@ func New() *Config {
 		TraceEndpointURL:      getEnvStr("TRACE_END_POINT_URL", "http://localhost:4318"),
 		DeploymentEnvironment: getEnvStr("DEPLOYMENT_ENVIRONMENT", "development"),
 		SizeBufferCache:       getEnvInt64("SIZE_BUFFER_CACHE", 5),
+		InMemoryDBAddr:        getEnvStr("IN_MEMORY_DB_ADDR", "localhost:6379"),
+		InMemoryDBPass:        getEnvStr("IN_MEMORY_DB_PASS", ""),
+		InMemoryDB0:           0,
 	}
 
 	return Config

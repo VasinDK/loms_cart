@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"route256/cart/internal/model"
 	"route256/cart/pkg/api/loms/v1"
@@ -11,8 +12,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/redis/go-redis/v9"
 )
 
 type Config interface {
@@ -30,6 +33,7 @@ type Repository struct {
 	Carts      Carts
 	ClientLoms loms.LomsClient
 	Config     Config
+	InMemoryDB *redis.Client
 	mu         sync.RWMutex
 }
 
@@ -53,8 +57,9 @@ var (
 )
 
 // NewRepository - инициализирует репозиторий
-func NewRepository(config Config, loms loms.LomsClient) *Repository {
+func NewRepository(config Config, loms loms.LomsClient, inMemoryDB *redis.Client) *Repository {
 	return &Repository{
+		InMemoryDB: inMemoryDB,
 		Carts:      make(Carts),
 		ClientLoms: loms,
 		Config:     config,
@@ -240,4 +245,64 @@ func (r *Repository) StockInfo(ctx context.Context, sku int64) (int64, error) {
 	}
 
 	return int64(countloms.GetCount()), nil
+}
+
+// GetByKeyMemDB - получает значение по ключу из inMemoryDB
+func (r *Repository) GetByKeyMemDB(ctx context.Context, key string) (string, error) {
+	start := time.Now()
+	externalAddress := "GetByKeyMemDB"
+
+	val, err := r.InMemoryDB.Get(ctx, key).Result()
+
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetStatusCodeRedis(err), externalAddress).Observe(time.Since(start).Seconds())
+
+	if err == redis.Nil {
+		return "", nil
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return val, nil
+}
+
+// SetKeyMemDB - устанавливает ключ - значение в inMemoryDB
+func (r *Repository) SetKeyMemDB(ctx context.Context, key string, value string) error {
+	start := time.Now()
+	externalAddress := "SetKeyMemDB"
+
+	err := r.InMemoryDB.Set(ctx, key, value, 0).Err()
+
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetStatusCodeRedis(err), externalAddress).Observe(time.Since(start).Seconds())
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Repository) ConnWebSocket(w http.ResponseWriter, req *http.Request, BufferSize int) (*websocket.Conn, error) {
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  BufferSize,
+		WriteBufferSize: BufferSize,
+	}
+
+	ws, err := upgrader.Upgrade(w, req, nil)
+	if err != nil {
+		return nil, fmt.Errorf("upgrader.Upgrade %w", err)
+	}
+
+	return ws, nil
+}
+
+func (r *Repository) ReadWebSocket() {
+
+}
+
+func (r *Repository) WriteWebSocket() {
+
 }

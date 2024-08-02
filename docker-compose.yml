@@ -3,6 +3,7 @@ version: "3.8"
 volumes:
   prometheus_data: {}
   grafana_data: {}
+  redis_data: {}
 
 services:
   postgres0:
@@ -159,6 +160,16 @@ services:
       cub kafka-ready -b kafka0:29092 1 30 && \
       kafka-topics --create --topic loms-order-events --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka0:29092 && \
       kafka-topics --bootstrap-server kafka0:29092 --alter --topic loms-order-events --partitions 2 --if-exists'"
+    networks:
+        - app-network
+  
+  redis:
+    image: "redis:latest"
+    container_name: "redis_container"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
         - app-network
   
