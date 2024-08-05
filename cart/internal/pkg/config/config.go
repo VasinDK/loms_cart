@@ -21,6 +21,7 @@ type Config struct {
 	InMemoryDBAddr        string `env:"IN_MEMORY_DB_ADDR"`      // Адрес InMemory бд
 	InMemoryDBPass        string `env:"IN_MEMORY_DB_PASS"`      // Пароль InMemory бд
 	InMemoryDB0           int    `env:"IN_MEMORY_DB_0"`         // Номер бд InMemory
+	SizeBufferWebSocket   int64  `env:"SIZE_BUFFER_WEB_SOCKET"` // Размер буфера вебсокета
 }
 
 // New - создает экземпляр конфига
@@ -38,6 +39,7 @@ func New() *Config {
 		InMemoryDBAddr:        getEnvStr("IN_MEMORY_DB_ADDR", "localhost:6379"),
 		InMemoryDBPass:        getEnvStr("IN_MEMORY_DB_PASS", ""),
 		InMemoryDB0:           0,
+		SizeBufferWebSocket:   getEnvInt64("SIZE_BUFFER_WEB_SOCKET", 1024),
 	}
 
 	return Config
@@ -104,7 +106,12 @@ func (c *Config) GetDeploymentEnvironment() string {
 	return c.DeploymentEnvironment
 }
 
-// GetSizeBufferCache - возвращает размер буфера
+// GetSizeBufferCache - возвращает размер буфера Cache
 func (c *Config) GetSizeBufferCache() int64 {
 	return c.SizeBufferCache
+}
+
+// GetSizeBufferWebSocket - возвращает размер буфера WebSocket
+func (c *Config) GetSizeBufferWebSocket() int64 {
+	return c.SizeBufferWebSocket
 }

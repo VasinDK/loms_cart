@@ -3,6 +3,7 @@ package statuses
 import (
 	"net/url"
 
+	"github.com/gorilla/websocket"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc/status"
@@ -63,4 +64,16 @@ func GetStatusCodeRedis(err error) string {
 	}
 
 	return "ok"
+}
+
+func GetStatusCodeWebSocket(err error) string {
+	if err == nil {
+		return "ok"
+	}
+
+	if closeErr, ok := err.(*websocket.CloseError); ok {
+		return closeErr.Error()
+	}
+
+	return "error"
 }

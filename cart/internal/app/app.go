@@ -52,6 +52,7 @@ func Run(config *config.Config) {
 
 	clientLoms := loms.NewLomsClient(conn)
 
+	// Клиент Redis
 	inMemoryDB := redis.NewClient(&redis.Options{
 		Addr:     config.InMemoryDBAddr,
 		Password: config.InMemoryDBPass,
@@ -75,8 +76,7 @@ func Run(config *config.Config) {
 	mux.HandleFunc("DELETE /user/{user_id}/cart", httpHandlers.DeleteItemsByUserID(clear_cart.New(cartRepository)))
 	mux.HandleFunc("GET /user/{user_id}/cart/list", httpHandlers.GetItemsByUserID(get_cart.New(cartRepository)))
 	mux.HandleFunc("POST /user/cart/checkout", httpHandlers.Checkout(checkout.New(cartRepository)))
-	mux.HandleFunc("GET /echo", httpHandlers.Echo(echo.New(cartRepository)))
-	// mux.Handle("GET /echo", httpHandlers.Echo(ctxStart, echo.New(cartRepository)))
+	mux.HandleFunc("GET /echo", httpHandlers.Echo(echo.New(cartRepository)))	// webSocket
 	mux.Handle("GET /metrics", promhttp.Handler())
 
 	handle := middleware.Tracing(mux)

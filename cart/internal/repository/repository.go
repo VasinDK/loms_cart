@@ -21,6 +21,7 @@ import (
 type Config interface {
 	GetTokenStore() string
 	GetAddressStore() string
+	GetSizeBufferWebSocket() int64
 }
 
 // Carts - структура: "Корзины". id пользователя - id конкретной корзины.
@@ -268,7 +269,7 @@ func (r *Repository) GetByKeyMemDB(ctx context.Context, key string) (string, err
 	return val, nil
 }
 
-// SetKeyMemDB - устанавливает ключ - значение в inMemoryDB
+// SetKeyMemDB - устанавливает ключ - значение в inMemoryDB. Использует Redis для хранения
 func (r *Repository) SetKeyMemDB(ctx context.Context, key string, value string) error {
 	start := time.Now()
 	externalAddress := "SetKeyMemDB"
@@ -285,13 +286,21 @@ func (r *Repository) SetKeyMemDB(ctx context.Context, key string, value string) 
 	return nil
 }
 
-func (r *Repository) ConnWebSocket(w http.ResponseWriter, req *http.Request, BufferSize int) (*websocket.Conn, error) {
+// ConnWebSocket - Создает WebSocket соединение
+func (r *Repository) ConnWebSocket(ctx context.Context, w http.ResponseWriter, req *http.Request) (*websocket.Conn, error) {
+	start := time.Now()
+	externalAddress := "ConnWebSocket"
+
 	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  BufferSize,
-		WriteBufferSize: BufferSize,
+		ReadBufferSize:  int(r.Config.GetSizeBufferWebSocket()),
+		WriteBufferSize: int(r.Config.GetSizeBufferWebSocket()),
 	}
 
 	ws, err := upgrader.Upgrade(w, req, nil)
+
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetStatusCodeWebSocket(err), externalAddress).Observe(time.Since(start).Seconds())
+
 	if err != nil {
 		return nil, fmt.Errorf("upgrader.Upgrade %w", err)
 	}
@@ -299,10 +308,21 @@ func (r *Repository) ConnWebSocket(w http.ResponseWriter, req *http.Request, Buf
 	return ws, nil
 }
 
-func (r *Repository) ReadWebSocket() {
-
+// ReadWebSocket - Читает из WebSocket соединения
+func (r *Repository) ReadWebSocket(conn *websocket.Conn) (string, error) {
+	_, message, err := conn.ReadMessage()
+	if err != nil {
+		return "", fmt.Errorf("conn.ReadMessage %w", err)
+	}
+	return string(message), nil
 }
 
-func (r *Repository) WriteWebSocket() {
+// WriteWebSocket - пишет в WebSocket соединение
+func (r *Repository) WriteWebSocket(conn *websocket.Conn, value string) error {
+	err := conn.WriteMessage(websocket.TextMessage, []byte(value))
+	if err != nil {
+		return fmt.Errorf("conn.WriteMessage %w", err)
+	}
 
+	return nil
 }
