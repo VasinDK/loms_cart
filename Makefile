@@ -56,6 +56,7 @@ run-docker-base:
 	docker-compose up jaeger -d && \
 	docker-compose up grafana -d && \
 	docker-compose up kafka-init-topics -d && \
+	docker-compose up redis -d && \
 	docker-compose up go-consumer-1 -d && \
 	docker-compose up go-consumer-2 -d && \
 	docker-compose up go-consumer-3 -d

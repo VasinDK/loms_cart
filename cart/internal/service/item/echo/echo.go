@@ -2,38 +2,70 @@ package echo
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"route256/cart/internal/pkg/logger"
+	"strconv"
+	"time"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
-type Echo struct{}
-
-func New() *Echo {
-	return &Echo{}
+type Repo interface {
+	GetByKeyMemDB(ctx context.Context, key string) (string, error)
+	SetKeyMemDB(ctx context.Context, key string, value string) error
+	ConnWebSocket(ctx context.Context, w http.ResponseWriter, req *http.Request) (*websocket.Conn, error)
+	ReadWebSocket(conn *websocket.Conn) (string, error)
+	WriteWebSocket(conn *websocket.Conn, value string) error
 }
 
-func (e *Echo) Echo() websocket.Handler {
-	return websocket.Handler(run)
+type Echo struct {
+	Repo Repo
 }
 
-func run(conn *websocket.Conn) {
-	ctx := context.Background()
+// New - новый экземпляр сервиса Echo
+func New(repo Repo) *Echo {
+	return &Echo{
+		repo,
+	}
+}
+
+// Echo - принимает сообщение записывает в реди, возвращает обратно
+func (e *Echo) Echo(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+	conn, err := e.Repo.ConnWebSocket(ctx, w, req)
+	if err != nil {
+		return fmt.Errorf("e.Repo.ConnWebSocket %w", err)
+	}
 	defer conn.Close()
 
 	// Можно добавить ping. Прослушивать и закрывать.
 	// Можно добавить закрытие по приходу syscall.SIGINT
 
-	var msg string
 	for {
-		if err := websocket.Message.Receive(conn, &msg); err != nil {
-			logger.Errorw(ctx, "websocket.Message.Receive", "err.Error", err.Error())
+		msg, err := e.Repo.ReadWebSocket(conn)
+		if err != nil {
+			logger.Errorw(ctx, "e.Repo.ReadWebSocket.", "err", err.Error())
 			break
 		}
 
-		if err := websocket.Message.Send(conn, msg); err != nil {
+		keyMess := strconv.FormatInt(time.Now().Unix(), 10)
+
+		err = e.Repo.SetKeyMemDB(ctx, keyMess, msg)
+		if err != nil {
+			logger.Errorw(ctx, "e.Repo.SetKeyMemDB", "err", err.Error())
+		}
+
+		value, err := e.Repo.GetByKeyMemDB(ctx, keyMess)
+		if err != nil {
+			logger.Errorw(ctx, "e.Repo.GetByKeyMemDB", "err", err.Error())
+		}
+
+		err = e.Repo.WriteWebSocket(conn, value)
+		if err != nil {
 			logger.Errorw(ctx, "websocket.Message.Send", "err.Error", err.Error())
 			break
 		}
 	}
+
+	return nil
 }

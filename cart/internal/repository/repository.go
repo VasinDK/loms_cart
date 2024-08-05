@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"route256/cart/internal/model"
 	"route256/cart/pkg/api/loms/v1"
@@ -11,13 +12,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/redis/go-redis/v9"
 )
 
 type Config interface {
 	GetTokenStore() string
 	GetAddressStore() string
+	GetSizeBufferWebSocket() int64
 }
 
 // Carts - структура: "Корзины". id пользователя - id конкретной корзины.
@@ -30,6 +34,7 @@ type Repository struct {
 	Carts      Carts
 	ClientLoms loms.LomsClient
 	Config     Config
+	InMemoryDB *redis.Client
 	mu         sync.RWMutex
 }
 
@@ -53,8 +58,9 @@ var (
 )
 
 // NewRepository - инициализирует репозиторий
-func NewRepository(config Config, loms loms.LomsClient) *Repository {
+func NewRepository(config Config, loms loms.LomsClient, inMemoryDB *redis.Client) *Repository {
 	return &Repository{
+		InMemoryDB: inMemoryDB,
 		Carts:      make(Carts),
 		ClientLoms: loms,
 		Config:     config,
@@ -240,4 +246,83 @@ func (r *Repository) StockInfo(ctx context.Context, sku int64) (int64, error) {
 	}
 
 	return int64(countloms.GetCount()), nil
+}
+
+// GetByKeyMemDB - получает значение по ключу из inMemoryDB
+func (r *Repository) GetByKeyMemDB(ctx context.Context, key string) (string, error) {
+	start := time.Now()
+	externalAddress := "GetByKeyMemDB"
+
+	val, err := r.InMemoryDB.Get(ctx, key).Result()
+
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetStatusCodeRedis(err), externalAddress).Observe(time.Since(start).Seconds())
+
+	if err == redis.Nil {
+		return "", nil
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return val, nil
+}
+
+// SetKeyMemDB - устанавливает ключ - значение в inMemoryDB. Использует Redis для хранения
+func (r *Repository) SetKeyMemDB(ctx context.Context, key string, value string) error {
+	start := time.Now()
+	externalAddress := "SetKeyMemDB"
+
+	err := r.InMemoryDB.Set(ctx, key, value, 0).Err()
+
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetStatusCodeRedis(err), externalAddress).Observe(time.Since(start).Seconds())
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ConnWebSocket - Создает WebSocket соединение
+func (r *Repository) ConnWebSocket(ctx context.Context, w http.ResponseWriter, req *http.Request) (*websocket.Conn, error) {
+	start := time.Now()
+	externalAddress := "ConnWebSocket"
+
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  int(r.Config.GetSizeBufferWebSocket()),
+		WriteBufferSize: int(r.Config.GetSizeBufferWebSocket()),
+	}
+
+	ws, err := upgrader.Upgrade(w, req, nil)
+
+	requestOutTotal.WithLabelValues(externalAddress).Inc()
+	requestOutTimeStatusAddress.WithLabelValues(statuses.GetStatusCodeWebSocket(err), externalAddress).Observe(time.Since(start).Seconds())
+
+	if err != nil {
+		return nil, fmt.Errorf("upgrader.Upgrade %w", err)
+	}
+
+	return ws, nil
+}
+
+// ReadWebSocket - Читает из WebSocket соединения
+func (r *Repository) ReadWebSocket(conn *websocket.Conn) (string, error) {
+	_, message, err := conn.ReadMessage()
+	if err != nil {
+		return "", fmt.Errorf("conn.ReadMessage %w", err)
+	}
+	return string(message), nil
+}
+
+// WriteWebSocket - пишет в WebSocket соединение
+func (r *Repository) WriteWebSocket(conn *websocket.Conn, value string) error {
+	err := conn.WriteMessage(websocket.TextMessage, []byte(value))
+	if err != nil {
+		return fmt.Errorf("conn.WriteMessage %w", err)
+	}
+
+	return nil
 }
